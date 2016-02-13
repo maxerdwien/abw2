@@ -84,9 +84,13 @@ int main(int, char**) {
 	if (!bg) {
 		std::cout << "error loading background: " << SDL_GetError() << std::endl;
 	}
-	SDL_Texture* spaceship = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\spaceship.png");
-	SDL_Texture* spaceship_low = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\spaceship_low.png");
-	SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\spaceship_high.png");
+	//SDL_Texture* spaceship = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\spaceship.png");
+	//SDL_Texture* spaceship_low = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\spaceship_low.png");
+	//SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\spaceship_high.png");
+	SDL_Texture* spaceship = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\desktop\\abw2\\Project1\\Project1\\assets\\bear-idle.png");
+	SDL_Texture* spaceship_low = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\desktop\\abw2\\Project1\\Project1\\assets\\bear-idle.png");
+	SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\desktop\\abw2\\Project1\\Project1\\assets\\bear-idle.png");
+	
 	SDL_Texture* sun_tex = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\sun.png");
 	SDL_Texture* bullet = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\bullet.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "C:\\Users\\max_000\\project1\\cannon.png");
