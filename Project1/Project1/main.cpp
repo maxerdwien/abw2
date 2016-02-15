@@ -10,6 +10,7 @@
 
 void render_texture(SDL_Texture*, SDL_Renderer*, int x, int y, double angle);
 double calculate_angle(int x_vel, int y_vel);
+bullet* spawn_bullets(spaceship* ship, int velocity, int spread);
 
 int main(int, char**) {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
@@ -97,7 +98,7 @@ int main(int, char**) {
 	SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bear-idle.png");
 	
 	SDL_Texture* sun_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
-	SDL_Texture* bullet = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
+	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 	SDL_Texture* baddie = IMG_LoadTexture(renderer, "..\\Project1\\assets\\baddie.png");
 
@@ -123,7 +124,8 @@ int main(int, char**) {
 
 	double G = 5000000000000;
 
-	bool fire_gun = false;
+	//bool fire_gun = false;
+	bool fire_gun = true;
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -179,7 +181,7 @@ int main(int, char**) {
 				break;
 			case SDL_CONTROLLERBUTTONUP:
 				if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
-					fire_gun = false;
+					//fire_gun = false;
 				}
 				break;
 			case SDL_CONTROLLERAXISMOTION:
@@ -293,33 +295,17 @@ int main(int, char**) {
 		if (fire_gun && ship->cannon_cooldown <= 0) {
 			int extra_x_vel = 0;
 			int extra_y_vel = 0;
-			int MUZZLE_VEL = 50000;
 
-			extra_x_vel = MUZZLE_VEL*ship->gun_dir_x / sqrt(pow(ship->gun_dir_x, 2) + pow(ship->gun_dir_y, 2));
-			extra_y_vel = MUZZLE_VEL*ship->gun_dir_y / sqrt(pow(ship->gun_dir_x, 2) + pow(ship->gun_dir_y, 2));
-			/*
-			if (ship->gun_dir_y == 0) {
-				extra_y_vel = 0;
-				extra_x_vel = MUZZLE_VEL;
+			int MUZZLE_VEL = 50000;
+			int spread = 1;
+			bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread);
+			for (int i = 0; i < spread; i++) {
+				bullets[num_bullets] = &new_bullets[i];
+				num_bullets++;
+				
 			}
-			else if (ship->gun_dir_x == 0) {
-				extra_x_vel = 0;
-				extra_y_vel = MUZZLE_VEL;
-			}
-			else {
-				extra_x_vel = (int)(MUZZLE_VEL / sqrt((pow(ship->gun_dir_y, 2) / pow(ship->gun_dir_x, 2)) + 1));
-				extra_y_vel = (int)(MUZZLE_VEL / sqrt((pow(ship->gun_dir_x, 2) / pow(ship->gun_dir_y, 2)) + 1));
-			}
-			if (ship->gun_dir_y < 0) {
-				extra_y_vel = -extra_y_vel;
-			}
-			if (ship->gun_dir_x < 0) {
-				extra_x_vel = -extra_x_vel;
-			}
-			*/
-			bullets[num_bullets] = init_bullet(ship->x_pos, ship->y_pos, ship->x_vel + extra_x_vel, ship->y_vel + extra_y_vel);
-			num_bullets++;
 			ship->cannon_cooldown += ship->cannon_delay;
+			
 		}
 
 		// update ship
@@ -498,19 +484,43 @@ int main(int, char**) {
 		for (int i = 0; i < num_bullets; i++) {
 			double angle = calculate_angle(bullets[i]->x_vel, bullets[i]->y_vel);
 			//std::cout << bullets[i]->x_vel << "\t" << bullets[i]->y_vel << "\t" << angle << std::endl;
-			render_texture(bullet, renderer, bullets[i]->x_pos / 10000, bullets[i]->y_pos / 10000, angle);
+			render_texture(bullet_tex, renderer, bullets[i]->x_pos / 10000, bullets[i]->y_pos / 10000, angle);
 		}
 		SDL_RenderPresent(renderer);
 	}
 
 	SDL_HapticClose(haptic);
 	SDL_DestroyTexture(bg);
-	// destroy other textures
+	// todo: destroy other textures
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 
 	SDL_Quit();
 	return 0;
+}
+
+bullet* spawn_bullets(spaceship* ship, int velocity, int spread) {
+	
+
+	double spread_angle = 3.14159 * 0.4368789353;
+
+	bullet* new_bullets = (bullet*)malloc(sizeof(bullet) * spread); // todo: free me
+
+	if (spread % 2 == 0) {
+
+	}
+	else {
+		double start_angle = spread_angle * (spread - 1) / 2;
+		for (int i = 0; i < spread; i++) {
+			int extra_x_vel = velocity*ship->gun_dir_x / sqrt(pow(ship->gun_dir_x, 2) + pow(ship->gun_dir_y, 2));
+			int extra_y_vel = velocity*ship->gun_dir_y / sqrt(pow(ship->gun_dir_x, 2) + pow(ship->gun_dir_y, 2));
+
+			new_bullets[i] = init_bullet(ship->x_pos, ship->y_pos, ship->x_vel + extra_x_vel, ship->y_vel + extra_y_vel)[0];
+		}
+	}
+
+	return new_bullets;
+	
 }
 
 double calculate_angle(int x_vel, int y_vel) {
