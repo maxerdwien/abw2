@@ -17,13 +17,18 @@ int main(int, char**) {
 		return 1;
 	}
 	enum Resolution {
+		_480p,
 		_720p,
 		_1080p
 	};
-	const Resolution res = _1080p;
+	const Resolution res = _720p;
 	int WINDOW_WIDTH;
 	int WINDOW_HEIGHT;
 	switch (res) {
+	case _480p:
+		WINDOW_WIDTH = 640;
+		WINDOW_HEIGHT = 480;
+		break;
 	case _720p:
 		WINDOW_WIDTH = 1280;
 		WINDOW_HEIGHT = 720;
