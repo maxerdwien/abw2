@@ -8,6 +8,8 @@ struct bullet {
 
 	int x_accel = 0;
 	int y_accel = 0;
+
+	int damage = 1;
 };
 
-struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel);
+struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage);

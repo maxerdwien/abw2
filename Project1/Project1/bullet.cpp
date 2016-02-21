@@ -1,6 +1,6 @@
 #include "bullet.h"
 
-struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel) {
+struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage) {
 	struct bullet* bull = new struct bullet;
 	
 	bull->x_pos = x_pos;
@@ -11,6 +11,8 @@ struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel) {
 
 	bull->x_accel = 0;
 	bull->y_accel = 0;
+
+	bull->damage = damage;
 
 	return bull;
 }
