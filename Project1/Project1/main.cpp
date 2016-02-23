@@ -1,8 +1,9 @@
 #include <iostream>
+
 #include <math.h>
 #include <SDL.h>
 #include <SDL_image.h>
-
+#include <SDL_ttf.h>
 #include "spaceship.h"
 #include "bullet.h"
 #include "body.h"
@@ -12,6 +13,7 @@ double calculate_angle(int x_vel, int y_vel);
 bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage);
 
 int main(int, char**) {
+	int test = TTF_Init();
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
 		std::cout << "SDL_Init error: " << SDL_GetError() << std::endl;
 		return 1;
@@ -377,6 +379,34 @@ int main(int, char**) {
 
 		// render ships
 		for (int i = 0; i < num_players; i++) {
+	
+			/* TO DO David is rendering percents*/
+
+		
+
+			TTF_Font* caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 24); //this opens a font style and sets a size
+
+			if (caladea == nullptr) {
+				std::cout << TTF_GetError() << std::endl;
+			}
+
+			SDL_Color White = { 255, 255, 255 };  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
+
+			SDL_Surface* surfaceMessage = TTF_RenderText_Solid(caladea, "0%", White); // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
+
+			SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //now you can convert it into a texture
+
+
+			SDL_Rect Message_rect; //create a rect
+			Message_rect.x = 0;  //controls the rect's x coordinate 
+			Message_rect.y = 0; // controls the rect's y coordinte
+			Message_rect.w = 100; // controls the width of the rect
+			Message_rect.h = 100; // controls the height of the rect
+
+
+			SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+
+
 			struct spaceship* ship = ships[i];
 			double total_engine = sqrt(pow(ship->x_accel, 2) + pow(ship->y_accel, 2));
 			double angle = calculate_angle(ship->x_accel, ship->y_accel);
