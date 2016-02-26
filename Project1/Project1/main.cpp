@@ -12,7 +12,7 @@ double calculate_angle(int x_vel, int y_vel);
 bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage);
 
 int main(int, char**) {
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
+	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
 		std::cout << "SDL_Init error: " << SDL_GetError() << std::endl;
 		return 1;
 	}
@@ -129,6 +129,7 @@ int main(int, char**) {
 	while (!quit) {
 		last_frame_start_time = frame_start_time;
 		frame_start_time = SDL_GetTicks();
+		//std::cout << frame_start_time - last_frame_start_time << std::endl;
 		int controller_index;
 		struct spaceship* ship;
 		while (SDL_PollEvent(&e)) {
@@ -226,13 +227,21 @@ int main(int, char**) {
 
 		for (int i = 0; i < num_players; i++) {
 			struct spaceship* ship = ships[i];
+
+			// regen stamina
+			//std::cout << ship->stamina << std::endl;
+			ship->stamina += ship->stamina_per_s * (frame_start_time - last_frame_start_time) / 1000;
+			if (ship->stamina > ship->stamina_max) {
+				ship->stamina = ship->stamina_max;
+			}
+
 			// handle bullet spawns
 			if (ship->cannon_cooldown > 0) {
 				ship->cannon_cooldown -= (frame_start_time - last_frame_start_time);
 			}
-			if (ship->fire_normal && ship->cannon_cooldown <= 0) {
+			if (ship->fire_normal && ship->stamina > 0 && ship->cannon_cooldown <= 0) {
 
-				int MUZZLE_VEL = 50000;
+				int MUZZLE_VEL = 40000;
 				int spread = 1;
 				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 2);
 				for (int i = 0; i < spread; i++) {
@@ -241,7 +250,7 @@ int main(int, char**) {
 
 				}
 				ship->cannon_cooldown += ship->cannon_delay;
-
+				ship->stamina -= 100;
 			}
 
 			// handle burst fire shots
@@ -251,8 +260,8 @@ int main(int, char**) {
 			if (ship->burst_shot_current != 0 && ship->burst_cooldown_2 > 0) {
 				ship->burst_cooldown_2 -= (frame_start_time - last_frame_start_time);
 			}
-			if (ship->fire_burst && ship->burst_cooldown_1 <= 0) {
-				int MUZZLE_VEL = 20000;
+			if (ship->fire_burst && ship->stamina > 0 && ship->burst_cooldown_1 <= 0) {
+				int MUZZLE_VEL = 70000;
 				int spread = 1;
 				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 1);
 				for (int i = 0; i < spread; i++) {
@@ -261,9 +270,10 @@ int main(int, char**) {
 				}
 				ship->burst_cooldown_1 += ship->burst_delay_1;
 				ship->burst_shot_current++;
+				ship->stamina -= 320;
 			}
 			if (ship->burst_cooldown_2 <= 0) {
-				int MUZZLE_VEL = 20000;
+				int MUZZLE_VEL = 70000;
 				int spread = 1;
 				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 1);
 				for (int i = 0; i < spread; i++) {
@@ -285,7 +295,7 @@ int main(int, char**) {
 				ship->x_vel = 2 * ship->move_dir_x;
 				ship->y_vel = 2 * ship->move_dir_y;
 				double new_vel = pow(ship->x_vel, 2) + pow(ship->y_vel, 2);
-				std::cout << new_vel << std::endl;
+				//std::cout << new_vel << std::endl;
 
 				/*
 				ship->x_vel_accumulator = 0;
@@ -312,6 +322,11 @@ int main(int, char**) {
 				//std::cout << sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)) << "\t" << ship->move_dir_x << std::endl;
 				ship->x_pos += ship->x_vel;
 				ship->y_pos += ship->y_vel;
+
+				if (ship->x_pos < 0 || ship->x_pos > WINDOW_WIDTH*10000 || ship->y_pos < 0 || ship->y_pos > WINDOW_HEIGHT*10000) {
+					ship->x_pos = 10000*WINDOW_WIDTH / 2;
+					ship->y_pos = 10000*WINDOW_HEIGHT / 2;
+				}
 
 				// do haptic feedback
 				/*
@@ -362,7 +377,7 @@ int main(int, char**) {
 						ship->num_bullets--;
 						free(ship->bullets[j]);
 						ship->bullets[j] = ship->bullets[ship->num_bullets];
-						i--;
+						j--;
 						break;
 					}
 				}
@@ -410,6 +425,15 @@ int main(int, char**) {
 				//std::cout << bullets[i]->x_vel << "\t" << bullets[i]->y_vel << "\t" << angle << std::endl;
 				render_texture(bullet_tex, renderer, ship->bullets[i]->x_pos / 10000, ship->bullets[i]->y_pos / 10000, angle);
 			}
+
+			// render stamina bar
+			SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
+			SDL_Rect r;
+			r.x = 0;
+			r.y = 50*i;
+			r.w = WINDOW_WIDTH * ship->stamina / ship->stamina_max;
+			r.h = 40;
+			SDL_RenderFillRect(renderer, &r);
 		}
 		
 		SDL_RenderPresent(renderer);

@@ -38,6 +38,10 @@ struct spaceship {
 
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
+
+	const int stamina_max = 1000;
+	const int stamina_per_s = 200;
+	int stamina;
 };
 
 const int SPACESHIP_MAX_ACCEL = 3000;
