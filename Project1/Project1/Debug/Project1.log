@@ -1,4 +1,1 @@
-﻿  main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(479): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(480): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
+﻿  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
