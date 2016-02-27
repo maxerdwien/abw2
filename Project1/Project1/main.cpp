@@ -46,6 +46,8 @@ int main(int, char**) {
 	
 	
 	const int DEAD_ZONE = 8000;
+	const int TEXT_SIZE = 50;
+	const int STATUS_SIZE = 150;
 
 	const bool DO_HAPTIC = false;
 
@@ -392,34 +394,28 @@ int main(int, char**) {
 		render_texture(bg, renderer, WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0);
 		render_texture(sun_tex, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0);
 
+
+		/*
+		Render status bar
+		*/
+		SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+		SDL_Rect s;
+		s.x = 0;
+		s.y = 0;
+		s.w = STATUS_SIZE;
+		s.h = 1000;
+		SDL_RenderFillRect(renderer, &s);
+
+		int percentCount = 0;
+
 		// render ships
 		for (int i = 0; i < num_players; i++) {
-	
-			/* TO DO David is rendering percents*/
-
-		
 
 			TTF_Font* caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 24); //this opens a font style and sets a size
 
 			if (caladea == nullptr) {
 				std::cout << TTF_GetError() << std::endl;
 			}
-
-			SDL_Color White = { 255, 255, 255 };  // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
-
-			SDL_Surface* surfaceMessage = TTF_RenderText_Solid(caladea, "0%", White); // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
-
-			SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //now you can convert it into a texture
-
-
-			SDL_Rect Message_rect; //create a rect
-			Message_rect.x = 0;  //controls the rect's x coordinate 
-			Message_rect.y = 0; // controls the rect's y coordinte
-			Message_rect.w = 100; // controls the width of the rect
-			Message_rect.h = 100; // controls the height of the rect
-
-
-			SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
 
 
 			struct spaceship* ship = ships[i];
@@ -460,10 +456,24 @@ int main(int, char**) {
 			SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
 			SDL_Rect r;
 			r.x = 0;
-			r.y = 50*i;
-			r.w = WINDOW_WIDTH * ship->stamina / ship->stamina_max;
-			r.h = 40;
+			r.y = 55 + percentCount;
+			r.w = 150 * ship->stamina / ship->stamina_max;
+			r.h = 30;
 			SDL_RenderFillRect(renderer, &r);
+
+			/*
+			Render the percentages
+			*/
+			SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
+			SDL_Surface* surfaceMessage = TTF_RenderText_Solid(caladea,"0%", White); //Create the sdl surface
+			SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //Convert to texture
+			SDL_Rect Message_rect; //create a rect
+			Message_rect.x = 0; //controls the rect's x coordinate 
+			Message_rect.y = (0 + percentCount); // controls the rect's y coordinte
+			Message_rect.w = TEXT_SIZE; // controls the width of the rect
+			Message_rect.h = TEXT_SIZE; // controls the height of the rect
+			SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+			percentCount = percentCount + 100;
 		}
 		
 		SDL_RenderPresent(renderer);
