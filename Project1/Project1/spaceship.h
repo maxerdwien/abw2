@@ -17,14 +17,14 @@ struct spaceship {
 
 	const int MIN_GUN_DIR = 20000;
 
-	const int cannon_delay = 200;
+	const int cannon_delay = 10;
 
 	int cannon_cooldown = 0;
 
-	const int burst_delay_1 = 2000;
+	const int burst_delay_1 = 120;
 	int burst_cooldown_1 = 0;
 
-	const int burst_delay_2 = 80;
+	const int burst_delay_2 = 5;
 	int burst_cooldown_2 = 0;
 
 	const int burst_shot_number = 5;
@@ -40,11 +40,12 @@ struct spaceship {
 	int num_bullets = 0;
 
 	const int stamina_max = 1000;
-	const int stamina_per_s = 200;
 	int stamina;
 };
 
 const int SPACESHIP_MAX_ACCEL = 3000;
 const int SPACESHIP_MAX_VEL = 100;
+
+const int SPACESHIP_STAMINA_PER_FRAME = 3;
 
 struct spaceship* init_spaceship(int x, int y);

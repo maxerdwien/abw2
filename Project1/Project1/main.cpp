@@ -128,9 +128,24 @@ int main(int, char**) {
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
 
+	const int frame_counter_size = 60;
+	int frame_time[frame_counter_size];
+	int frame_counter = 0;
+
 	while (!quit) {
 		last_frame_start_time = frame_start_time;
 		frame_start_time = SDL_GetTicks();
+		frame_time[frame_counter] = frame_start_time - last_frame_start_time;
+		frame_counter++;
+		if (frame_counter > frame_counter_size) {
+			frame_counter = 0;
+			int total_time = 0;
+			for (int i = 0; i < frame_counter_size; i++) {
+				total_time += frame_time[i];
+			}
+			double total_seconds = (double)total_time * 60.0 / 1000;
+			//std::cout << total_seconds << " fps" << std::endl;
+		}
 		//std::cout << frame_start_time - last_frame_start_time << std::endl;
 		int controller_index;
 		struct spaceship* ship;
@@ -231,15 +246,14 @@ int main(int, char**) {
 			struct spaceship* ship = ships[i];
 
 			// regen stamina
-			//std::cout << ship->stamina << std::endl;
-			ship->stamina += ship->stamina_per_s * (frame_start_time - last_frame_start_time) / 1000;
+			ship->stamina += SPACESHIP_STAMINA_PER_FRAME;
 			if (ship->stamina > ship->stamina_max) {
 				ship->stamina = ship->stamina_max;
 			}
 
 			// handle bullet spawns
 			if (ship->cannon_cooldown > 0) {
-				ship->cannon_cooldown -= (frame_start_time - last_frame_start_time);
+				ship->cannon_cooldown--;
 			}
 			if (ship->fire_normal && ship->stamina > 0 && ship->cannon_cooldown <= 0) {
 
@@ -257,10 +271,10 @@ int main(int, char**) {
 
 			// handle burst fire shots
 			if (ship->burst_cooldown_1 > 0) {
-				ship->burst_cooldown_1 -= (frame_start_time - last_frame_start_time);
+				ship->burst_cooldown_1--;
 			}
 			if (ship->burst_shot_current != 0 && ship->burst_cooldown_2 > 0) {
-				ship->burst_cooldown_2 -= (frame_start_time - last_frame_start_time);
+				ship->burst_cooldown_2--;
 			}
 			if (ship->fire_burst && ship->stamina > 0 && ship->burst_cooldown_1 <= 0) {
 				int MUZZLE_VEL = 70000;
