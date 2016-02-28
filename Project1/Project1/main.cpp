@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include <math.h>
 #include <SDL.h>
@@ -9,7 +10,7 @@
 
 void render_texture(SDL_Texture*, SDL_Renderer*, int x, int y, double angle);
 double calculate_angle(int x_vel, int y_vel);
-bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage);
+bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage, int base_knockback, int knockback_scaling);
 
 int main(int, char**) {
 	int test = TTF_Init();
@@ -113,12 +114,12 @@ int main(int, char**) {
 	bool quit = false;
 	bool pause = false;
 
-	const int num_players = 4;
+	const int num_players = 2;
 	struct spaceship* ships[num_players];
-	ships[0] = init_spaceship(300*10000, 300*10000);
-	ships[1] = init_spaceship(700*10000, 300*10000);
-	ships[2] = init_spaceship(300*10000, 700*10000);
-	ships[3] = init_spaceship(700*10000, 700*10000);
+	ships[0] = init_spaceship(300*10000, 300*10000, 10);
+	ships[1] = init_spaceship(700*10000, 300*10000, 10);
+	//ships[2] = init_spaceship(300*10000, 700*10000);
+	//ships[3] = init_spaceship(700*10000, 700*10000);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -254,7 +255,7 @@ int main(int, char**) {
 
 				int MUZZLE_VEL = 40000;
 				int spread = 1;
-				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 2);
+				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 5, 10, 1000);
 				for (int i = 0; i < spread; i++) {
 					ship->bullets[ship->num_bullets] = &new_bullets[i];
 					ship->num_bullets++;
@@ -274,7 +275,7 @@ int main(int, char**) {
 			if (ship->fire_burst && ship->stamina > 0 && ship->burst_cooldown_1 <= 0) {
 				int MUZZLE_VEL = 70000;
 				int spread = 1;
-				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 1);
+				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 2, 50, 0);
 				for (int i = 0; i < spread; i++) {
 					ship->bullets[ship->num_bullets] = &new_bullets[i];
 					ship->num_bullets++;
@@ -286,7 +287,7 @@ int main(int, char**) {
 			if (ship->burst_cooldown_2 <= 0) {
 				int MUZZLE_VEL = 70000;
 				int spread = 1;
-				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 1);
+				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 2, 50, 0);
 				for (int i = 0; i < spread; i++) {
 					ship->bullets[ship->num_bullets] = &new_bullets[i];
 					ship->num_bullets++;
@@ -302,20 +303,11 @@ int main(int, char**) {
 			{
 
 				// update acceleration
-				double original_vel = pow(ship->x_vel, 2) + pow(ship->y_vel, 2);
-				ship->x_vel = 2 * ship->move_dir_x;
-				ship->y_vel = 2 * ship->move_dir_y;
-				double new_vel = pow(ship->x_vel, 2) + pow(ship->y_vel, 2);
-				//std::cout << new_vel << std::endl;
-
-				/*
-				ship->x_vel_accumulator = 0;
-				ship->y_vel_accumulator = 0;
-				//std::cout << ship->move_dir_x << std::endl;
 				double accel_mag = sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
 				if (accel_mag > SPACESHIP_MAX_ACCEL) {
 					accel_mag = SPACESHIP_MAX_ACCEL;
 				}
+
 				if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
 					ship->x_accel = accel_mag*ship->move_dir_x / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
 					ship->y_accel = accel_mag*ship->move_dir_y / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
@@ -325,10 +317,36 @@ int main(int, char**) {
 					ship->y_accel = 0;
 					//ship->control_state = stabilize;
 				}
-					*/
 
-				//ship->x_vel += ship->x_accel;
-				//ship->y_vel += ship->y_accel;
+				ship->x_vel += ship->x_accel;
+				ship->y_vel += ship->y_accel;
+
+				// friction
+				if (ship->x_vel > 0) {
+					ship->x_vel -= (pow(ship->x_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION);
+					if (ship->x_vel < 0) {
+						ship->x_vel = 0;
+					}
+				} else if (ship->x_vel < 0) {
+					ship->x_vel += (pow(ship->x_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION);
+					if (ship->x_vel > 0) {
+						ship->x_vel = 0;
+					}
+				}
+
+				if (ship->y_vel > 0) {
+					ship->y_vel -= (pow(ship->y_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION);
+					if (ship->y_vel < 0) {
+						ship->y_vel = 0;
+					}
+				}
+				else if (ship->y_vel < 0) {
+					ship->y_vel += (pow(ship->y_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION);
+					if (ship->y_vel > 0) {
+						ship->y_vel = 0;
+					}
+				}
+				
 
 				//std::cout << sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)) << "\t" << ship->move_dir_x << std::endl;
 				ship->x_pos += ship->x_vel;
@@ -337,6 +355,8 @@ int main(int, char**) {
 				if (ship->x_pos < 0 || ship->x_pos > WINDOW_WIDTH*10000 || ship->y_pos < 0 || ship->y_pos > WINDOW_HEIGHT*10000) {
 					ship->x_pos = 10000*WINDOW_WIDTH / 2;
 					ship->y_pos = 10000*WINDOW_HEIGHT / 2;
+					ship->x_vel = 0;
+					ship->y_vel = 0;
 				}
 
 				// do haptic feedback
@@ -384,6 +404,17 @@ int main(int, char**) {
 						// todo: do haptic on hit
 
 						
+						
+						// knockback
+						int total_knockback = (bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight;
+						std::cout << total_knockback << std::endl;
+						ships[k]->x_vel = 1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2));
+						ships[k]->y_vel = 1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2));
+
+						ships[k]->percent += bullet->damage;
+						if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
+							ships[k]->percent = SPACESHIP_MAX_PERCENT;
+						}
 
 						ship->num_bullets--;
 						free(ship->bullets[j]);
@@ -412,8 +443,6 @@ int main(int, char**) {
 		s.w = STATUS_SIZE;
 		s.h = 1000;
 		SDL_RenderFillRect(renderer, &s);
-
-		int percentCount = 0;
 
 		// render ships
 		for (int i = 0; i < num_players; i++) {
@@ -461,7 +490,7 @@ int main(int, char**) {
 			SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
 			SDL_Rect r;
 			r.x = 0;
-			r.y = 55 + percentCount;
+			r.y = 55 + 100*i;
 			r.w = 150 * ship->stamina / ship->stamina_max;
 			r.h = 30;
 			SDL_RenderFillRect(renderer, &r);
@@ -469,16 +498,18 @@ int main(int, char**) {
 			/*
 			Render the percentages
 			*/
+			// todo: make the text texture size scale with the length of the text
+			char str[6];
+			snprintf(str, 6, "%d%%", ship->percent);
 			SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
-			SDL_Surface* surfaceMessage = TTF_RenderText_Solid(caladea,"0%", White); //Create the sdl surface
+			SDL_Surface* surfaceMessage = TTF_RenderText_Solid(caladea, str , White); //Create the sdl surface
 			SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //Convert to texture
 			SDL_Rect Message_rect; //create a rect
 			Message_rect.x = 0; //controls the rect's x coordinate 
-			Message_rect.y = (0 + percentCount); // controls the rect's y coordinte
+			Message_rect.y = (0 + 100 * i); // controls the rect's y coordinte
 			Message_rect.w = TEXT_SIZE; // controls the width of the rect
 			Message_rect.h = TEXT_SIZE; // controls the height of the rect
 			SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
-			percentCount = percentCount + 100;
 			SDL_DestroyTexture(Message);
 			SDL_FreeSurface(surfaceMessage);
 			
@@ -500,7 +531,7 @@ int main(int, char**) {
 	return 0;
 }
 
-bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage) {
+bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage, int base_knockback, int knockback_scaling) {
 	
 
 	double spread_angle = 3.14159 * 0.2;
@@ -527,7 +558,7 @@ bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage) {
 			int x_vel = velocity*straight_x_vel;
 			int y_vel = velocity*straight_y_vel;
 
-			new_bullets[i] = init_bullet(ship->x_pos, ship->y_pos, x_vel, y_vel, damage)[0];
+			new_bullets[i] = init_bullet(ship->x_pos, ship->y_pos, x_vel, y_vel, damage, base_knockback, knockback_scaling)[0];
 		}
 	}
 

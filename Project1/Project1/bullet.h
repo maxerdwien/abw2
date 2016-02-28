@@ -10,6 +10,8 @@ struct bullet {
 	int y_accel = 0;
 
 	int damage = 1;
+	int base_knockback = 0;
+	int knockback_scaling = 0;
 };
 
-struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage);
+struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling);

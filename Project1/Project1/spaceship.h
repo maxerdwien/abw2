@@ -43,11 +43,16 @@ struct spaceship {
 	int stamina;
 
 	int percent = 0;
+
+	int weight;
 };
 
-const int SPACESHIP_MAX_ACCEL = 3000;
-const int SPACESHIP_MAX_VEL = 100;
+const int SPACESHIP_MAX_ACCEL = 7000;
+const int SPACESHIP_MAX_FRICTION= 90;
+const int SPACESHIP_STEADY_FRICTION = 200000000;
+
+const int SPACESHIP_MAX_PERCENT = 999;
 
 const int SPACESHIP_STAMINA_PER_FRAME = 3;
 
-struct spaceship* init_spaceship(int x, int y);
+struct spaceship* init_spaceship(int x, int y, int weight);
