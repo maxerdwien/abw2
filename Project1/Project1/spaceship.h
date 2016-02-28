@@ -41,6 +41,8 @@ struct spaceship {
 
 	const int stamina_max = 1000;
 	int stamina;
+
+	int percent = 0;
 };
 
 const int SPACESHIP_MAX_ACCEL = 3000;

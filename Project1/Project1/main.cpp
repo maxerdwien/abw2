@@ -6,7 +6,6 @@
 #include <SDL_ttf.h>
 #include "spaceship.h"
 #include "bullet.h"
-#include "body.h"
 
 void render_texture(SDL_Texture*, SDL_Renderer*, int x, int y, double angle);
 double calculate_angle(int x_vel, int y_vel);
@@ -108,30 +107,24 @@ int main(int, char**) {
 	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 
+	TTF_Font* caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 24); //this opens a font style and sets a size
+
 	SDL_Event e;
 	bool quit = false;
 	bool pause = false;
 
 	const int num_players = 4;
 	struct spaceship* ships[num_players];
-	ships[0] = init_spaceship(100*10000, 100*10000);
-	ships[1] = init_spaceship(500*10000, 100*10000);
-	ships[2] = init_spaceship(100*10000, 500*10000);
-	ships[3] = init_spaceship(500*10000, 500*10000);
-
-	struct body* sun = new body;
-	sun->x_pos = WINDOW_WIDTH / 2 * 10000;
-	sun->y_pos = WINDOW_HEIGHT / 2 * 10000;
-
-	int sun_mass = 1000;
-
-	double G = 5000000000000;
+	ships[0] = init_spaceship(300*10000, 300*10000);
+	ships[1] = init_spaceship(700*10000, 300*10000);
+	ships[2] = init_spaceship(300*10000, 700*10000);
+	ships[3] = init_spaceship(700*10000, 700*10000);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
 
 	const int frame_counter_size = 60;
-	int frame_time[frame_counter_size];
+	int frame_time[frame_counter_size+1];
 	int frame_counter = 0;
 
 	while (!quit) {
@@ -366,13 +359,13 @@ int main(int, char**) {
 			// update bullets
 			for (int j = 0; j < ship->num_bullets; j++) {
 				struct bullet* bullet = ship->bullets[j];
-				double dist = sqrt(pow(bullet->x_pos - sun->x_pos, 2) + pow(bullet->y_pos - sun->y_pos, 2));
+				//double dist = sqrt(pow(bullet->x_pos - sun->x_pos, 2) + pow(bullet->y_pos - sun->y_pos, 2));
 
-				double power = G * sun_mass / pow(dist, 2);
-				double ratio = (double)power / (double)dist;
-				int x_grav_accel = (int)((sun->x_pos - bullet->x_pos) * ratio);
+				//double power = G * sun_mass / pow(dist, 2);
+				//double ratio = (double)power / (double)dist;
+				//int x_grav_accel = (int)((sun->x_pos - bullet->x_pos) * ratio);
 				//std::cout << dist << "\t" << (x_offset - sun_x) * ratio << std::endl;
-				int y_grav_accel = (int)((sun->y_pos - bullet->y_pos) * ratio);
+				//int y_grav_accel = (int)((sun->y_pos - bullet->y_pos) * ratio);
 
 				//bullets[i]->x_vel += bullets[i]->x_accel + x_grav_accel;
 				//bullets[i]->y_vel += bullets[i]->y_accel + y_grav_accel;
@@ -403,7 +396,7 @@ int main(int, char**) {
 		}
 
 		
-
+		// begin rendering
 		SDL_RenderClear(renderer);
 		render_texture(bg, renderer, WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0);
 		render_texture(sun_tex, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0);
@@ -424,8 +417,6 @@ int main(int, char**) {
 
 		// render ships
 		for (int i = 0; i < num_players; i++) {
-
-			TTF_Font* caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 24); //this opens a font style and sets a size
 
 			if (caladea == nullptr) {
 				std::cout << TTF_GetError() << std::endl;
@@ -488,6 +479,9 @@ int main(int, char**) {
 			Message_rect.h = TEXT_SIZE; // controls the height of the rect
 			SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
 			percentCount = percentCount + 100;
+			SDL_DestroyTexture(Message);
+			SDL_FreeSurface(surfaceMessage);
+			
 		}
 		
 		SDL_RenderPresent(renderer);

@@ -77,7 +77,6 @@
     <ClCompile Include="spaceship.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="body.h" />
     <ClInclude Include="bullet.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="spaceship.h" />
