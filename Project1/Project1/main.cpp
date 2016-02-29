@@ -47,7 +47,7 @@ int main(int, char**) {
 	
 	const int DEAD_ZONE = 5000;
 	const int STATUS_BAR_WIDTH = 150;
-
+	const int playerUiWidth = 10;
 	const bool DO_HAPTIC = false;
 
 	SDL_Window* window = SDL_CreateWindow("hl2.exe", 1000, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
@@ -111,7 +111,7 @@ int main(int, char**) {
 	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 
-	TTF_Font* caladea48 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 48); //this opens a font style and sets a size
+	TTF_Font* caladea48 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 44); //this opens a font style and sets a size
 
 	SDL_Event e;
 	bool quit = false;
@@ -490,6 +490,8 @@ int main(int, char**) {
 		s.h = 1000;
 		SDL_RenderFillRect(renderer, &s);
 
+		int adjustment = 50;
+		
 		// render ships
 		for (int i = 0; i < num_players; i++) {
 
@@ -536,7 +538,7 @@ int main(int, char**) {
 			SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
 			SDL_Rect r;
 			r.x = 0;
-			r.y = 55 + 100*i;
+			r.y = 120 + 100*i + (adjustment * i);
 			r.w = 150 * ship->stamina / ship->stamina_max;
 			r.h = 30;
 			SDL_RenderFillRect(renderer, &r);
@@ -544,19 +546,51 @@ int main(int, char**) {
 			/*
 			Render the percentages
 			*/
-			// todo: make the text texture size scale with the length of the text
+			
 			char str[6];
 			snprintf(str, 6, "%d%%", ship->percent);
 			SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
-			SDL_Surface* surfaceMessage = TTF_RenderText_Solid(caladea48, str , White); //Create the sdl surface
-			SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //Convert to texture
-			SDL_Rect Message_rect; //create a rect
-			Message_rect.x = 0; //controls the rect's x coordinate 
-			Message_rect.y = (0 + 100 * i); // controls the rect's y coordinte
-			SDL_QueryTexture(Message, NULL, NULL, &Message_rect.w, &Message_rect.h);
-			SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
-			SDL_DestroyTexture(Message);
-			SDL_FreeSurface(surfaceMessage);
+			SDL_Surface* percentSurface = TTF_RenderText_Solid(caladea48, str , White); //Create the sdl surface
+			SDL_Texture* percentTexture = SDL_CreateTextureFromSurface(renderer, percentSurface); //Convert to texture
+			SDL_Rect percentRect; //create a rect
+			percentRect.x = playerUiWidth + 70; //controls the rect's x coordinate 
+			percentRect.y = (60 + 100 * i + 1) + adjustment * i; // controls the rect's y coordinte
+			SDL_QueryTexture(percentTexture, NULL, NULL, &percentRect.w, &percentRect.h);
+			SDL_RenderCopy(renderer, percentTexture, NULL, &percentRect);
+			SDL_DestroyTexture(percentTexture);
+			SDL_FreeSurface(percentSurface);
+			
+			/*
+			Render player information
+			*/
+			char playerInfo[10];
+			sprintf_s(playerInfo, "P%d: ", i+1);
+			SDL_Surface* playerNumberSurface = TTF_RenderText_Solid(caladea48,playerInfo, White); //Create the sdl surface
+			SDL_Texture* playerNumberTexture = SDL_CreateTextureFromSurface(renderer, playerNumberSurface); //Convert to texture
+			SDL_Rect playerNumberRect; //create a rect
+			playerNumberRect.x = 0; //2controls the rect's x coordinate 
+			playerNumberRect.y = (60 + 100 * i) + adjustment * i; // controls the rect's y coordinte
+			SDL_QueryTexture(playerNumberTexture, NULL, NULL, &playerNumberRect.w, &playerNumberRect.h);
+			SDL_RenderCopy(renderer, playerNumberTexture, NULL, &playerNumberRect);
+			SDL_DestroyTexture(playerNumberTexture);
+			SDL_FreeSurface(playerNumberSurface);
+
+			/*
+			Render stock counter
+			*/
+			char playerLives[20];
+			sprintf_s(playerLives, "Lives: %d", ship->lives);
+			SDL_Surface* stockSurface = TTF_RenderText_Solid(caladea48, playerLives, White); //Create the sdl surface
+			SDL_Texture* stockTexture = SDL_CreateTextureFromSurface(renderer, stockSurface); //Convert to texture
+			SDL_Rect stockRect; //create a rect
+			stockRect.x = 0; //2controls the rect's x coordinate 
+			stockRect.y = (10 + 150 * i); // controls the rect's y coordinte
+			SDL_QueryTexture(stockTexture, NULL, NULL, &stockRect.w, &stockRect.h);
+			SDL_RenderCopy(renderer, stockTexture, NULL, &stockRect);
+			SDL_DestroyTexture(stockTexture);
+			SDL_FreeSurface(stockSurface);
+
+
 			
 		}
 		
