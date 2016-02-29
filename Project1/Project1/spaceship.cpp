@@ -8,7 +8,7 @@ struct spaceship* init_spaceship(int x, int y, int weight) {
 
 	ship->weight = weight;
 
-	ship->burst_cooldown_2 = 80;
+	ship->burst_cooldown_2 = 5;
 
 	ship->stamina = ship->stamina_max;
 

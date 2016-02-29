@@ -55,6 +55,6 @@ const int SPACESHIP_STEADY_FRICTION = 200000000;
 
 const int SPACESHIP_MAX_PERCENT = 999;
 
-const int SPACESHIP_STAMINA_PER_FRAME = 3;
+const int SPACESHIP_STAMINA_PER_FRAME = 5;
 
 struct spaceship* init_spaceship(int x, int y, int weight);

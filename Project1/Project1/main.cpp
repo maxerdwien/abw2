@@ -45,7 +45,7 @@ int main(int, char**) {
 	}
 	
 	
-	const int DEAD_ZONE = 8000;
+	const int DEAD_ZONE = 5000;
 	const int STATUS_BAR_WIDTH = 150;
 
 	const bool DO_HAPTIC = false;
@@ -70,27 +70,30 @@ int main(int, char**) {
 	// register controllers
 	SDL_GameController* controllers[4];
 	SDL_Haptic* haptics[4];
+
 	int num_joysticks = SDL_NumJoysticks();
-	//std::cout << num_joysticks << std::endl;
+	std::cout << num_joysticks << std::endl;
 	for (int i = 0; i < num_joysticks; i++) {
 		controllers[i] = NULL;
 		{
 			if (SDL_IsGameController(i)) {
-				controllers[i] = SDL_GameControllerOpen(0);
+				controllers[i] = SDL_GameControllerOpen(i);
+				// todo: fix this hack
+				haptics[i] = SDL_HapticOpen((i+1)%2);
+				{
+					if (!haptics[i]) {
+						std::cout << "could not connect haptic device" << std::endl;
+					}
+					if (SDL_HapticRumbleInit(haptics[i]) != 0) {
+						std::cout << "could not init haptic device" << std::endl;
+					}
+				}
 			}
 			if (!controllers[i]) {
 				std::cout << "could not connect controller" << std::endl;
 			}
 		}
-		haptics[i] = SDL_HapticOpen(i);
-		{
-			if (!haptics[i]) {
-				std::cout << "could not connect haptic device" << std::endl;
-			}
-			if (SDL_HapticRumbleInit(haptics[i]) != 0) {
-				std::cout << "could not init haptic device" << std::endl;
-			}
-		}
+		
 	}
 
 	SDL_Texture* bg = IMG_LoadTexture(renderer, "..\\Project1\\assets\\background.png");
@@ -113,6 +116,7 @@ int main(int, char**) {
 	SDL_Event e;
 	bool quit = false;
 	bool pause = false;
+	SDL_Keycode k;
 
 	const int num_players = 2;
 	struct spaceship* ships[num_players];
@@ -127,6 +131,8 @@ int main(int, char**) {
 	const int frame_counter_size = 60;
 	int frame_time[frame_counter_size+1];
 	int frame_counter = 0;
+
+	bool is_fullscreen = false;
 
 	while (!quit) {
 		last_frame_start_time = frame_start_time;
@@ -151,10 +157,28 @@ int main(int, char**) {
 				quit = true;
 				break;
 			case SDL_KEYDOWN:
-				//SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+				k = e.key.keysym.sym;
+				if (k == SDLK_f) {
+					if (is_fullscreen) {
+						SDL_SetWindowFullscreen(window, 0);
+					}
+					else {
+						SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+					}
+					is_fullscreen = !is_fullscreen;
+					//pause = true;
+				}
+				else if (k == SDLK_ESCAPE) {
+					if (is_fullscreen) {
+						SDL_SetWindowFullscreen(window, 0);
+						is_fullscreen = !is_fullscreen;
+						//pause = true;
+					}
+				}
 				break;
 			case SDL_CONTROLLERBUTTONDOWN:
 				controller_index = e.cbutton.which;
+				std::cout << controller_index << std::endl;
 				ship = ships[controller_index];
 				if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 					ship->x_vel = 0;
@@ -258,7 +282,7 @@ int main(int, char**) {
 
 				int MUZZLE_VEL = 40000;
 				int spread = 1;
-				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 5, 10, 1000);
+				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 5, 10, 400);
 				for (int i = 0; i < spread; i++) {
 					ship->bullets[ship->num_bullets] = &new_bullets[i];
 					ship->num_bullets++;
@@ -278,7 +302,7 @@ int main(int, char**) {
 			if (ship->fire_burst && ship->stamina > 0 && ship->burst_cooldown_1 <= 0) {
 				int MUZZLE_VEL = 70000;
 				int spread = 1;
-				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 2, 50, 0);
+				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 3, 150, 0);
 				for (int i = 0; i < spread; i++) {
 					ship->bullets[ship->num_bullets] = &new_bullets[i];
 					ship->num_bullets++;
@@ -290,7 +314,7 @@ int main(int, char**) {
 			if (ship->burst_cooldown_2 <= 0) {
 				int MUZZLE_VEL = 70000;
 				int spread = 1;
-				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 2, 50, 0);
+				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 3, 150, 0);
 				for (int i = 0; i < spread; i++) {
 					ship->bullets[ship->num_bullets] = &new_bullets[i];
 					ship->num_bullets++;
@@ -306,9 +330,10 @@ int main(int, char**) {
 			{
 
 				// update acceleration
-				double accel_mag = sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
+				double accel_mag = 0.3*sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
 				if (accel_mag > SPACESHIP_MAX_ACCEL) {
 					accel_mag = SPACESHIP_MAX_ACCEL;
+					std::cout << "overflowing man" << std::endl;
 				}
 
 				if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
@@ -418,15 +443,18 @@ int main(int, char**) {
 					double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 					//std::cout << dist << std::endl;
 					if (dist <= 20 * 10000) {
-						// todo: do haptic on hit
-
-						SDL_HapticRumblePlay(haptics[k], 1, 100);
+						
 						
 						// knockback
 						int total_knockback = (int)((bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight);
-						std::cout << total_knockback << std::endl;
 						ships[k]->x_vel += (int)(1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
 						ships[k]->y_vel += (int)(1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
+
+						double haptic_amount = 0.03 + total_knockback / 100.0;
+						if (haptic_amount > 1) {
+							haptic_amount = 1;
+						}
+						SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
 
 						ships[k]->percent += bullet->damage;
 						if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
