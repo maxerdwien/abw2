@@ -108,7 +108,7 @@ int main(int, char**) {
 	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 
-	TTF_Font* caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 24); //this opens a font style and sets a size
+	TTF_Font* caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 48); //this opens a font style and sets a size
 
 	SDL_Event e;
 	bool quit = false;
@@ -408,8 +408,8 @@ int main(int, char**) {
 						// knockback
 						int total_knockback = (int)((bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight);
 						std::cout << total_knockback << std::endl;
-						ships[k]->x_vel = (int)(1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
-						ships[k]->y_vel = (int)(1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
+						ships[k]->x_vel += (int)(1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
+						ships[k]->y_vel += (int)(1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
 
 						ships[k]->percent += bullet->damage;
 						if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
@@ -507,8 +507,9 @@ int main(int, char**) {
 			SDL_Rect Message_rect; //create a rect
 			Message_rect.x = 0; //controls the rect's x coordinate 
 			Message_rect.y = (0 + 100 * i); // controls the rect's y coordinte
-			Message_rect.w = TEXT_SIZE; // controls the width of the rect
-			Message_rect.h = TEXT_SIZE; // controls the height of the rect
+			//Message_rect.w = TEXT_SIZE; // controls the width of the rect
+			//Message_rect.h = TEXT_SIZE; // controls the height of the rect
+			SDL_QueryTexture(Message, NULL, NULL, &Message_rect.w, &Message_rect.h);
 			SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
 			SDL_DestroyTexture(Message);
 			SDL_FreeSurface(surfaceMessage);
