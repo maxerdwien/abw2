@@ -1,13 +1,2 @@
 ﻿  main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(312): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(313): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(326): warning C4244: '-=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(331): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(338): warning C4244: '-=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(344): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(409): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(411): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(412): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(575): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(576): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
+  Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe

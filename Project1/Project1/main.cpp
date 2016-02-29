@@ -309,8 +309,8 @@ int main(int, char**) {
 				}
 
 				if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
-					ship->x_accel = accel_mag*ship->move_dir_x / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
-					ship->y_accel = accel_mag*ship->move_dir_y / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
+					ship->x_accel = (int)(accel_mag*ship->move_dir_x / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)));
+					ship->y_accel = (int)(accel_mag*ship->move_dir_y / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)));
 				}
 				else {
 					ship->x_accel = 0;
@@ -323,25 +323,25 @@ int main(int, char**) {
 
 				// friction
 				if (ship->x_vel > 0) {
-					ship->x_vel -= (pow(ship->x_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION);
+					ship->x_vel -= (int)((pow(ship->x_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION));
 					if (ship->x_vel < 0) {
 						ship->x_vel = 0;
 					}
 				} else if (ship->x_vel < 0) {
-					ship->x_vel += (pow(ship->x_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION);
+					ship->x_vel += (int)((pow(ship->x_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION));
 					if (ship->x_vel > 0) {
 						ship->x_vel = 0;
 					}
 				}
 
 				if (ship->y_vel > 0) {
-					ship->y_vel -= (pow(ship->y_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION);
+					ship->y_vel -= (int)((pow(ship->y_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION));
 					if (ship->y_vel < 0) {
 						ship->y_vel = 0;
 					}
 				}
 				else if (ship->y_vel < 0) {
-					ship->y_vel += (pow(ship->y_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION);
+					ship->y_vel += (int)((pow(ship->y_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION));
 					if (ship->y_vel > 0) {
 						ship->y_vel = 0;
 					}
@@ -406,10 +406,10 @@ int main(int, char**) {
 						
 						
 						// knockback
-						int total_knockback = (bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight;
+						int total_knockback = (int)((bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight);
 						std::cout << total_knockback << std::endl;
-						ships[k]->x_vel = 1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2));
-						ships[k]->y_vel = 1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2));
+						ships[k]->x_vel = (int)(1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
+						ships[k]->y_vel = (int)(1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
 
 						ships[k]->percent += bullet->damage;
 						if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
@@ -555,8 +555,8 @@ bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage, int
 			//double y_vel = velocity*sqrt(1.0 - pow(x_vel, 2));
 			//double y_vel = velocity*sqrt(1 / ((1 / y_over_x) + 1));
 
-			int x_vel = velocity*straight_x_vel;
-			int y_vel = velocity*straight_y_vel;
+			int x_vel = (int)(velocity*straight_x_vel);
+			int y_vel = (int)(velocity*straight_y_vel);
 
 			new_bullets[i] = init_bullet(ship->x_pos, ship->y_pos, x_vel, y_vel, damage, base_knockback, knockback_scaling)[0];
 		}
