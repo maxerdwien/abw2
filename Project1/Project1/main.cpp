@@ -120,8 +120,8 @@ int main(int, char**) {
 
 	const int num_players = 2;
 	struct spaceship* ships[num_players];
-	ships[0] = init_spaceship(300*10000, 300*10000, 10);
-	ships[1] = init_spaceship(700*10000, 300*10000, 10);
+	ships[0] = init_spaceship(300*10000, 300*10000, 1);
+	ships[1] = init_spaceship(700*10000, 300*10000, 1);
 	//ships[2] = init_spaceship(300*10000, 700*10000);
 	//ships[3] = init_spaceship(700*10000, 700*10000);
 
@@ -280,7 +280,7 @@ int main(int, char**) {
 			}
 			if (ship->fire_normal && ship->stamina > 0 && ship->cannon_cooldown <= 0) {
 
-				int MUZZLE_VEL = 40000;
+				int MUZZLE_VEL = 60000;
 				int spread = 1;
 				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 5, 10, 400);
 				for (int i = 0; i < spread; i++) {
@@ -300,7 +300,7 @@ int main(int, char**) {
 				ship->burst_cooldown_2--;
 			}
 			if (ship->fire_burst && ship->stamina > 0 && ship->burst_cooldown_1 <= 0) {
-				int MUZZLE_VEL = 70000;
+				int MUZZLE_VEL = 90000;
 				int spread = 1;
 				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 3, 150, 0);
 				for (int i = 0; i < spread; i++) {
@@ -501,6 +501,9 @@ int main(int, char**) {
 
 
 			struct spaceship* ship = ships[i];
+			double angle = calculate_angle(ship->x_accel, ship->y_accel);
+			render_texture(spaceship, renderer, ship->x_pos / 10000, ship->y_pos / 10000, angle);
+			/*
 			double total_engine = sqrt(pow(ship->x_accel, 2) + pow(ship->y_accel, 2));
 			double angle = calculate_angle(ship->x_accel, ship->y_accel);
 			if (total_engine <= 500) {
@@ -512,6 +515,7 @@ int main(int, char**) {
 			else {
 				render_texture(spaceship_high, renderer, ship->x_pos / 10000, ship->y_pos / 10000, angle);
 			}
+			*/
 
 			{
 				SDL_Rect rect;
