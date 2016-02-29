@@ -46,18 +46,18 @@ int main(int, char**) {
 	
 	
 	const int DEAD_ZONE = 8000;
-	const int TEXT_SIZE = 50;
-	const int STATUS_SIZE = 150;
+	const int STATUS_BAR_WIDTH = 150;
 
 	const bool DO_HAPTIC = false;
 
-	//const Uint32 FRAME_TIME = 1000 / 60;
 	SDL_Window* window = SDL_CreateWindow("hl2.exe", 1000, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
 		std::cout << "SDL_CreateWindow error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
 		return 1;
 	}
+
+	
 
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	if (!renderer) {
@@ -149,6 +149,9 @@ int main(int, char**) {
 			switch (e.type) {
 			case SDL_QUIT:
 				quit = true;
+				break;
+			case SDL_KEYDOWN:
+				//SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 				break;
 			case SDL_CONTROLLERBUTTONDOWN:
 				controller_index = e.cbutton.which;
@@ -352,7 +355,7 @@ int main(int, char**) {
 				ship->x_pos += ship->x_vel;
 				ship->y_pos += ship->y_vel;
 
-				if (ship->x_pos < 0 || ship->x_pos > WINDOW_WIDTH*10000 || ship->y_pos < 0 || ship->y_pos > WINDOW_HEIGHT*10000) {
+				if (ship->x_pos < STATUS_BAR_WIDTH*10000 || ship->x_pos > WINDOW_WIDTH*10000 || ship->y_pos < 0 || ship->y_pos > WINDOW_HEIGHT*10000) {
 					ship->x_pos = 10000*WINDOW_WIDTH / 2;
 					ship->y_pos = 10000*WINDOW_HEIGHT / 2;
 					ship->x_vel = 0;
@@ -400,6 +403,15 @@ int main(int, char**) {
 				bullet->y_pos += bullet->y_vel;
 				//std::cout << ship->x_pos << std::endl;
 
+				// check for bullet going out of bounds
+				if (bullet->x_pos < STATUS_BAR_WIDTH * 10000 || bullet->x_pos > WINDOW_WIDTH * 10000 || bullet->y_pos < 0 || bullet->y_pos > WINDOW_HEIGHT * 10000) {
+					ship->num_bullets--; 
+					free(ship->bullets[j]);
+					ship->bullets[j] = ship->bullets[ship->num_bullets];
+					j--;
+					continue;
+				}
+
 				// check for collisions with enemies
 				for (int k = 0; k < num_players; k++) {
 					if (i == k) continue;
@@ -428,6 +440,8 @@ int main(int, char**) {
 						break;
 					}
 				}
+
+				
 			}
 		}
 
@@ -437,7 +451,6 @@ int main(int, char**) {
 		render_texture(bg, renderer, WINDOW_WIDTH/2, WINDOW_HEIGHT/2, 0);
 		render_texture(sun_tex, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0);
 
-
 		/*
 		Render status bar
 		*/
@@ -445,7 +458,7 @@ int main(int, char**) {
 		SDL_Rect s;
 		s.x = 0;
 		s.y = 0;
-		s.w = STATUS_SIZE;
+		s.w = STATUS_BAR_WIDTH;
 		s.h = 1000;
 		SDL_RenderFillRect(renderer, &s);
 
@@ -562,7 +575,9 @@ bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage, int
 			int x_vel = (int)(velocity*straight_x_vel);
 			int y_vel = (int)(velocity*straight_y_vel);
 
-			new_bullets[i] = init_bullet(ship->x_pos, ship->y_pos, x_vel, y_vel, damage, base_knockback, knockback_scaling)[0];
+			if (x_vel != 0 || y_vel != 0) {
+				new_bullets[i] = init_bullet(ship->x_pos, ship->y_pos, x_vel, y_vel, damage, base_knockback, knockback_scaling)[0];
+			}
 		}
 	}
 
