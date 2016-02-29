@@ -111,7 +111,7 @@ int main(int, char**) {
 	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 
-	TTF_Font* caladea48 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 44); //this opens a font style and sets a size
+	TTF_Font* caladea48 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
 
 	SDL_Event e;
 	bool quit = false;
@@ -553,7 +553,7 @@ int main(int, char**) {
 			SDL_Surface* percentSurface = TTF_RenderText_Solid(caladea48, str , White); //Create the sdl surface
 			SDL_Texture* percentTexture = SDL_CreateTextureFromSurface(renderer, percentSurface); //Convert to texture
 			SDL_Rect percentRect; //create a rect
-			percentRect.x = playerUiWidth + 70; //controls the rect's x coordinate 
+			percentRect.x = playerUiWidth + 40; //controls the rect's x coordinate 
 			percentRect.y = (60 + 100 * i + 1) + adjustment * i; // controls the rect's y coordinte
 			SDL_QueryTexture(percentTexture, NULL, NULL, &percentRect.w, &percentRect.h);
 			SDL_RenderCopy(renderer, percentTexture, NULL, &percentRect);
