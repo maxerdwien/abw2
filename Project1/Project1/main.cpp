@@ -108,7 +108,7 @@ int main(int, char**) {
 	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 
-	TTF_Font* caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 48); //this opens a font style and sets a size
+	TTF_Font* caladea48 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 48); //this opens a font style and sets a size
 
 	SDL_Event e;
 	bool quit = false;
@@ -357,9 +357,14 @@ int main(int, char**) {
 					ship->y_pos = 10000*WINDOW_HEIGHT / 2;
 					ship->x_vel = 0;
 					ship->y_vel = 0;
+
+					ship->lives--;
+
+					SDL_HapticRumblePlay(haptics[i], 1, 300);
 				}
 
 				// do haptic feedback
+				
 				/*
 				double total_accel = sqrt(pow(ship->x_accel + x_grav_accel, 2) + pow(ship->y_accel + y_grav_accel, 2));
 				//std::cout << total_accel << std::endl;
@@ -403,7 +408,7 @@ int main(int, char**) {
 					if (dist <= 20 * 10000) {
 						// todo: do haptic on hit
 
-						
+						SDL_HapticRumblePlay(haptics[k], 1, 100);
 						
 						// knockback
 						int total_knockback = (int)((bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight);
@@ -447,7 +452,7 @@ int main(int, char**) {
 		// render ships
 		for (int i = 0; i < num_players; i++) {
 
-			if (caladea == nullptr) {
+			if (caladea48 == nullptr) {
 				std::cout << TTF_GetError() << std::endl;
 			}
 
@@ -502,13 +507,11 @@ int main(int, char**) {
 			char str[6];
 			snprintf(str, 6, "%d%%", ship->percent);
 			SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
-			SDL_Surface* surfaceMessage = TTF_RenderText_Solid(caladea, str , White); //Create the sdl surface
+			SDL_Surface* surfaceMessage = TTF_RenderText_Solid(caladea48, str , White); //Create the sdl surface
 			SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage); //Convert to texture
 			SDL_Rect Message_rect; //create a rect
 			Message_rect.x = 0; //controls the rect's x coordinate 
 			Message_rect.y = (0 + 100 * i); // controls the rect's y coordinte
-			//Message_rect.w = TEXT_SIZE; // controls the width of the rect
-			//Message_rect.h = TEXT_SIZE; // controls the height of the rect
 			SDL_QueryTexture(Message, NULL, NULL, &Message_rect.w, &Message_rect.h);
 			SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
 			SDL_DestroyTexture(Message);

@@ -12,5 +12,7 @@ struct spaceship* init_spaceship(int x, int y, int weight) {
 
 	ship->stamina = ship->stamina_max;
 
+	ship->lives = 4;
+
 	return ship;
 }

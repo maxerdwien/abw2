@@ -45,6 +45,8 @@ struct spaceship {
 	int percent = 0;
 
 	int weight;
+
+	int lives;
 };
 
 const int SPACESHIP_MAX_ACCEL = 7000;
