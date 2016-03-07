@@ -30,11 +30,12 @@ struct spaceship {
 	const int burst_shot_number = 5;
 	int burst_shot_current = 0;
 
-	int x_vel_accumulator = 0;
-	int y_vel_accumulator = 0;
+	const int missile_delay = 240;
+	int missile_cooldown = 0;
 
 	bool fire_normal = false;
 	bool fire_burst = false;
+	bool fire_missile = false;
 
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
@@ -50,6 +51,8 @@ struct spaceship {
 	int weight;
 
 	int lives = 4;
+
+	const int radius = 15;
 };
 
 const int SPACESHIP_MAX_ACCEL = 7000;

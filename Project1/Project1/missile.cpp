@@ -13,5 +13,10 @@ struct missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int dam
 	miss->base_knockback = base_knockback;
 	miss->knockback_scaling = knockback_scaling;
 
+	miss->players_hit[0] = false;
+	miss->players_hit[1] = false;
+	miss->players_hit[2] = false;
+	miss->players_hit[3] = false;
+
 	return miss;
 }
