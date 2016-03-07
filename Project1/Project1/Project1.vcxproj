@@ -74,10 +74,12 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="bullet.cpp" />
+    <ClCompile Include="missile.cpp" />
     <ClCompile Include="spaceship.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bullet.h" />
+    <ClInclude Include="missile.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="spaceship.h" />
   </ItemGroup>

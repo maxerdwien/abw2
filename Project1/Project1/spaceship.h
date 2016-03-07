@@ -25,7 +25,7 @@ struct spaceship {
 	int burst_cooldown_1 = 0;
 
 	const int burst_delay_2 = 5;
-	int burst_cooldown_2 = 0;
+	int burst_cooldown_2 = 5;
 
 	const int burst_shot_number = 5;
 	int burst_shot_current = 0;
@@ -39,14 +39,17 @@ struct spaceship {
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
 
+	struct missile* missiles[100];
+	int num_missiles = 0;
+
 	const int stamina_max = 1000;
-	int stamina;
+	int stamina = 1000;
 
 	int percent = 0;
 
 	int weight;
 
-	int lives;
+	int lives = 4;
 };
 
 const int SPACESHIP_MAX_ACCEL = 7000;

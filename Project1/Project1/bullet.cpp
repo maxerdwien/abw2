@@ -9,9 +9,6 @@ struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damag
 	bull->x_vel = x_vel;
 	bull->y_vel = y_vel;
 
-	bull->x_accel = 0;
-	bull->y_accel = 0;
-
 	bull->damage = damage;
 	bull->base_knockback = base_knockback;
 	bull->knockback_scaling = knockback_scaling;

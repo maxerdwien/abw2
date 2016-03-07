@@ -7,6 +7,7 @@
 #include <SDL_ttf.h>
 #include "spaceship.h"
 #include "bullet.h"
+#include "missile.h"
 
 void render_texture(SDL_Texture*, SDL_Renderer*, int x, int y, double angle);
 double calculate_angle(int x_vel, int y_vel);
@@ -100,7 +101,7 @@ int main(int, char**) {
 	if (!bg) {
 		std::cout << "error loading background: " << SDL_GetError() << std::endl;
 	}
-	SDL_Texture* spaceship = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceship.png");
+	SDL_Texture* spaceship = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceship-old.png");
 	SDL_Texture* spaceship_low = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceship_low.png");
 	SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceship_high.png");
 	//SDL_Texture* spaceship = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bear-idle.png");
@@ -108,7 +109,7 @@ int main(int, char**) {
 	//SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bear-idle.png");
 	
 	SDL_Texture* sun_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
-	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
+	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet-old.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 
 	TTF_Font* caladea48 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
@@ -133,6 +134,7 @@ int main(int, char**) {
 	int frame_counter = 0;
 
 	bool is_fullscreen = false;
+	//SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
 	while (!quit) {
 		last_frame_start_time = frame_start_time;
@@ -178,17 +180,10 @@ int main(int, char**) {
 				break;
 			case SDL_CONTROLLERBUTTONDOWN:
 				controller_index = e.cbutton.which;
-				std::cout << controller_index << std::endl;
 				ship = ships[controller_index];
 				if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-					ship->x_vel = 0;
-					ship->y_vel = 0;
 				}
 				else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
-					ship->x_vel = 0;
-					ship->y_vel = 0;
-					ship->x_pos = 0;
-					ship->y_pos = 0;
 				}
 				else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
 
@@ -205,8 +200,11 @@ int main(int, char**) {
 				else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 					pause = !pause;
 				}
-				else {
+				else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
 					quit = true;
+				}
+				else {
+					
 				}
 				break;
 			case SDL_CONTROLLERBUTTONUP:
@@ -312,7 +310,7 @@ int main(int, char**) {
 				ship->stamina -= 320;
 			}
 			if (ship->burst_cooldown_2 <= 0) {
-				int MUZZLE_VEL = 70000;
+				int MUZZLE_VEL = 90000;
 				int spread = 1;
 				bullet* new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 3, 150, 0);
 				for (int i = 0; i < spread; i++) {
@@ -333,7 +331,6 @@ int main(int, char**) {
 				double accel_mag = 0.3*sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
 				if (accel_mag > SPACESHIP_MAX_ACCEL) {
 					accel_mag = SPACESHIP_MAX_ACCEL;
-					std::cout << "overflowing man" << std::endl;
 				}
 
 				if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
@@ -380,11 +377,14 @@ int main(int, char**) {
 				ship->x_pos += ship->x_vel;
 				ship->y_pos += ship->y_vel;
 
+				// handle death
 				if (ship->x_pos < STATUS_BAR_WIDTH*10000 || ship->x_pos > WINDOW_WIDTH*10000 || ship->y_pos < 0 || ship->y_pos > WINDOW_HEIGHT*10000) {
 					ship->x_pos = 10000*WINDOW_WIDTH / 2;
 					ship->y_pos = 10000*WINDOW_HEIGHT / 2;
 					ship->x_vel = 0;
 					ship->y_vel = 0;
+
+					ship->percent = 0;
 
 					ship->lives--;
 
