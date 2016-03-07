@@ -12,6 +12,7 @@
 void render_texture(SDL_Texture*, SDL_Renderer*, int x, int y, double angle);
 double calculate_angle(int x_vel, int y_vel);
 bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage, int base_knockback, int knockback_scaling);
+missile* spawn_missiles(spaceship* ship, int velocity, int spread, int damage, int base_knockback, int knockback_scaling);
 
 int main(int, char**) {
 	int test = TTF_Init();
@@ -109,7 +110,9 @@ int main(int, char**) {
 	//SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bear-idle.png");
 	
 	SDL_Texture* sun_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
-	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet-old.png");
+	SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
+	SDL_Texture* missile_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet-old.png");
+	SDL_Texture* explosion_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 
 	TTF_Font* caladea48 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
@@ -133,8 +136,8 @@ int main(int, char**) {
 	int frame_time[frame_counter_size+1];
 	int frame_counter = 0;
 
-	bool is_fullscreen = false;
-	//SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+	bool is_fullscreen = true;
+	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
 	while (!quit) {
 		last_frame_start_time = frame_start_time;
@@ -227,7 +230,7 @@ int main(int, char**) {
 						ship->move_dir_x = 0;
 					}
 				}
-				if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
+				else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
 					if (abs(e.caxis.value) > DEAD_ZONE) {
 						ship->move_dir_y = (int)e.caxis.value;
 					}
@@ -237,7 +240,7 @@ int main(int, char**) {
 					
 				}
 
-				if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
+				else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
 					double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_y, 2));
 					if (new_gun_mag >= ship->MIN_GUN_DIR) {
 						ship->gun_dir_x = (int)(e.caxis.value);
@@ -246,13 +249,22 @@ int main(int, char**) {
 						ship->gun_dir_x = 0;
 					}
 				}
-				if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
+				else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
 					double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_x, 2));
 					if (new_gun_mag >= ship->MIN_GUN_DIR) {
 						ship->gun_dir_y = (int)(e.caxis.value);
 					}
 					else {
 						ship->gun_dir_y = 0;
+					}
+				}
+				else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+					int min_activation = 30000;
+					//std::cout << e.caxis.value << std::endl;
+					if (e.caxis.value < min_activation) {
+						ship->fire_missile = false;
+					} else {
+						ship->fire_missile = true;
 					}
 				}
 			break;
@@ -322,6 +334,23 @@ int main(int, char**) {
 				if (ship->burst_shot_current == ship->burst_shot_number) {
 					ship->burst_shot_current = 0;
 				}
+			}
+			
+			// handle missile fires
+			if (ship->missile_cooldown > 0) {
+				ship->missile_cooldown--;
+			}
+			if (ship->fire_missile && ship->stamina > 0 && ship->missile_cooldown <= 0) {
+				int MUZZLE_VEL = 90000;
+				int spread = 1;
+				missile* new_missiles = spawn_missiles(ship, MUZZLE_VEL, spread, 20, 150, 150);
+				for (int i = 0; i < spread; i++) {
+					ship->missiles[ship->num_missiles] = &new_missiles[i];
+					ship->num_missiles++;
+				}
+				// todo: add a real constant here
+				ship->missile_cooldown += 240;
+				ship->stamina -= 400;
 			}
 
 			// update ship
@@ -442,7 +471,7 @@ int main(int, char**) {
 					if (i == k) continue;
 					double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 					//std::cout << dist << std::endl;
-					if (dist <= 20 * 10000) {
+					if (dist <= (ship->radius + BULLET_RADIUS) * 10000) {
 						
 						
 						// knockback
@@ -450,7 +479,7 @@ int main(int, char**) {
 						ships[k]->x_vel += (int)(1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
 						ships[k]->y_vel += (int)(1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
 
-						double haptic_amount = 0.03 + total_knockback / 100.0;
+						float haptic_amount = 0.03f + total_knockback / 100.0f;
 						if (haptic_amount > 1) {
 							haptic_amount = 1;
 						}
@@ -470,6 +499,71 @@ int main(int, char**) {
 				}
 
 				
+			}
+
+			// update missiles
+			for (int j = 0; j < ship->num_missiles; j++) {
+				struct missile* missile = ship->missiles[j];
+
+				missile->x_pos += missile->x_vel;
+				missile->y_pos += missile->y_vel;
+
+				// check for missile going out of bounds
+				if (missile->x_pos < STATUS_BAR_WIDTH * 10000 || missile->x_pos > WINDOW_WIDTH * 10000 || missile->y_pos < 0 || missile->y_pos > WINDOW_HEIGHT * 10000) {
+					ship->num_missiles--;
+					free(ship->missiles[j]);
+					ship->missiles[j] = ship->missiles[ship->num_missiles];
+					j--;
+					continue;
+				}
+
+				// expand missile radius
+				if (missile->exploded) {
+					missile->radius += MISSILE_RADIUS_PER_FRAME;
+					if (missile->radius > MISSILE_MAX_RADIUS) {
+						ship->num_missiles--;
+						free(ship->missiles[j]);
+						ship->missiles[j] = ship->missiles[ship->num_missiles];
+						j--;
+						continue;
+					}
+				}
+				// check for collisions with enemies
+				for (int k = 0; k < num_players; k++) {
+					//if (i == k) continue;
+					double dist = sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2));
+					//std::cout << dist << std::endl;
+					if (!missile->exploded) {
+						if (i == k) continue;
+						if (dist <= MISSILE_ACTIVATION_RADIUS * 10000) {
+							missile->exploded = true;
+							missile->x_vel = 0;
+							missile->y_vel = 0;
+						}
+					} else {
+						if (dist <= (ship->radius + missile->radius) * 10000) {
+							if (missile->players_hit[k]) continue;
+							missile->players_hit[k] = true;
+							// knockback
+							int total_knockback = (int)((missile->base_knockback + (ships[k]->percent / 100.0)*missile->knockback_scaling) / ships[k]->weight);
+							ships[k]->x_vel += (int)(1000.0*total_knockback*(ships[k]->x_pos-missile->x_pos) / sqrt(pow(missile->x_pos-ships[k]->x_pos, 2) + pow(missile->y_pos-ships[k]->y_pos, 2)));
+							ships[k]->y_vel += (int)(1000.0*total_knockback*(ships[k]->y_pos-missile->y_pos) / sqrt(pow(missile->x_pos-ships[k]->x_pos, 2) + pow(missile->y_pos-ships[k]->y_pos, 2)));
+
+							float haptic_amount = 0.03f + total_knockback / 100.0f;
+							if (haptic_amount > 1) {
+								haptic_amount = 1;
+							}
+							SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
+
+							ships[k]->percent += missile->damage;
+							if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
+								ships[k]->percent = SPACESHIP_MAX_PERCENT;
+							}
+						} else {
+							//std::cout << "missile missed\n";
+						}
+					}
+				}
 			}
 		}
 
@@ -532,11 +626,37 @@ int main(int, char**) {
 			}
 
 			// render bullets
-			for (int i = 0; i < ship->num_bullets; i++) {
-				double angle = calculate_angle(ship->bullets[i]->x_vel, ship->bullets[i]->y_vel);
+			for (int j = 0; j < ship->num_bullets; j++) {
+				double angle = calculate_angle(ship->bullets[j]->x_vel, ship->bullets[j]->y_vel);
 				//std::cout << bullets[i]->x_vel << "\t" << bullets[i]->y_vel << "\t" << angle << std::endl;
-				render_texture(bullet_tex, renderer, ship->bullets[i]->x_pos / 10000, ship->bullets[i]->y_pos / 10000, angle);
+				render_texture(bullet_tex, renderer, ship->bullets[j]->x_pos / 10000, ship->bullets[j]->y_pos / 10000, angle);
 			}
+
+			// render missiles
+			//std::cout << ship->num_missiles << std::endl;
+			for (int j = 0; j < ship->num_missiles; j++) {
+				if (!ship->missiles[j]->exploded) {
+					std::cout << "rendering missile\n";
+					double angle = calculate_angle(ship->missiles[j]->x_vel, ship->missiles[j]->y_vel);
+					//std::cout << bullets[i]->x_vel << "\t" << bullets[i]->y_vel << "\t" << angle << std::endl;
+					render_texture(missile_tex, renderer, ship->missiles[j]->x_pos / 10000, ship->missiles[j]->y_pos / 10000, angle);
+				} else {
+					std::cout << "rendering missile explosion\n";
+					
+					SDL_Rect rect;
+
+					rect.w = ship->missiles[j]->radius*2;
+					rect.h = ship->missiles[j]->radius*2;
+					rect.x = ship->missiles[j]->x_pos / 10000 - rect.w / 2;
+					rect.y = ship->missiles[j]->y_pos / 10000 - rect.h / 2;
+
+					SDL_RenderCopyEx(renderer, explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+					
+
+					//render_texture(explosion_tex, renderer, ship->missiles[j]->x_pos / 10000, ship->missiles[j]->y_pos / 10000, 0);
+				}
+			}
+
 
 			// render stamina bar
 			SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
@@ -649,6 +769,42 @@ bullet* spawn_bullets(spaceship* ship, int velocity, int spread, int damage, int
 
 	return new_bullets;
 	
+}
+
+missile* spawn_missiles(spaceship* ship, int velocity, int spread, int damage, int base_knockback, int knockback_scaling) {
+
+
+	double spread_angle = 3.14159 * 0.2;
+
+	missile* new_missiles = (missile*)malloc(sizeof(missile) * spread); // todo: free me
+
+	if (spread % 2 == 0) {
+
+	} else {
+		double start_angle = spread_angle * (spread - 1) / 2;
+		double straight_x_vel = ship->gun_dir_x / sqrt(pow(ship->gun_dir_x, 2) + pow(ship->gun_dir_y, 2));
+		double straight_y_vel = ship->gun_dir_y / sqrt(pow(ship->gun_dir_x, 2) + pow(ship->gun_dir_y, 2));
+
+		for (int i = 0; i < spread; i++) {
+			double y_over_x = tan(atan2(straight_y_vel, straight_x_vel) - 0);
+			//std::cout << y_over_x << "\t" << straight_y_vel / straight_x_vel << std::endl;
+
+			//double x_vel = velocity*sqrt(1 / (1 + pow(y_over_x, 2)));
+			//std::cout << 1.0 - pow(x_vel, 2) << std::endl;
+			//double y_vel = velocity*sqrt(1.0 - pow(x_vel, 2));
+			//double y_vel = velocity*sqrt(1 / ((1 / y_over_x) + 1));
+
+			int x_vel = (int)(velocity*straight_x_vel);
+			int y_vel = (int)(velocity*straight_y_vel);
+
+			if (x_vel != 0 || y_vel != 0) {
+				new_missiles[i] = init_missile(ship->x_pos, ship->y_pos, x_vel, y_vel, damage, base_knockback, knockback_scaling)[0];
+			}
+		}
+	}
+
+	return new_missiles;
+
 }
 
 double calculate_angle(int x_vel, int y_vel) {

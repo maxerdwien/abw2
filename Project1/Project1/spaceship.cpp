@@ -8,5 +8,6 @@ struct spaceship* init_spaceship(int x, int y, int weight) {
 
 	ship->weight = weight;
 
+	ship->fire_missile = false;
 	return ship;
 }
