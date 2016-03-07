@@ -30,7 +30,7 @@ struct spaceship {
 	const int burst_shot_number = 5;
 	int burst_shot_current = 0;
 
-	const int missile_delay = 240;
+	const int missile_delay = 30;
 	int missile_cooldown = 0;
 
 	bool fire_normal = false;

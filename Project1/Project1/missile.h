@@ -5,6 +5,9 @@ struct missile {
 	int x_vel;
 	int y_vel;
 
+	int x_accel;
+	int y_accel;
+
 	int damage;
 	int base_knockback;
 	int knockback_scaling;
@@ -16,7 +19,7 @@ struct missile {
 	bool players_hit[4];
 };
 
-const int MISSILE_ACTIVATION_RADIUS = 75;
+const int MISSILE_ACTIVATION_RADIUS = 100;
 const int MISSILE_MAX_RADIUS = 120;
 const int MISSILE_RADIUS_PER_FRAME = 5;
 

@@ -138,6 +138,7 @@ int main(int, char**) {
 
 	bool is_fullscreen = true;
 	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+	SDL_ShowCursor(0);
 
 	while (!quit) {
 		last_frame_start_time = frame_start_time;
@@ -166,18 +167,19 @@ int main(int, char**) {
 				if (k == SDLK_f) {
 					if (is_fullscreen) {
 						SDL_SetWindowFullscreen(window, 0);
+						SDL_ShowCursor(1);
 					}
 					else {
 						SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+						SDL_ShowCursor(0);
 					}
 					is_fullscreen = !is_fullscreen;
-					//pause = true;
 				}
 				else if (k == SDLK_ESCAPE) {
 					if (is_fullscreen) {
 						SDL_SetWindowFullscreen(window, 0);
 						is_fullscreen = !is_fullscreen;
-						//pause = true;
+						SDL_ShowCursor(1);
 					}
 				}
 				break;
@@ -341,7 +343,7 @@ int main(int, char**) {
 				ship->missile_cooldown--;
 			}
 			if (ship->fire_missile && ship->stamina > 0 && ship->missile_cooldown <= 0) {
-				int MUZZLE_VEL = 90000;
+				int MUZZLE_VEL = 30000;
 				int spread = 1;
 				missile* new_missiles = spawn_missiles(ship, MUZZLE_VEL, spread, 20, 150, 150);
 				for (int i = 0; i < spread; i++) {
@@ -349,7 +351,7 @@ int main(int, char**) {
 					ship->num_missiles++;
 				}
 				// todo: add a real constant here
-				ship->missile_cooldown += 240;
+				ship->missile_cooldown += 60;
 				ship->stamina -= 400;
 			}
 
@@ -472,8 +474,6 @@ int main(int, char**) {
 					double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 					//std::cout << dist << std::endl;
 					if (dist <= (ship->radius + BULLET_RADIUS) * 10000) {
-						
-						
 						// knockback
 						int total_knockback = (int)((bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight);
 						ships[k]->x_vel += (int)(1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
@@ -497,14 +497,16 @@ int main(int, char**) {
 						break;
 					}
 				}
-
-				
 			}
 
 			// update missiles
 			for (int j = 0; j < ship->num_missiles; j++) {
 				struct missile* missile = ship->missiles[j];
 
+				if (!missile->exploded) {
+					missile->x_vel += missile->x_accel;
+					missile->y_vel += missile->y_accel;
+				}
 				missile->x_pos += missile->x_vel;
 				missile->y_pos += missile->y_vel;
 
