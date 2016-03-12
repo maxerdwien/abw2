@@ -58,8 +58,8 @@ int main(int, char**) {
 		WINDOW_WIDTH = 1280;
 		WINDOW_HEIGHT = 720;
 	}
-	
-	
+
+
 	const int DEAD_ZONE = 5000;
 	const int STATUS_BAR_WIDTH = 150;
 	const int playerUiWidth = 10;
@@ -92,7 +92,7 @@ int main(int, char**) {
 			if (SDL_IsGameController(i)) {
 				controllers[i] = SDL_GameControllerOpen(i);
 				// todo: fix this hack
-				haptics[i] = SDL_HapticOpen((i+1)%2);
+				haptics[i] = SDL_HapticOpen((i + 1) % 2);
 				{
 					if (!haptics[i]) {
 						std::cout << "could not connect haptic device" << std::endl;
@@ -106,7 +106,7 @@ int main(int, char**) {
 				std::cout << "could not connect controller " << i << std::endl;
 			}
 		}
-		
+
 	}
 
 	SDL_Texture* bg = IMG_LoadTexture(renderer, "..\\Project1\\assets\\background.png");
@@ -127,7 +127,7 @@ int main(int, char**) {
 	SDL_Texture* bullet_yellow_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bulletYellow.png");
 	SDL_Texture* bullet_red_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bulletRed.png");
 	SDL_Texture* bullet_green_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bulletGreen.png");
-	
+
 	SDL_Texture* sun_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
 	//SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
 	SDL_Texture* missile_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bulletYellow.png");
@@ -138,12 +138,11 @@ int main(int, char**) {
 
 	SDL_Event e;
 	bool quit = false;
-//	bool pause = false;
 	SDL_Keycode k;
 
 	struct spaceship* ships[2];
-	ships[0] = init_spaceship(300*10000, 300*10000, 1);
-	ships[1] = init_spaceship(700*10000, 300*10000, 1);
+	ships[0] = init_spaceship(300 * 10000, 300 * 10000, 1);
+	ships[1] = init_spaceship(700 * 10000, 300 * 10000, 1);
 	//ships[2] = init_spaceship(300*10000, 700*10000, 1);
 	//ships[3] = init_spaceship(700*10000, 700*10000);
 
@@ -151,7 +150,7 @@ int main(int, char**) {
 	Uint32 frame_start_time = SDL_GetTicks();
 
 	const int frame_counter_size = 60;
-	int frame_time[frame_counter_size+1];
+	int frame_time[frame_counter_size + 1];
 	int frame_counter = 0;
 
 	bool is_fullscreen = false;
@@ -160,7 +159,7 @@ int main(int, char**) {
 		SDL_ShowCursor(0);
 	}
 
-	//Start game loop
+	// start game loop
 	while (!quit) {
 		last_frame_start_time = frame_start_time;
 		frame_start_time = SDL_GetTicks();
@@ -182,6 +181,8 @@ int main(int, char**) {
 		if (currentState == inGame) {
 			int controller_index;
 			struct spaceship* ship;
+
+			// poll input
 			while (SDL_PollEvent(&e)) {
 				switch (e.type) {
 				case SDL_QUIT:
@@ -249,6 +250,20 @@ int main(int, char**) {
 						} else {
 							ship->move_dir_y = 0;
 						}
+					} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
+						double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_y, 2));
+						if (new_gun_mag >= ship->MIN_GUN_DIR) {
+							ship->gun_dir_x = (int)(e.caxis.value);
+						} else {
+							ship->gun_dir_x = 0;
+						}
+					} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
+						double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_x, 2));
+						if (new_gun_mag >= ship->MIN_GUN_DIR) {
+							ship->gun_dir_y = (int)(e.caxis.value);
+						} else {
+							ship->gun_dir_y = 0;
+						}
 					} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
 						int min_activation = 20000;
 						//std::cout << e.caxis.value << std::endl;
@@ -268,25 +283,13 @@ int main(int, char**) {
 					}
 					break;
 				}
-
 			}
-
 			if (currentState == pause) {
 				continue;
 			}
 
-			// reduce invincibility time
-			if (ship->invincibility_cooldown > 0) {
-				ship->invincibility_cooldown--;
-			}
 
-			// handle bullet spawns
-			if (ship->cannon_cooldown > 0) {
-				ship->cannon_cooldown--;
-			}
-
-
-
+			// update ships
 			for (int i = 0; i < num_players; i++) {
 				struct spaceship* ship = ships[i];
 
@@ -296,7 +299,12 @@ int main(int, char**) {
 					ship->stamina = ship->stamina_max;
 				}
 
-				// handle bullet spawns
+				// reduce invincibility time
+				if (ship->invincibility_cooldown > 0) {
+					ship->invincibility_cooldown--;
+				}
+
+				// handle normal bullet spawns
 				if (ship->cannon_cooldown > 0) {
 					ship->cannon_cooldown--;
 				}
@@ -314,7 +322,7 @@ int main(int, char**) {
 					ship->stamina -= 100;
 				}
 
-				// handle burst fire shots
+				// handle burst fire spawns
 				if (ship->burst_cooldown_1 > 0) {
 					ship->burst_cooldown_1--;
 				}
@@ -350,7 +358,7 @@ int main(int, char**) {
 					}
 				}
 
-				// handle spread fire shots
+				// handle spread fire spawns
 				if (ship->spread_cooldown > 0) {
 					ship->spread_cooldown--;
 				}
@@ -368,7 +376,7 @@ int main(int, char**) {
 					ship->stamina -= 250;
 				}
 
-				// handle missile fires
+				// handle missile spawns
 				if (ship->missile_cooldown > 0) {
 					ship->missile_cooldown--;
 				}
@@ -381,12 +389,11 @@ int main(int, char**) {
 						ship->num_missiles++;
 					}
 					free(new_missiles);
-					// todo: add a real constant here
 					ship->missile_cooldown += ship->missile_delay;
 					ship->stamina -= 400;
 				}
 
-				// update ship
+				// update ship itself
 				{
 
 					// update acceleration
@@ -401,7 +408,6 @@ int main(int, char**) {
 					} else {
 						ship->x_accel = 0;
 						ship->y_accel = 0;
-						//ship->control_state = stabilize;
 					}
 
 					ship->x_vel += ship->x_accel;
@@ -448,26 +454,18 @@ int main(int, char**) {
 						ship->lives--;
 						ship->invincibility_cooldown += ship->respawn_invincibility_delay;
 
-						// do haptic feedback
 						SDL_HapticRumblePlay(haptics[i], 1, 300);
 					}
 
 				}
+
 				// update bullets
 				for (int j = 0; j < ship->num_bullets; j++) {
 					struct bullet* bullet = ship->bullets[j];
-					//double dist = sqrt(pow(bullet->x_pos - sun->x_pos, 2) + pow(bullet->y_pos - sun->y_pos, 2));
 
-					//double power = G * sun_mass / pow(dist, 2);
-					//double ratio = (double)power / (double)dist;
-					//int x_grav_accel = (int)((sun->x_pos - bullet->x_pos) * ratio);
-					//std::cout << dist << "\t" << (x_offset - sun_x) * ratio << std::endl;
-					//int y_grav_accel = (int)((sun->y_pos - bullet->y_pos) * ratio);
-
-					//bullets[i]->x_vel += bullets[i]->x_accel + x_grav_accel;
-					//bullets[i]->y_vel += bullets[i]->y_accel + y_grav_accel;
 					bullet->x_vel += bullet->x_accel;
 					bullet->y_vel += bullet->y_accel;
+
 					bullet->x_pos += bullet->x_vel;
 					bullet->y_pos += bullet->y_vel;
 					//std::cout << ship->x_pos << std::endl;
@@ -508,8 +506,6 @@ int main(int, char**) {
 							}
 						}
 					}
-
-
 				}
 
 				// update missiles
@@ -582,6 +578,7 @@ int main(int, char**) {
 								if (missile->players_hit[k]) continue;
 								missile->players_hit[k] = true;
 								if (ships[k]->invincibility_cooldown == 0) {
+
 									// knockback
 									int total_knockback = (int)((missile->base_knockback + (ships[k]->percent / 100.0)*missile->knockback_scaling) / ships[k]->weight);
 									ships[k]->x_vel += (int)(1000.0*total_knockback*(ships[k]->x_pos - missile->x_pos) / sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2)));
@@ -603,108 +600,108 @@ int main(int, char**) {
 							}
 						}
 					}
+				}
+			}
 
-					// begin rendering
-					SDL_RenderClear(renderer);
-					render_texture(bg, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
-					render_texture(sun_tex, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
+			// begin rendering
+			{
+				SDL_RenderClear(renderer);
+				render_texture(bg, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
+				render_texture(sun_tex, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
 
-					/*
-					Render status bar
-					*/
-					SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-					SDL_Rect s;
-					s.x = 0;
-					s.y = 0;
-					s.w = STATUS_BAR_WIDTH;
-					s.h = 1000;
-					SDL_RenderFillRect(renderer, &s);
+				/*
+				Render status bar
+				*/
+				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+				SDL_Rect s;
+				s.x = 0;
+				s.y = 0;
+				s.w = STATUS_BAR_WIDTH;
+				s.h = 1000;
+				SDL_RenderFillRect(renderer, &s);
 
-					int adjustment = 50;
+				int adjustment = 50;
 
-					// render ships
-					for (int i = 0; i < num_players; i++) {
+				// render ships
+				for (int i = 0; i < num_players; i++) {
 
-						SDL_Texture* ship_tex;
-						SDL_Texture* bullet_tex;
-						if (i == 0) {
-							ship_tex = medium_red_tex;
-							bullet_tex = bullet_red_tex;
-						} else if (i == 1) {
-							ship_tex = medium_blue_tex;
-							bullet_tex = bullet_blue_tex;
-						} else if (i == 2) {
-							ship_tex = medium_green_tex;
-							bullet_tex = bullet_green_tex;
+					// choose textures
+					SDL_Texture* ship_tex;
+					SDL_Texture* bullet_tex;
+					if (i == 0) {
+						ship_tex = medium_red_tex;
+						bullet_tex = bullet_red_tex;
+					} else if (i == 1) {
+						ship_tex = medium_blue_tex;
+						bullet_tex = bullet_blue_tex;
+					} else if (i == 2) {
+						ship_tex = medium_green_tex;
+						bullet_tex = bullet_green_tex;
+					} else {
+						ship_tex = medium_yellow_tex;
+						bullet_tex = bullet_yellow_tex;
+					}
+
+					if (ships[i]->invincibility_cooldown > 0) {
+						ship_tex = medium_yellow_tex;
+					}
+
+					if (!caladea36) {
+						std::cout << TTF_GetError() << std::endl;
+					}
+
+					struct spaceship* ship = ships[i];
+					double angle = calculate_angle(ship->x_accel, ship->y_accel);
+
+					render_texture(ship_tex, renderer, ship->x_pos / 10000, ship->y_pos / 10000, angle, 3);
+
+					// render gun
+					{
+						SDL_Rect rect;
+
+						SDL_QueryTexture(cannon, NULL, NULL, &rect.w, &rect.h);
+						rect.x = ship->x_pos / 10000 - rect.w;
+						rect.y = ship->y_pos / 10000 - rect.h;
+						//std::cout << rect.x << std::endl;
+						SDL_Point* point = new SDL_Point;
+						point->x = 2;
+						point->y = 11;
+						SDL_RenderCopyEx(renderer, cannon, NULL, &rect, calculate_angle(ship->gun_dir_x, ship->gun_dir_y), point, SDL_FLIP_NONE);
+						free(point);
+					}
+
+
+
+					// render bullets
+					for (int j = 0; j < ship->num_bullets; j++) {
+						double angle = calculate_angle(ship->bullets[j]->x_vel, ship->bullets[j]->y_vel);
+						//std::cout << bullets[i]->x_vel << "\t" << bullets[i]->y_vel << "\t" << angle << std::endl;
+						render_texture(bullet_tex, renderer, ship->bullets[j]->x_pos / 10000, ship->bullets[j]->y_pos / 10000, angle, 1);
+					}
+
+					// render missiles
+					for (int j = 0; j < ship->num_missiles; j++) {
+						if (!ship->missiles[j]->exploded) {
+							//std::cout << "rendering missile\n";
+							double angle = calculate_angle(ship->missiles[j]->x_vel, ship->missiles[j]->y_vel);
+							//std::cout << bullets[i]->x_vel << "\t" << bullets[i]->y_vel << "\t" << angle << std::endl;
+							render_texture(missile_tex, renderer, ship->missiles[j]->x_pos / 10000, ship->missiles[j]->y_pos / 10000, angle, 1.8);
 						} else {
-							ship_tex = medium_yellow_tex;
-							bullet_tex = bullet_yellow_tex;
-						}
-
-						if (ships[i]->invincibility_cooldown > 0) {
-							ship_tex = medium_yellow_tex;
-						}
-
-						if (!caladea36) {
-							std::cout << TTF_GetError() << std::endl;
-						}
-
-						struct spaceship* ship = ships[i];
-						double angle = calculate_angle(ship->x_accel, ship->y_accel);
-
-						render_texture(ship_tex, renderer, ship->x_pos / 10000, ship->y_pos / 10000, angle, 3);
-
-						// render gun
-						{
 							SDL_Rect rect;
 
-							SDL_QueryTexture(cannon, NULL, NULL, &rect.w, &rect.h);
-							rect.x = ship->x_pos / 10000 - rect.w;
-							rect.y = ship->y_pos / 10000 - rect.h;
-							//std::cout << rect.x << std::endl;
-							SDL_Point* point = new SDL_Point;
-							point->x = 2;
-							point->y = 11;
-							SDL_RenderCopyEx(renderer, cannon, NULL, &rect, calculate_angle(ship->gun_dir_x, ship->gun_dir_y), point, SDL_FLIP_NONE);
-							free(point);
+							rect.w = ship->missiles[j]->radius * 2;
+							rect.h = ship->missiles[j]->radius * 2;
+							rect.x = ship->missiles[j]->x_pos / 10000 - rect.w / 2;
+							rect.y = ship->missiles[j]->y_pos / 10000 - rect.h / 2;
+
+							SDL_RenderCopyEx(renderer, explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
 						}
 
+					}
 
 
-						// render bullets
-						for (int j = 0; j < ship->num_bullets; j++) {
-							double angle = calculate_angle(ship->bullets[j]->x_vel, ship->bullets[j]->y_vel);
-							//std::cout << bullets[i]->x_vel << "\t" << bullets[i]->y_vel << "\t" << angle << std::endl;
-							render_texture(bullet_tex, renderer, ship->bullets[j]->x_pos / 10000, ship->bullets[j]->y_pos / 10000, angle, 1);
-						}
-
-						// render missiles
-						//std::cout << ship->num_missiles << std::endl;
-						for (int j = 0; j < ship->num_missiles; j++) {
-							if (!ship->missiles[j]->exploded) {
-								//std::cout << "rendering missile\n";
-								double angle = calculate_angle(ship->missiles[j]->x_vel, ship->missiles[j]->y_vel);
-								//std::cout << bullets[i]->x_vel << "\t" << bullets[i]->y_vel << "\t" << angle << std::endl;
-								render_texture(missile_tex, renderer, ship->missiles[j]->x_pos / 10000, ship->missiles[j]->y_pos / 10000, angle, 1.8);
-							} else {
-								//std::cout << "rendering missile explosion\n";
-								SDL_Rect rect;
-
-								SDL_QueryTexture(cannon, NULL, NULL, &rect.w, &rect.h);
-								rect.x = ship->x_pos / 10000 - rect.w;
-								rect.y = ship->y_pos / 10000 - rect.h;
-								//std::cout << rect.x << std::endl;
-								SDL_Point* point = new SDL_Point;
-								point->x = 2;
-								point->y = 11;
-								SDL_RenderCopyEx(renderer, cannon, NULL, &rect, calculate_angle(ship->gun_dir_x, ship->gun_dir_y), point, SDL_FLIP_NONE);
-								free(point);
-							}
-
-						}
-
-
-						// render stamina bar
+					// render stamina bar
+					{
 						SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
 						SDL_Rect r;
 						r.x = 0;
@@ -712,14 +709,13 @@ int main(int, char**) {
 						r.w = 150 * ship->stamina / ship->stamina_max;
 						r.h = 30;
 						SDL_RenderFillRect(renderer, &r);
+					}
 
-						/*
-						Render the percentages
-						*/
-
+					// render percentages
+					{
 						char str[10];
 						snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
-						SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
+						SDL_Color White = { 255, 255, 255 };
 						SDL_Surface* percentSurface = TTF_RenderText_Solid(caladea36, str, White); //Create the sdl surface
 						SDL_Texture* percentTexture = SDL_CreateTextureFromSurface(renderer, percentSurface); //Convert to texture
 						SDL_Rect percentRect; //create a rect
@@ -729,29 +725,30 @@ int main(int, char**) {
 						SDL_RenderCopy(renderer, percentTexture, NULL, &percentRect);
 						SDL_DestroyTexture(percentTexture);
 						SDL_FreeSurface(percentSurface);
+					}
 
-						/*
-						Render player information
-						*/
-						/*
-						char playerInfo[10];
-						sprintf_s(playerInfo, "P%d: ", i+1);
-						SDL_Surface* playerNumberSurface = TTF_RenderText_Solid(caladea36,playerInfo, White); //Create the sdl surface
-						SDL_Texture* playerNumberTexture = SDL_CreateTextureFromSurface(renderer, playerNumberSurface); //Convert to texture
-						SDL_Rect playerNumberRect; //create a rect
-						playerNumberRect.x = 0; //2controls the rect's x coordinate
-						playerNumberRect.y = (60 + 100 * i) + adjustment * i; // controls the rect's y coordinte
-						SDL_QueryTexture(playerNumberTexture, NULL, NULL, &playerNumberRect.w, &playerNumberRect.h);
-						SDL_RenderCopy(renderer, playerNumberTexture, NULL, &playerNumberRect);
-						SDL_DestroyTexture(playerNumberTexture);
-						SDL_FreeSurface(playerNumberSurface);
-						*/
+					/*
+					Render player information
+					*/
+					/*
+					char playerInfo[10];
+					sprintf_s(playerInfo, "P%d: ", i+1);
+					SDL_Surface* playerNumberSurface = TTF_RenderText_Solid(caladea36,playerInfo, White); //Create the sdl surface
+					SDL_Texture* playerNumberTexture = SDL_CreateTextureFromSurface(renderer, playerNumberSurface); //Convert to texture
+					SDL_Rect playerNumberRect; //create a rect
+					playerNumberRect.x = 0; //2controls the rect's x coordinate
+					playerNumberRect.y = (60 + 100 * i) + adjustment * i; // controls the rect's y coordinte
+					SDL_QueryTexture(playerNumberTexture, NULL, NULL, &playerNumberRect.w, &playerNumberRect.h);
+					SDL_RenderCopy(renderer, playerNumberTexture, NULL, &playerNumberRect);
+					SDL_DestroyTexture(playerNumberTexture);
+					SDL_FreeSurface(playerNumberSurface);
+					*/
 
-						/*
-						Render stock counter
-						*/
+					// render stock counter
+					{
 						char playerLives[20];
 						sprintf_s(playerLives, "Lives: %d", ship->lives);
+						SDL_Color White = { 255, 255, 255 };
 						SDL_Surface* stockSurface = TTF_RenderText_Solid(caladea36, playerLives, White); //Create the sdl surface
 						SDL_Texture* stockTexture = SDL_CreateTextureFromSurface(renderer, stockSurface); //Convert to texture
 						SDL_Rect stockRect; //create a rect
@@ -761,72 +758,70 @@ int main(int, char**) {
 						SDL_RenderCopy(renderer, stockTexture, NULL, &stockRect);
 						SDL_DestroyTexture(stockTexture);
 						SDL_FreeSurface(stockSurface);
-
-
-
 					}
 
-
-					SDL_RenderPresent(renderer);
-				} //end of ingame state
-
-				//Begin pause state
-				if (currentState == pause) {
-
-					while (SDL_PollEvent(&e)) {
-						switch (e.type) {
-						case SDL_CONTROLLERBUTTONDOWN:
-							if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
-								currentState = inGame;
-							}
-							break;
-						}
-
-
-					}
-
-					/*
-						Render status bar
-					*/
-					SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-					SDL_Rect s;
-					s.x = WINDOW_WIDTH / 2;
-					s.y = WINDOW_HEIGHT / 2;
-					s.w = 120;
-					s.h = 50;
-					SDL_RenderFillRect(renderer, &s);
-
-
-					SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
-					SDL_Surface* pauseSurface = TTF_RenderText_Solid(caladea36, "Paused", White); //Create the sdl surface
-					SDL_Texture* pauseTexture = SDL_CreateTextureFromSurface(renderer, pauseSurface); //Convert to texture
-					SDL_Rect pauseRect; //create a rect
-					pauseRect.x = WINDOW_WIDTH / 2;
-					pauseRect.y = WINDOW_HEIGHT / 2;
-					SDL_QueryTexture(pauseTexture, NULL, NULL, &pauseRect.w, &pauseRect.h);
-					SDL_RenderCopy(renderer, pauseTexture, NULL, &pauseRect);
-					SDL_DestroyTexture(pauseTexture);
-					SDL_FreeSurface(pauseSurface);
-
-					SDL_RenderPresent(renderer);
-
-
-				} //end pause state
-			} //end of loop
-
-
-			for (int i = 0; i < num_players; i++) {
-				// todo: close the controllers themselves?
-				SDL_HapticClose(haptics[i]);
+				}
+				SDL_RenderPresent(renderer);
 			}
-			SDL_DestroyTexture(bg);
-			// todo: destroy other textures
-			SDL_DestroyRenderer(renderer);
-			SDL_DestroyWindow(window);
+		} //end of ingame state
 
-			SDL_Quit();
-			return 0;
+		// start pause state
+		if (currentState == pause) {
+
+			while (SDL_PollEvent(&e)) {
+				switch (e.type) {
+				case SDL_CONTROLLERBUTTONDOWN:
+					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+						currentState = inGame;
+					}
+					break;
+				}
+			}
+
+			// render pause background
+			{
+				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+				SDL_Rect s;
+				s.x = WINDOW_WIDTH / 2;
+				s.y = WINDOW_HEIGHT / 2;
+				s.w = 120;
+				s.h = 50;
+				SDL_RenderFillRect(renderer, &s);
+			}
+
+			// render word "paused"
+			{
+				SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
+				SDL_Surface* pauseSurface = TTF_RenderText_Solid(caladea36, "Paused", White); //Create the sdl surface
+				SDL_Texture* pauseTexture = SDL_CreateTextureFromSurface(renderer, pauseSurface); //Convert to texture
+				SDL_Rect pauseRect; //create a rect
+				pauseRect.x = WINDOW_WIDTH / 2;
+				pauseRect.y = WINDOW_HEIGHT / 2;
+				SDL_QueryTexture(pauseTexture, NULL, NULL, &pauseRect.w, &pauseRect.h);
+				SDL_RenderCopy(renderer, pauseTexture, NULL, &pauseRect);
+				SDL_DestroyTexture(pauseTexture);
+				SDL_FreeSurface(pauseSurface);
+			}
+
+			SDL_RenderPresent(renderer);
+
+
+		} //end pause state
+
 		
+	} //end of loop
+
+	for (int i = 0; i < num_players; i++) {
+		// todo: close the controllers themselves?
+		SDL_HapticClose(haptics[i]);
+	}
+	SDL_DestroyTexture(bg);
+	// todo: destroy other textures
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+
+	SDL_Quit();
+	return 0;
 }
 
 bullet** spawn_bullets(spaceship* ship, int velocity, int spread, int damage, int base_knockback, int knockback_scaling) {
