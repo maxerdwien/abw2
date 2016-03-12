@@ -9,8 +9,8 @@ struct missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int dam
 	miss->x_vel = x_vel;
 	miss->y_vel = y_vel;
 
-	miss->x_accel = x_vel / 10.0;
-	miss->y_accel = y_vel / 10.0;
+	//miss->x_accel = x_vel / 10.0;
+	//miss->y_accel = y_vel / 10.0;
 
 	miss->damage = damage;
 	miss->base_knockback = base_knockback;
@@ -23,3 +23,4 @@ struct missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int dam
 
 	return miss;
 }
+
