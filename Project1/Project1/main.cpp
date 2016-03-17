@@ -27,7 +27,7 @@ int main(int, char**) {
 		pause
 	};
 
-	gameState currentState = stageSelect; // temporary
+	gameState currentState = mainMenu;
 
 	// init SDL
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
@@ -121,6 +121,7 @@ int main(int, char**) {
 	SDL_Texture* medium_yellow_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceshipYellow.png");
 	SDL_Texture* medium_red_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceshipRed.png");
 	SDL_Texture* medium_green_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceshipGreen.png");
+	SDL_Texture* medium_white_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceshipWhite.png");
 	//SDL_Texture* spaceship_low = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceship_low.png");
 	//SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceship_high.png");
 	//SDL_Texture* spaceship = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bear-idle.png");
@@ -134,7 +135,7 @@ int main(int, char**) {
 
 	SDL_Texture* sun_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
 	//SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
-	SDL_Texture* missile_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bulletYellow.png");
+	SDL_Texture* missile_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\missle.png");
 	SDL_Texture* explosion_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 
@@ -143,6 +144,7 @@ int main(int, char**) {
 	SDL_Event e;
 	bool quit = false;
 	SDL_Keycode k;
+	int winner;
 
 	// init game objects
 	struct spaceship* ships[2];
@@ -181,8 +183,80 @@ int main(int, char**) {
 		}
 		//std::cout << frame_start_time - last_frame_start_time << std::endl;
 
-		// inGame state
-		if (currentState == inGame) {
+		//Start of input section or inGame state
+		//INSERT MEGA IFS
+
+		//start of main menu state
+		if (currentState == mainMenu) {
+			while (SDL_PollEvent(&e)) {
+				switch (e.type) {
+				case SDL_CONTROLLERBUTTONDOWN:
+					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+						currentState = characterSelect;
+					}
+					break;
+				}
+			}
+
+			SDL_RenderClear(renderer);
+
+			// render basic black background
+			{
+				SDL_SetRenderDrawColor(renderer, 00, 00, 00, SDL_ALPHA_OPAQUE);
+				SDL_Rect s;
+				s.x = WINDOW_WIDTH/2;
+				s.y = WINDOW_HEIGHT/2;
+				s.w = WINDOW_WIDTH;
+				s.h = WINDOW_HEIGHT;
+				SDL_RenderFillRect(renderer, &s);
+			}
+
+			// render title name and prompt to move forward
+			{
+				SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
+				SDL_Surface* titleSurface = TTF_RenderText_Solid(caladea36, "Alaskan Cosmobear Spacefighting", White); //Create the sdl surface
+				SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface); //Convert to texture
+				SDL_Rect titleRect; //create a rect
+				titleRect.x = WINDOW_WIDTH/3.5;
+				titleRect.y = WINDOW_HEIGHT/2.5;
+				SDL_QueryTexture(titleTexture, NULL, NULL, &titleRect.w, &titleRect.h);
+				SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
+				SDL_DestroyTexture(titleTexture);
+				SDL_FreeSurface(titleSurface);
+
+				SDL_Surface* promptSurface = TTF_RenderText_Solid(caladea36, "Press the A button to start.", White); //Create the sdl surface
+				SDL_Texture* promptTexture = SDL_CreateTextureFromSurface(renderer, promptSurface); //Convert to texture
+				SDL_Rect promptRect; //create a rect
+				promptRect.x = WINDOW_WIDTH / 3.5;
+				promptRect.y = WINDOW_HEIGHT / 2;
+				SDL_QueryTexture(promptTexture, NULL, NULL, &promptRect.w, &promptRect.h);
+				SDL_RenderCopy(renderer, promptTexture, NULL, &promptRect);
+				SDL_DestroyTexture(promptTexture);
+				SDL_FreeSurface(promptSurface);
+			}
+
+			
+
+			SDL_RenderPresent(renderer);
+
+		}
+		//start of character select state
+		else if (currentState == characterSelect) {
+			currentState = stageSelect;
+		}
+		//start of stage select state
+		else if (currentState == stageSelect) {
+			currentState = inGame;
+			
+		}
+		//start of in game state
+		else if (currentState == inGame) {
+			int controller_index;
+			struct spaceship* ship;
+
+			SDL_RenderClear(renderer);
+
+
 			// poll input
 			{
 				int controller_index;
@@ -612,7 +686,32 @@ int main(int, char**) {
 						}
 					}
 				}
-			}
+
+				//Check to see if the game is over
+				int victoryCheck = 0;
+				for (int i = 0; i < num_players; i++) {
+					ship = ships[i];
+					if (ship->lives == 0) {
+						victoryCheck++;
+					}
+					if (victoryCheck == num_players - 1) {
+						for (int j = 0; j < num_players; j++) {
+							ship = ships[j];
+							if (ship->lives != 0) {
+								winner = j + 1;
+							}
+						}
+						for (int k = 0; k < num_players; k++) {
+							ship = ships[k];
+							ship->lives = 4;
+							ship->percent = 0;
+							ship->stamina = ship->stamina_max;
+						}
+						currentState = results;
+					}
+				}
+
+			} // end of update ships
 
 			// begin rendering
 			{
@@ -643,7 +742,7 @@ int main(int, char**) {
 					}
 
 					if (ships[i]->invincibility_cooldown > 0) {
-						ship_tex = medium_yellow_tex;
+						ship_tex = medium_white_tex;
 					}
 
 
@@ -768,8 +867,8 @@ int main(int, char**) {
 			}
 		} //end of ingame state
 
-		// pause state
-		if (currentState == pause) {
+		// start pause state
+		else if (currentState == pause) {
 
 			while (SDL_PollEvent(&e)) {
 				switch (e.type) {
@@ -810,10 +909,66 @@ int main(int, char**) {
 
 
 		} //end pause state
+
 		// stage select state
 		else if (currentState == stageSelect) {
 
 			currentState = inGame;
+		}
+		//start of options state
+		else if (currentState == options) {
+
+		}
+		//start of results state
+		else if (currentState == results) {
+			while (SDL_PollEvent(&e)) {
+				switch (e.type) {
+				case SDL_CONTROLLERBUTTONDOWN:
+					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+						currentState = mainMenu;
+					}
+					break;
+				}
+			}
+			SDL_RenderClear(renderer);
+
+			// render basic black background
+			{
+				SDL_SetRenderDrawColor(renderer, 00, 00, 00, SDL_ALPHA_OPAQUE);
+				SDL_Rect s;
+				s.x = WINDOW_WIDTH;
+				s.y = WINDOW_HEIGHT;
+				s.w = WINDOW_WIDTH;
+				s.h = WINDOW_HEIGHT;
+				SDL_RenderFillRect(renderer, &s);
+			}
+
+			// render who won plus continue prompt
+			{
+				char winnerMessage[15];
+				sprintf_s(winnerMessage, "Player %d wins!", winner);
+				SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
+				SDL_Surface* winnerSurface = TTF_RenderText_Solid(caladea36, winnerMessage, White); //Create the sdl surface
+				SDL_Texture* winnerTexture = SDL_CreateTextureFromSurface(renderer, winnerSurface); //Convert to texture
+				SDL_Rect winnerRect; //create a rect
+				winnerRect.x = WINDOW_WIDTH / 3.5;
+				winnerRect.y = WINDOW_HEIGHT / 2.5;
+				SDL_QueryTexture(winnerTexture, NULL, NULL, &winnerRect.w, &winnerRect.h);
+				SDL_RenderCopy(renderer, winnerTexture, NULL, &winnerRect);
+				SDL_DestroyTexture(winnerTexture);
+				SDL_FreeSurface(winnerSurface);
+
+				SDL_Surface* promptSurface = TTF_RenderText_Solid(caladea36, "Press the A button to continue.", White); //Create the sdl surface
+				SDL_Texture* promptTexture = SDL_CreateTextureFromSurface(renderer, promptSurface); //Convert to texture
+				SDL_Rect promptRect; //create a rect
+				promptRect.x = WINDOW_WIDTH / 3.5;
+				promptRect.y = WINDOW_HEIGHT / 2;
+				SDL_QueryTexture(promptTexture, NULL, NULL, &promptRect.w, &promptRect.h);
+				SDL_RenderCopy(renderer, promptTexture, NULL, &promptRect);
+				SDL_DestroyTexture(promptTexture);
+				SDL_FreeSurface(promptSurface);
+			}
+			SDL_RenderPresent(renderer);
 		}
 
 		
