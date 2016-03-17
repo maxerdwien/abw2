@@ -15,7 +15,28 @@ struct spaceship {
 	int gun_dir_x = 1;
 	int gun_dir_y = 0;
 
+	bool fire_normal = false;
+	bool fire_burst = false;
+	bool fire_spread = false;
+	bool fire_missile = false;
+
+	struct bullet* bullets[1000];
+	int num_bullets = 0;
+
+	struct missile* missiles[100];
+	int num_missiles = 0;
+
 	const int MIN_GUN_DIR = 20000;
+
+	int percent = 0;
+
+	int lives = 4;
+
+	const int respawn_invincibility_delay = 120;
+	int invincibility_cooldown = 0;
+
+
+
 
 	const int cannon_delay = 10;
 
@@ -36,31 +57,12 @@ struct spaceship {
 	const int missile_delay = 50;
 	int missile_cooldown = 0;
 
-	bool fire_normal = false;
-	bool fire_burst = false;
-	bool fire_spread = false;
-	bool fire_missile = false;
-
-	struct bullet* bullets[1000];
-	int num_bullets = 0;
-
-	struct missile* missiles[100];
-	int num_missiles = 0;
-
 	const int stamina_max = 1000;
 	int stamina = 1000;
 
-	int percent = 0;
-
 	int weight;
 
-	int lives = 4;
-
-	const int radius = 40; // 15
-
-	const int respawn_invincibility_delay = 120;
-
-	int invincibility_cooldown = 0;
+	const int radius = 40;
 };
 
 const int SPACESHIP_MAX_ACCEL = 7000;

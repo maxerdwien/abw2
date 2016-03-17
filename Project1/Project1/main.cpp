@@ -15,7 +15,7 @@ bullet** spawn_bullets(spaceship* ship, int velocity, int spread, int damage, in
 missile** spawn_missiles(spaceship* ship, int velocity, int spread, int damage, int base_knockback, int knockback_scaling);
 
 int main(int, char**) {
-	int test = TTF_Init();
+	int test = TTF_Init(); // todo: delete or rename
 
 	enum gameState {
 		mainMenu,
@@ -27,12 +27,15 @@ int main(int, char**) {
 		pause
 	};
 
-	gameState currentState = inGame;
+	gameState currentState = stageSelect; // temporary
 
+	// init SDL
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
 		std::cout << "SDL_Init error: " << SDL_GetError() << std::endl;
 		return 1;
 	}
+
+	// set resolution
 	enum Resolution {
 		_480p,
 		_720p,
@@ -109,6 +112,7 @@ int main(int, char**) {
 
 	}
 
+	// load textures
 	SDL_Texture* bg = IMG_LoadTexture(renderer, "..\\Project1\\assets\\background.png");
 	if (!bg) {
 		std::cout << "error loading background: " << SDL_GetError() << std::endl;
@@ -140,6 +144,7 @@ int main(int, char**) {
 	bool quit = false;
 	SDL_Keycode k;
 
+	// init game objects
 	struct spaceship* ships[2];
 	ships[0] = init_spaceship(300 * 10000, 300 * 10000, 1);
 	ships[1] = init_spaceship(700 * 10000, 300 * 10000, 1);
@@ -159,7 +164,7 @@ int main(int, char**) {
 		SDL_ShowCursor(0);
 	}
 
-	// start game loop
+	// game loop
 	while (!quit) {
 		last_frame_start_time = frame_start_time;
 		frame_start_time = SDL_GetTicks();
@@ -176,120 +181,120 @@ int main(int, char**) {
 		}
 		//std::cout << frame_start_time - last_frame_start_time << std::endl;
 
-		//Start of input section or inGame state
-		//INSERT MEGA IFS
+		// inGame state
 		if (currentState == inGame) {
-			int controller_index;
-			struct spaceship* ship;
-
 			// poll input
-			while (SDL_PollEvent(&e)) {
-				switch (e.type) {
-				case SDL_QUIT:
-					quit = true;
-					break;
-				case SDL_KEYDOWN:
-					k = e.key.keysym.sym;
-					if (k == SDLK_f) {
-						if (is_fullscreen) {
-							SDL_SetWindowFullscreen(window, 0);
-							SDL_ShowCursor(1);
-						} else {
-							SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-							SDL_ShowCursor(0);
-						}
-						is_fullscreen = !is_fullscreen;
-					} else if (k == SDLK_ESCAPE) {
-						if (is_fullscreen) {
-							SDL_SetWindowFullscreen(window, 0);
-							is_fullscreen = !is_fullscreen;
-							SDL_ShowCursor(1);
-						}
-					}
-					break;
-				case SDL_CONTROLLERBUTTONDOWN:
-					controller_index = e.cbutton.which;
-					ship = ships[controller_index];
-					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
-
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
-
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
-						ship->fire_normal = true;
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
-						ship->fire_burst = true;
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
-						currentState = pause;
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+			{
+				int controller_index;
+				struct spaceship* ship;
+				while (SDL_PollEvent(&e)) {
+					switch (e.type) {
+					case SDL_QUIT:
 						quit = true;
+						break;
+					case SDL_KEYDOWN:
+						k = e.key.keysym.sym;
+						if (k == SDLK_f) {
+							if (is_fullscreen) {
+								SDL_SetWindowFullscreen(window, 0);
+								SDL_ShowCursor(1);
+							} else {
+								SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+								SDL_ShowCursor(0);
+							}
+							is_fullscreen = !is_fullscreen;
+						} else if (k == SDLK_ESCAPE) {
+							if (is_fullscreen) {
+								SDL_SetWindowFullscreen(window, 0);
+								is_fullscreen = !is_fullscreen;
+								SDL_ShowCursor(1);
+							}
+						}
+						break;
+					case SDL_CONTROLLERBUTTONDOWN:
+						controller_index = e.cbutton.which;
+						ship = ships[controller_index];
+						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
+
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
+
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+							ship->fire_normal = true;
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+							ship->fire_burst = true;
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+							currentState = pause;
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+							quit = true;
+						}
+						break;
+					case SDL_CONTROLLERBUTTONUP:
+						controller_index = e.cbutton.which;
+						ship = ships[controller_index];
+						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+							ship->fire_normal = false;
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+							ship->fire_burst = false;
+						}
+						break;
+					case SDL_CONTROLLERAXISMOTION:
+						controller_index = e.caxis.which;
+						ship = ships[controller_index];
+						if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
+							if (abs(e.caxis.value) > DEAD_ZONE) {
+								ship->move_dir_x = (int)e.caxis.value;
+							} else {
+								ship->move_dir_x = 0;
+							}
+						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
+							if (abs(e.caxis.value) > DEAD_ZONE) {
+								ship->move_dir_y = (int)e.caxis.value;
+							} else {
+								ship->move_dir_y = 0;
+							}
+						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
+							double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_y, 2));
+							if (new_gun_mag >= ship->MIN_GUN_DIR) {
+								ship->gun_dir_x = (int)(e.caxis.value);
+							} else {
+								ship->gun_dir_x = 0;
+							}
+						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
+							double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_x, 2));
+							if (new_gun_mag >= ship->MIN_GUN_DIR) {
+								ship->gun_dir_y = (int)(e.caxis.value);
+							} else {
+								ship->gun_dir_y = 0;
+							}
+						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+							int min_activation = 20000;
+							//std::cout << e.caxis.value << std::endl;
+							if (e.caxis.value < min_activation) {
+								ship->fire_missile = false;
+							} else {
+								ship->fire_missile = true;
+							}
+						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+							int min_activation = 20000;
+							//std::cout << e.caxis.value << std::endl;
+							if (e.caxis.value < min_activation) {
+								ship->fire_spread = false;
+							} else {
+								ship->fire_spread = true;
+							}
+						}
+						break;
 					}
-					break;
-				case SDL_CONTROLLERBUTTONUP:
-					controller_index = e.cbutton.which;
-					ship = ships[controller_index];
-					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
-						ship->fire_normal = false;
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
-						ship->fire_burst = false;
-					}
-					break;
-				case SDL_CONTROLLERAXISMOTION:
-					controller_index = e.caxis.which;
-					ship = ships[controller_index];
-					if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
-						if (abs(e.caxis.value) > DEAD_ZONE) {
-							ship->move_dir_x = (int)e.caxis.value;
-						} else {
-							ship->move_dir_x = 0;
-						}
-					} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
-						if (abs(e.caxis.value) > DEAD_ZONE) {
-							ship->move_dir_y = (int)e.caxis.value;
-						} else {
-							ship->move_dir_y = 0;
-						}
-					} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
-						double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_y, 2));
-						if (new_gun_mag >= ship->MIN_GUN_DIR) {
-							ship->gun_dir_x = (int)(e.caxis.value);
-						} else {
-							ship->gun_dir_x = 0;
-						}
-					} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
-						double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_x, 2));
-						if (new_gun_mag >= ship->MIN_GUN_DIR) {
-							ship->gun_dir_y = (int)(e.caxis.value);
-						} else {
-							ship->gun_dir_y = 0;
-						}
-					} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
-						int min_activation = 20000;
-						//std::cout << e.caxis.value << std::endl;
-						if (e.caxis.value < min_activation) {
-							ship->fire_missile = false;
-						} else {
-							ship->fire_missile = true;
-						}
-					} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
-						int min_activation = 20000;
-						//std::cout << e.caxis.value << std::endl;
-						if (e.caxis.value < min_activation) {
-							ship->fire_spread = false;
-						} else {
-							ship->fire_spread = true;
-						}
-					}
-					break;
 				}
 			}
+
 			if (currentState == pause) {
 				continue;
 			}
 
-
-			// update ships
+			// update
 			for (int i = 0; i < num_players; i++) {
 				struct spaceship* ship = ships[i];
 
@@ -439,7 +444,7 @@ int main(int, char**) {
 					}
 
 
-					//std::cout << sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)) << "\t" << ship->move_dir_x << std::endl;
+					// update position
 					ship->x_pos += ship->x_vel;
 					ship->y_pos += ship->y_vel;
 
@@ -476,7 +481,7 @@ int main(int, char**) {
 						free(ship->bullets[j]);
 						ship->bullets[j] = ship->bullets[ship->num_bullets];
 						j--;
-						break;
+						continue;
 					}
 
 					// check for collisions with enemies
@@ -491,19 +496,25 @@ int main(int, char**) {
 								ships[k]->x_vel += (int)(1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
 								ships[k]->y_vel += (int)(1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
 
+								// damage
+								ships[k]->percent += bullet->damage;
+								if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
+									ships[k]->percent = SPACESHIP_MAX_PERCENT;
+								}
+
 								// haptic
 								float haptic_amount = 0.03f + total_knockback / 100.0f;
 								if (haptic_amount > 1) {
 									haptic_amount = 1;
 								}
 								SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
-
-								// damage
-								ships[k]->percent += bullet->damage;
-								if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
-									ships[k]->percent = SPACESHIP_MAX_PERCENT;
-								}
 							}
+							// delete bullet
+							ship->num_bullets--;
+							free(ship->bullets[j]);
+							ship->bullets[j] = ship->bullets[ship->num_bullets];
+							j--;
+							break;
 						}
 					}
 				}
@@ -584,18 +595,18 @@ int main(int, char**) {
 									ships[k]->x_vel += (int)(1000.0*total_knockback*(ships[k]->x_pos - missile->x_pos) / sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2)));
 									ships[k]->y_vel += (int)(1000.0*total_knockback*(ships[k]->y_pos - missile->y_pos) / sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2)));
 
+									// damage
+									ships[k]->percent += missile->damage;
+									if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
+										ships[k]->percent = SPACESHIP_MAX_PERCENT;
+									}
+
 									// haptic
 									float haptic_amount = 0.03f + total_knockback / 100.0f;
 									if (haptic_amount > 1) {
 										haptic_amount = 1;
 									}
 									SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
-
-									// damage
-									ships[k]->percent += missile->damage;
-									if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
-										ships[k]->percent = SPACESHIP_MAX_PERCENT;
-									}
 								}
 							}
 						}
@@ -606,23 +617,12 @@ int main(int, char**) {
 			// begin rendering
 			{
 				SDL_RenderClear(renderer);
+
+				// render background
 				render_texture(bg, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
 				render_texture(sun_tex, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
 
-				/*
-				Render status bar
-				*/
-				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-				SDL_Rect s;
-				s.x = 0;
-				s.y = 0;
-				s.w = STATUS_BAR_WIDTH;
-				s.h = 1000;
-				SDL_RenderFillRect(renderer, &s);
-
-				int adjustment = 50;
-
-				// render ships
+				// render all ship elements
 				for (int i = 0; i < num_players; i++) {
 
 					// choose textures
@@ -646,10 +646,13 @@ int main(int, char**) {
 						ship_tex = medium_yellow_tex;
 					}
 
+
+					// todo: relocate this
 					if (!caladea36) {
 						std::cout << TTF_GetError() << std::endl;
 					}
 
+					// render ship
 					struct spaceship* ship = ships[i];
 					double angle = calculate_angle(ship->x_accel, ship->y_accel);
 
@@ -669,8 +672,6 @@ int main(int, char**) {
 						SDL_RenderCopyEx(renderer, cannon, NULL, &rect, calculate_angle(ship->gun_dir_x, ship->gun_dir_y), point, SDL_FLIP_NONE);
 						free(point);
 					}
-
-
 
 					// render bullets
 					for (int j = 0; j < ship->num_bullets; j++) {
@@ -698,74 +699,76 @@ int main(int, char**) {
 						}
 
 					}
+					
 
+				}
 
-					// render stamina bar
-					{
-						SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
-						SDL_Rect r;
-						r.x = 0;
-						r.y = 120 + 100 * i + (adjustment * i);
-						r.w = 150 * ship->stamina / ship->stamina_max;
-						r.h = 30;
-						SDL_RenderFillRect(renderer, &r);
+				// render UI elements
+				{
+					// render status bar background
+					SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+					SDL_Rect s;
+					s.x = 0;
+					s.y = 0;
+					s.w = STATUS_BAR_WIDTH;
+					s.h = 1000;
+					SDL_RenderFillRect(renderer, &s);
+
+					int adjustment = 50; // todo: rename this shit
+
+					// render each ship's UI elements
+					for (int i = 0; i < num_players; i++) {
+						struct spaceship* ship = ships[i];
+
+						// render stamina bar
+						{
+							SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
+							SDL_Rect r;
+							r.x = 0;
+							r.y = 120 + 100 * i + (adjustment * i);
+							r.w = 150 * ship->stamina / ship->stamina_max;
+							r.h = 30;
+							SDL_RenderFillRect(renderer, &r);
+						}
+
+						// render percentages
+						{
+							char str[10];
+							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
+							SDL_Color White = { 255, 255, 255 };
+							SDL_Surface* percentSurface = TTF_RenderText_Solid(caladea36, str, White); //Create the sdl surface
+							SDL_Texture* percentTexture = SDL_CreateTextureFromSurface(renderer, percentSurface); //Convert to texture
+							SDL_Rect percentRect; //create a rect
+							percentRect.x = 0; //controls the rect's x coordinate 
+							percentRect.y = (60 + 100 * i + 1) + adjustment * i; // controls the rect's y coordinte
+							SDL_QueryTexture(percentTexture, NULL, NULL, &percentRect.w, &percentRect.h);
+							SDL_RenderCopy(renderer, percentTexture, NULL, &percentRect);
+							SDL_DestroyTexture(percentTexture);
+							SDL_FreeSurface(percentSurface);
+						}
+
+						// render stock counter
+						{
+							char playerLives[20];
+							sprintf_s(playerLives, "Lives: %d", ship->lives);
+							SDL_Color White = { 255, 255, 255 };
+							SDL_Surface* stockSurface = TTF_RenderText_Solid(caladea36, playerLives, White); //Create the sdl surface
+							SDL_Texture* stockTexture = SDL_CreateTextureFromSurface(renderer, stockSurface); //Convert to texture
+							SDL_Rect stockRect; //create a rect
+							stockRect.x = 0; //2controls the rect's x coordinate 
+							stockRect.y = (10 + 150 * i); // controls the rect's y coordinte
+							SDL_QueryTexture(stockTexture, NULL, NULL, &stockRect.w, &stockRect.h);
+							SDL_RenderCopy(renderer, stockTexture, NULL, &stockRect);
+							SDL_DestroyTexture(stockTexture);
+							SDL_FreeSurface(stockSurface);
+						}
 					}
-
-					// render percentages
-					{
-						char str[10];
-						snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
-						SDL_Color White = { 255, 255, 255 };
-						SDL_Surface* percentSurface = TTF_RenderText_Solid(caladea36, str, White); //Create the sdl surface
-						SDL_Texture* percentTexture = SDL_CreateTextureFromSurface(renderer, percentSurface); //Convert to texture
-						SDL_Rect percentRect; //create a rect
-						percentRect.x = 0; //controls the rect's x coordinate 
-						percentRect.y = (60 + 100 * i + 1) + adjustment * i; // controls the rect's y coordinte
-						SDL_QueryTexture(percentTexture, NULL, NULL, &percentRect.w, &percentRect.h);
-						SDL_RenderCopy(renderer, percentTexture, NULL, &percentRect);
-						SDL_DestroyTexture(percentTexture);
-						SDL_FreeSurface(percentSurface);
-					}
-
-					/*
-					Render player information
-					*/
-					/*
-					char playerInfo[10];
-					sprintf_s(playerInfo, "P%d: ", i+1);
-					SDL_Surface* playerNumberSurface = TTF_RenderText_Solid(caladea36,playerInfo, White); //Create the sdl surface
-					SDL_Texture* playerNumberTexture = SDL_CreateTextureFromSurface(renderer, playerNumberSurface); //Convert to texture
-					SDL_Rect playerNumberRect; //create a rect
-					playerNumberRect.x = 0; //2controls the rect's x coordinate
-					playerNumberRect.y = (60 + 100 * i) + adjustment * i; // controls the rect's y coordinte
-					SDL_QueryTexture(playerNumberTexture, NULL, NULL, &playerNumberRect.w, &playerNumberRect.h);
-					SDL_RenderCopy(renderer, playerNumberTexture, NULL, &playerNumberRect);
-					SDL_DestroyTexture(playerNumberTexture);
-					SDL_FreeSurface(playerNumberSurface);
-					*/
-
-					// render stock counter
-					{
-						char playerLives[20];
-						sprintf_s(playerLives, "Lives: %d", ship->lives);
-						SDL_Color White = { 255, 255, 255 };
-						SDL_Surface* stockSurface = TTF_RenderText_Solid(caladea36, playerLives, White); //Create the sdl surface
-						SDL_Texture* stockTexture = SDL_CreateTextureFromSurface(renderer, stockSurface); //Convert to texture
-						SDL_Rect stockRect; //create a rect
-						stockRect.x = 0; //2controls the rect's x coordinate 
-						stockRect.y = (10 + 150 * i); // controls the rect's y coordinte
-						SDL_QueryTexture(stockTexture, NULL, NULL, &stockRect.w, &stockRect.h);
-						SDL_RenderCopy(renderer, stockTexture, NULL, &stockRect);
-						SDL_DestroyTexture(stockTexture);
-						SDL_FreeSurface(stockSurface);
-					}
-
 				}
 				SDL_RenderPresent(renderer);
 			}
 		} //end of ingame state
 
-		// start pause state
+		// pause state
 		if (currentState == pause) {
 
 			while (SDL_PollEvent(&e)) {
@@ -807,6 +810,11 @@ int main(int, char**) {
 
 
 		} //end pause state
+		// stage select state
+		else if (currentState == stageSelect) {
+
+			currentState = inGame;
+		}
 
 		
 	} //end of loop
@@ -861,7 +869,7 @@ missile** spawn_missiles(spaceship* ship, int velocity, int spread, int damage, 
 
 	double spread_angle = 3.14159 * 0.2;
 
-	missile** new_missiles = (missile**)malloc(sizeof(missile*) * spread); // todo: free me
+	missile** new_missiles = (missile**)malloc(sizeof(missile*) * spread);
 
 	if (spread % 2 == 0) {
 
