@@ -12,6 +12,9 @@ struct spaceship {
 	int move_dir_x = 0;
 	int move_dir_y = 0;
 
+	int face_dir_x = 0;
+	int face_dir_y = 0;
+
 	int gun_dir_x = 1;
 	int gun_dir_y = 0;
 
@@ -25,8 +28,6 @@ struct spaceship {
 
 	struct missile* missiles[100];
 	int num_missiles = 0;
-
-	const int MIN_GUN_DIR = 20000;
 
 	int percent = 0;
 
@@ -68,6 +69,8 @@ struct spaceship {
 const int SPACESHIP_MAX_ACCEL = 7000;
 const int SPACESHIP_MAX_FRICTION= 90;
 const int SPACESHIP_STEADY_FRICTION = 200000000;
+
+const int SPACESHIP_MIN_GUN_DIR = 25000;
 
 const int SPACESHIP_MAX_PERCENT = 999;
 

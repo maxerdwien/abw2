@@ -27,7 +27,8 @@ int main(int, char**) {
 		pause
 	};
 
-	gameState currentState = mainMenu;
+	//gameState currentState = mainMenu;
+	gameState currentState = inGame;
 
 	// init SDL
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
@@ -183,7 +184,6 @@ int main(int, char**) {
 		}
 		//std::cout << frame_start_time - last_frame_start_time << std::endl;
 
-		//Start of input section or inGame state
 		//INSERT MEGA IFS
 
 		//start of main menu state
@@ -235,21 +235,19 @@ int main(int, char**) {
 				SDL_FreeSurface(promptSurface);
 			}
 
-			
-
 			SDL_RenderPresent(renderer);
 
 		}
-		//start of character select state
+		// start of character select state
 		else if (currentState == characterSelect) {
 			currentState = stageSelect;
 		}
-		//start of stage select state
+		// start of stage select state
 		else if (currentState == stageSelect) {
 			currentState = inGame;
 			
 		}
-		//start of in game state
+		// start of in game state
 		else if (currentState == inGame) {
 			int controller_index;
 			struct spaceship* ship;
@@ -319,29 +317,56 @@ int main(int, char**) {
 						if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
 							if (abs(e.caxis.value) > DEAD_ZONE) {
 								ship->move_dir_x = (int)e.caxis.value;
+								ship->face_dir_x = (int)e.caxis.value;
 							} else {
 								ship->move_dir_x = 0;
 							}
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
 							if (abs(e.caxis.value) > DEAD_ZONE) {
 								ship->move_dir_y = (int)e.caxis.value;
+								ship->face_dir_y = (int)e.caxis.value;
 							} else {
 								ship->move_dir_y = 0;
 							}
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
-							double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_y, 2));
-							if (new_gun_mag >= ship->MIN_GUN_DIR) {
+							double old_gun_mag = sqrt(pow(ship->gun_dir_x, 2) + pow(ship->gun_dir_y, 2));
+							//if (controller_index == 1) std::cout << "x\t" << new_gun_mag << std::endl;
+							int value = e.caxis.value / 16;
+							//if (value > 2000) value = 2000;
+							//if (value < -2000) value = -2000;
+							double angle = ((double)value / 2000) * (3.14159 / 96);
+							std::cout << old_gun_mag << std::endl;
+							ship->gun_dir_x = (int)(10000 * sin(angle));
+							/*
+							if (new_gun_mag >= SPACESHIP_MIN_GUN_DIR) {
 								ship->gun_dir_x = (int)(e.caxis.value);
 							} else {
-								ship->gun_dir_x = 0;
+								ship->gun_dir_x = (int)sqrt(pow(SPACESHIP_MIN_GUN_DIR, 2) - pow(ship->gun_dir_y, 2));
+								if (e.caxis.value < 0) {
+									//std::cout << new_gun_mag- SPACESHIP_MIN_GUN_DIR << std::endl;
+									ship->gun_dir_x *= -1;
+								}
 							}
+							*/
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
 							double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_x, 2));
-							if (new_gun_mag >= ship->MIN_GUN_DIR) {
+							//if (controller_index == 1) std::cout << "y\t" << new_gun_mag << std::endl;
+							int value = e.caxis.value / 16;
+							//if (value > 2000) value = 2000;
+							//if (value < -2000) value = -2000;
+							double angle = ((double)value / 2000) * (3.14159 / 96);
+							//std::cout << angle << std::endl;
+							ship->gun_dir_y = (int)(10000 * sin(angle));
+							/*
+							if (new_gun_mag >= SPACESHIP_MIN_GUN_DIR) {
 								ship->gun_dir_y = (int)(e.caxis.value);
 							} else {
-								ship->gun_dir_y = 0;
+								ship->gun_dir_y = (int)sqrt(pow(SPACESHIP_MIN_GUN_DIR,2) - pow(ship->gun_dir_x, 2));
+								if (e.caxis.value < 0) {
+									ship->gun_dir_y *= -1;
+								}
 							}
+							*/
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
 							int min_activation = 20000;
 							//std::cout << e.caxis.value << std::endl;
@@ -753,7 +778,7 @@ int main(int, char**) {
 
 					// render ship
 					struct spaceship* ship = ships[i];
-					double angle = calculate_angle(ship->x_accel, ship->y_accel);
+					double angle = calculate_angle(ship->face_dir_x, ship->face_dir_y);
 
 					render_texture(ship_tex, renderer, ship->x_pos / 10000, ship->y_pos / 10000, angle, 3);
 
@@ -915,11 +940,11 @@ int main(int, char**) {
 
 			currentState = inGame;
 		}
-		//start of options state
+		// start of options state
 		else if (currentState == options) {
 
 		}
-		//start of results state
+		// start of results state
 		else if (currentState == results) {
 			while (SDL_PollEvent(&e)) {
 				switch (e.type) {
