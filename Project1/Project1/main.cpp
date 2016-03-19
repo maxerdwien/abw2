@@ -203,7 +203,7 @@ int main(int, char**) {
 				}
 			}
 
-			SDL_RenderClear(renderer);
+			//SDL_RenderClear(renderer);
 
 			// render basic black background
 			{
@@ -354,11 +354,7 @@ int main(int, char**) {
 		}
 		// start of in game state
 		else if (currentState == inGame) {
-			int controller_index;
-			struct spaceship* ship;
-
-			SDL_RenderClear(renderer);
-
+			//SDL_RenderClear(renderer);
 
 			// poll input
 			{
@@ -440,7 +436,7 @@ int main(int, char**) {
 							//if (value > 2000) value = 2000;
 							//if (value < -2000) value = -2000;
 							double angle = ((double)value / 2000) * (3.14159 / 96);
-							std::cout << old_gun_mag << std::endl;
+							//std::cout << old_gun_mag << std::endl;
 							ship->gun_dir_x = (int)(10000 * sin(angle));
 							/*
 							if (new_gun_mag >= SPACESHIP_MIN_GUN_DIR) {
@@ -590,7 +586,7 @@ int main(int, char**) {
 					ship->missile_cooldown--;
 				}
 				if (ship->fire_missile && ship->stamina > 0 && ship->missile_cooldown <= 0) {
-					int MUZZLE_VEL = 50000;
+					int MUZZLE_VEL = 70000;
 					int spread = 1;
 					missile** new_missiles = spawn_missiles(ship, MUZZLE_VEL, spread, 25, 200, 300);
 					for (int i = 0; i < spread; i++) {
@@ -647,6 +643,40 @@ int main(int, char**) {
 						}
 					}
 
+					// handle collisions between ships
+					for (int j = 0; j < num_players; j++) {
+						if (i == j) continue;
+						double dist = sqrt(pow(ship->x_pos - ships[j]->x_pos, 2) + pow(ship->y_pos - ships[j]->y_pos, 2));
+						double epsilon = 1;
+						if (dist < epsilon && dist > -epsilon) dist = epsilon;
+						if (dist <= 10000*(ships[i]->radius + ships[j]->radius)) {
+
+							
+							double x_force = 1000000.0/(ship->x_pos - ships[j]->x_pos);
+							ship->x_vel += x_force;
+							double y_force = 1000000.0/(ship->y_pos - ships[j]->y_pos);
+							ship->y_vel += y_force;
+							/*
+							double vel_mag_1 = sqrt(pow(ships[i]->x_vel, 2) + pow(ships[i]->y_vel, 2));
+							double vel_mag_2 = sqrt(pow(ships[j]->x_vel, 2) + pow(ships[j]->y_vel, 2));
+
+							double dot_product = (ship->x_vel - ships[j]->x_vel) * (ship->x_pos - ships[j]->x_pos) + (ship->y_vel - ships[j]->y_vel) * (ship->y_pos - ships[j]->y_pos);
+							//double dot_product_2 = (ships[j]->x_vel - ship->x_vel) * (ships[j]->x_pos - ship->x_pos) + (ships[j]->y_vel - ship->y_vel) * (ships[j]->y_pos - ship->y_pos);
+							//std::cout << dot_product_1 - dot_product_2 << std::endl;
+
+							double weight_ratio = ((double)ships[j]->weight / (ships[j]->weight + ship->weight));
+							double term = (dot_product / pow(dist, 2));
+							double coeff = 2 * weight_ratio * term;
+							std::cout << "x_vel:\t" << ship->x_vel << "\ty_vel:\t" << ship->x_vel << "\tweight ratio:\t" << weight_ratio << "\tterm:\t" << term << "\tdot_product\t" << dot_product << "\tcoeff:\t" << coeff << std::endl;
+							ship->x_vel += coeff * (ship->x_pos - ships[j]->x_pos);
+							ship->y_vel += coeff * (ship->y_pos - ships[j]->y_pos);
+
+							ships[j]->x_vel += (2 * ((double)ship->weight / (ship->weight + ships[j]->weight)) * (dot_product / pow(dist, 2)) * (ships[j]->x_pos - ship->x_pos));
+							ships[j]->y_vel += (2 * ((double)ship->weight / (ship->weight + ships[j]->weight)) * (dot_product / pow(dist, 2)) * (ships[j]->y_pos - ship->y_pos));
+							*/
+						
+						}
+					}
 
 					// update position
 					ship->x_pos += ship->x_vel;
@@ -693,7 +723,7 @@ int main(int, char**) {
 						if (i == k) continue;
 						double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 						//std::cout << dist << std::endl;
-						if (dist <= (ship->radius + BULLET_RADIUS) * 10000) {
+						if (dist <= (ship->radius + bullet->radius) * 10000) {
 							if (ships[k]->invincibility_cooldown == 0) {
 								// knockback
 								int total_knockback = (int)((bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight);
@@ -817,35 +847,35 @@ int main(int, char**) {
 					}
 				}
 
-				//Check to see if the game is over
+				// Check to see if the game is over
 				int victoryCheck = 0;
 				for (int i = 0; i < num_players; i++) {
 					ship = ships[i];
 					if (ship->lives == 0) {
 						victoryCheck++;
 					}
-					if (victoryCheck == num_players - 1) {
-						for (int j = 0; j < num_players; j++) {
-							ship = ships[j];
-							if (ship->lives != 0) {
-								winner = j + 1;
-							}
+				}
+				if (victoryCheck == num_players - 1) {
+					for (int j = 0; j < num_players; j++) {
+						ship = ships[j];
+						if (ship->lives != 0) {
+							winner = j + 1;
 						}
-						for (int k = 0; k < num_players; k++) {
-							ship = ships[k];
-							ship->lives = 4;
-							ship->percent = 0;
-							ship->stamina = ship->stamina_max;
-						}
-						currentState = results;
 					}
+					for (int k = 0; k < num_players; k++) {
+						ship = ships[k];
+						ship->lives = 4;
+						ship->percent = 0;
+						ship->stamina = ship->stamina_max;
+					}
+					currentState = results;
 				}
 
 			} // end of update ships
 
 			// begin rendering
 			{
-				SDL_RenderClear(renderer);
+				//SDL_RenderClear(renderer);
 
 				// render background
 				render_texture(bg, renderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
@@ -948,10 +978,21 @@ int main(int, char**) {
 					// render each ship's UI elements
 					for (int i = 0; i < num_players; i++) {
 						struct spaceship* ship = ships[i];
-
+						
 						// render stamina bar
 						{
-							SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
+							// todo: match these to the real colors
+							// set stamina bar color
+							if (i == 0) {
+								SDL_SetRenderDrawColor(renderer, 160, 0, 0, SDL_ALPHA_OPAQUE);
+							} else if (i == 1) {
+								SDL_SetRenderDrawColor(renderer, 0, 0, 160, SDL_ALPHA_OPAQUE);
+							} else if (i == 2) {
+								SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
+							} else {
+								SDL_SetRenderDrawColor(renderer, 210, 210, 0, SDL_ALPHA_OPAQUE);
+							}
+
 							SDL_Rect r;
 							r.x = 0;
 							r.y = 120 + 100 * i + (textAdjustment * i);
@@ -1009,6 +1050,8 @@ int main(int, char**) {
 					break;
 				}
 			}
+
+			//SDL_RenderClear(renderer);
 
 			// render pause background
 			{
@@ -1109,7 +1152,7 @@ int main(int, char**) {
 		SDL_HapticClose(haptics[i]);
 	}
 	SDL_DestroyTexture(bg);
-	// todo: destroy other textures
+	// todo: destroy other textures?
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 

@@ -1,14 +1,14 @@
 ﻿  main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(220): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(221): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(230): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(643): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(644): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(979): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(980): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(989): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(253): warning C4101: 'ship': unreferenced local variable
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(252): warning C4101: 'controller_index': unreferenced local variable
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(1092): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(1093): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
-  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(220): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(221): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(230): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(551): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(553): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(673): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(674): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(1022): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(1023): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(1032): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(1135): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(1136): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+  Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe
