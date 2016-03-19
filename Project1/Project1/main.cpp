@@ -139,6 +139,8 @@ int main(int, char**) {
 	SDL_Texture* missile_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\missle.png");
 	SDL_Texture* explosion_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
+	SDL_Texture* right_arrow = IMG_LoadTexture(renderer, "..\\Project1\\assets\\right_arrow.png");
+	SDL_Texture* left_arrow = IMG_LoadTexture(renderer, "..\\Project1\\assets\\left_arrow.png");
 
 	TTF_Font* caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
 
@@ -194,6 +196,9 @@ int main(int, char**) {
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						currentState = characterSelect;
 					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+						quit = true;
+					}
 					break;
 				}
 			}
@@ -204,8 +209,8 @@ int main(int, char**) {
 			{
 				SDL_SetRenderDrawColor(renderer, 00, 00, 00, SDL_ALPHA_OPAQUE);
 				SDL_Rect s;
-				s.x = WINDOW_WIDTH/2;
-				s.y = WINDOW_HEIGHT/2;
+				s.x = 0;
+				s.y = 0;
 				s.w = WINDOW_WIDTH;
 				s.h = WINDOW_HEIGHT;
 				SDL_RenderFillRect(renderer, &s);
@@ -214,7 +219,7 @@ int main(int, char**) {
 			// render title name and prompt to move forward
 			{
 				SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
-				SDL_Surface* titleSurface = TTF_RenderText_Solid(caladea36, "Alaskan Cosmobear Spacefighting", White); //Create the sdl surface
+				SDL_Surface* titleSurface = TTF_RenderText_Blended(caladea36, "Alaskan Cosmobear Spacefighting", White); //Create the sdl surface
 				SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface); //Convert to texture
 				SDL_Rect titleRect; //create a rect
 				titleRect.x = WINDOW_WIDTH/3.5;
@@ -224,7 +229,7 @@ int main(int, char**) {
 				SDL_DestroyTexture(titleTexture);
 				SDL_FreeSurface(titleSurface);
 
-				SDL_Surface* promptSurface = TTF_RenderText_Solid(caladea36, "Press the A button to start.", White); //Create the sdl surface
+				SDL_Surface* promptSurface = TTF_RenderText_Blended(caladea36, "Press the A button to start.", White); //Create the sdl surface
 				SDL_Texture* promptTexture = SDL_CreateTextureFromSurface(renderer, promptSurface); //Convert to texture
 				SDL_Rect promptRect; //create a rect
 				promptRect.x = WINDOW_WIDTH / 3.5;
@@ -233,6 +238,16 @@ int main(int, char**) {
 				SDL_RenderCopy(renderer, promptTexture, NULL, &promptRect);
 				SDL_DestroyTexture(promptTexture);
 				SDL_FreeSurface(promptSurface);
+
+				SDL_Surface* quitSurface = TTF_RenderText_Blended(caladea36, "Press the B button to quit.", White); //Create the sdl surface
+				SDL_Texture* quitTexture = SDL_CreateTextureFromSurface(renderer, quitSurface); //Convert to texture
+				SDL_Rect quitRect; //create a rect
+				quitRect.x = WINDOW_WIDTH / 3.5;
+				quitRect.y = WINDOW_HEIGHT / 1.7;
+				SDL_QueryTexture(quitTexture, NULL, NULL, &quitRect.w, &quitRect.h);
+				SDL_RenderCopy(renderer, quitTexture, NULL, &quitRect);
+				SDL_DestroyTexture(quitTexture);
+				SDL_FreeSurface(quitSurface);
 			}
 
 			SDL_RenderPresent(renderer);
@@ -240,7 +255,97 @@ int main(int, char**) {
 		}
 		// start of character select state
 		else if (currentState == characterSelect) {
-			currentState = stageSelect;
+
+			int controller_index;
+			int selection;
+			int selections[4];
+
+
+			while (SDL_PollEvent(&e)) {
+				switch (e.type) {
+				case SDL_CONTROLLERBUTTONDOWN:
+					controller_index = e.cbutton.which;
+					selection = selections[controller_index];
+					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+						currentState = stageSelect;
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+						currentState = mainMenu;
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+
+					}
+					break;
+				}
+			}
+
+			SDL_RenderClear(renderer);
+
+			// render basic black background
+			{
+				SDL_SetRenderDrawColor(renderer, 00, 00, 00, SDL_ALPHA_OPAQUE);
+				SDL_Rect s;
+				s.x = 0;
+				s.y = 0;
+				s.w = WINDOW_WIDTH;
+				s.h = WINDOW_HEIGHT;
+				SDL_RenderFillRect(renderer, &s);
+			}
+
+			// render character select dividers vertical
+			{
+				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+				SDL_Rect s;
+				s.x = WINDOW_WIDTH/2;
+				s.y = 0;
+				s.w = 25;
+				s.h = WINDOW_HEIGHT;
+				SDL_RenderFillRect(renderer, &s);
+			}
+
+			// render character select dividers horizontal
+			{
+				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+				SDL_Rect s;
+				s.x = 0;
+				s.y = WINDOW_HEIGHT / 2;
+				s.w = WINDOW_WIDTH;
+				s.h = 25;
+				SDL_RenderFillRect(renderer, &s);
+			}
+		
+
+			// render ships 
+			{
+				//p1
+				render_texture(medium_red_tex, renderer, 300, 150, 0, 4);
+				render_texture(right_arrow, renderer, 400, 150, 0, 1);
+				render_texture(left_arrow, renderer, 200, 150, 0, 1);
+
+
+				//p2
+				render_texture(medium_blue_tex, renderer, 1000, 150, 0, 4);
+				render_texture(right_arrow, renderer, 1100, 150, 0, 1);
+				render_texture(left_arrow, renderer, 900, 150, 0, 1);
+
+
+				//p3
+				render_texture(medium_yellow_tex, renderer, 300, 550, 0, 4);
+				render_texture(right_arrow, renderer, 400, 550, 0, 1);
+				render_texture(left_arrow, renderer, 200, 550, 0, 1);
+
+
+				//p4
+				render_texture(medium_green_tex, renderer, 1000, 550, 0, 4);
+				render_texture(right_arrow, renderer, 1100, 550, 0, 1);
+				render_texture(left_arrow, renderer, 900, 550, 0, 1);
+			}
+
+			SDL_RenderPresent(renderer);
+
 		}
 		// start of stage select state
 		else if (currentState == stageSelect) {
@@ -759,11 +864,11 @@ int main(int, char**) {
 						ship_tex = medium_blue_tex;
 						bullet_tex = bullet_blue_tex;
 					} else if (i == 2) {
-						ship_tex = medium_green_tex;
-						bullet_tex = bullet_green_tex;
-					} else {
 						ship_tex = medium_yellow_tex;
 						bullet_tex = bullet_yellow_tex;
+					} else {
+						ship_tex = medium_green_tex;
+						bullet_tex = bullet_green_tex;
 					}
 
 					if (ships[i]->invincibility_cooldown > 0) {
@@ -838,7 +943,7 @@ int main(int, char**) {
 					s.h = 1000;
 					SDL_RenderFillRect(renderer, &s);
 
-					int adjustment = 50; // todo: rename this shit
+					int textAdjustment = 50; // todo: rename this shit
 
 					// render each ship's UI elements
 					for (int i = 0; i < num_players; i++) {
@@ -849,7 +954,7 @@ int main(int, char**) {
 							SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
 							SDL_Rect r;
 							r.x = 0;
-							r.y = 120 + 100 * i + (adjustment * i);
+							r.y = 120 + 100 * i + (textAdjustment * i);
 							r.w = 150 * ship->stamina / ship->stamina_max;
 							r.h = 30;
 							SDL_RenderFillRect(renderer, &r);
@@ -860,11 +965,11 @@ int main(int, char**) {
 							char str[10];
 							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
 							SDL_Color White = { 255, 255, 255 };
-							SDL_Surface* percentSurface = TTF_RenderText_Solid(caladea36, str, White); //Create the sdl surface
+							SDL_Surface* percentSurface = TTF_RenderText_Blended(caladea36, str, White); //Create the sdl surface
 							SDL_Texture* percentTexture = SDL_CreateTextureFromSurface(renderer, percentSurface); //Convert to texture
 							SDL_Rect percentRect; //create a rect
 							percentRect.x = 0; //controls the rect's x coordinate 
-							percentRect.y = (60 + 100 * i + 1) + adjustment * i; // controls the rect's y coordinte
+							percentRect.y = (60 + 100 * i + 1) + textAdjustment * i; // controls the rect's y coordinte
 							SDL_QueryTexture(percentTexture, NULL, NULL, &percentRect.w, &percentRect.h);
 							SDL_RenderCopy(renderer, percentTexture, NULL, &percentRect);
 							SDL_DestroyTexture(percentTexture);
@@ -876,7 +981,7 @@ int main(int, char**) {
 							char playerLives[20];
 							sprintf_s(playerLives, "Lives: %d", ship->lives);
 							SDL_Color White = { 255, 255, 255 };
-							SDL_Surface* stockSurface = TTF_RenderText_Solid(caladea36, playerLives, White); //Create the sdl surface
+							SDL_Surface* stockSurface = TTF_RenderText_Blended(caladea36, playerLives, White); //Create the sdl surface
 							SDL_Texture* stockTexture = SDL_CreateTextureFromSurface(renderer, stockSurface); //Convert to texture
 							SDL_Rect stockRect; //create a rect
 							stockRect.x = 0; //2controls the rect's x coordinate 
@@ -919,7 +1024,7 @@ int main(int, char**) {
 			// render word "paused"
 			{
 				SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
-				SDL_Surface* pauseSurface = TTF_RenderText_Solid(caladea36, "Paused", White); //Create the sdl surface
+				SDL_Surface* pauseSurface = TTF_RenderText_Blended(caladea36, "Paused", White); //Create the sdl surface
 				SDL_Texture* pauseTexture = SDL_CreateTextureFromSurface(renderer, pauseSurface); //Convert to texture
 				SDL_Rect pauseRect; //create a rect
 				pauseRect.x = WINDOW_WIDTH / 2;
@@ -961,8 +1066,8 @@ int main(int, char**) {
 			{
 				SDL_SetRenderDrawColor(renderer, 00, 00, 00, SDL_ALPHA_OPAQUE);
 				SDL_Rect s;
-				s.x = WINDOW_WIDTH;
-				s.y = WINDOW_HEIGHT;
+				s.x = 0;
+				s.y = 0;
 				s.w = WINDOW_WIDTH;
 				s.h = WINDOW_HEIGHT;
 				SDL_RenderFillRect(renderer, &s);
@@ -973,7 +1078,7 @@ int main(int, char**) {
 				char winnerMessage[15];
 				sprintf_s(winnerMessage, "Player %d wins!", winner);
 				SDL_Color White = { 255, 255, 255 };  // Renders the color of the text
-				SDL_Surface* winnerSurface = TTF_RenderText_Solid(caladea36, winnerMessage, White); //Create the sdl surface
+				SDL_Surface* winnerSurface = TTF_RenderText_Blended(caladea36, winnerMessage, White); //Create the sdl surface
 				SDL_Texture* winnerTexture = SDL_CreateTextureFromSurface(renderer, winnerSurface); //Convert to texture
 				SDL_Rect winnerRect; //create a rect
 				winnerRect.x = WINDOW_WIDTH / 3.5;
@@ -983,7 +1088,7 @@ int main(int, char**) {
 				SDL_DestroyTexture(winnerTexture);
 				SDL_FreeSurface(winnerSurface);
 
-				SDL_Surface* promptSurface = TTF_RenderText_Solid(caladea36, "Press the A button to continue.", White); //Create the sdl surface
+				SDL_Surface* promptSurface = TTF_RenderText_Blended(caladea36, "Press the A button to continue.", White); //Create the sdl surface
 				SDL_Texture* promptTexture = SDL_CreateTextureFromSurface(renderer, promptSurface); //Convert to texture
 				SDL_Rect promptRect; //create a rect
 				promptRect.x = WINDOW_WIDTH / 3.5;
