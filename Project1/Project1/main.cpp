@@ -123,11 +123,6 @@ int main(int, char**) {
 	SDL_Texture* medium_red_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceshipRed.png");
 	SDL_Texture* medium_green_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceshipGreen.png");
 	SDL_Texture* medium_white_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceshipWhite.png");
-	//SDL_Texture* spaceship_low = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceship_low.png");
-	//SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "..\\Project1\\assets\\spaceship_high.png");
-	//SDL_Texture* spaceship = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bear-idle.png");
-	//SDL_Texture* spaceship_low = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bear-idle.png");
-	//SDL_Texture* spaceship_high = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bear-idle.png");
 
 	SDL_Texture* bullet_blue_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bulletBlue.png");
 	SDL_Texture* bullet_yellow_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bulletYellow.png");
@@ -135,9 +130,8 @@ int main(int, char**) {
 	SDL_Texture* bullet_green_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bulletGreen.png");
 
 	SDL_Texture* sun_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
-	//SDL_Texture* bullet_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\bullet.png");
 	SDL_Texture* missile_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\missle.png");
-	SDL_Texture* explosion_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\sun.png");
+	SDL_Texture* explosion_tex = IMG_LoadTexture(renderer, "..\\Project1\\assets\\explosion.png");
 	SDL_Texture* cannon = IMG_LoadTexture(renderer, "..\\Project1\\assets\\cannon.png");
 	SDL_Texture* right_arrow = IMG_LoadTexture(renderer, "..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = IMG_LoadTexture(renderer, "..\\Project1\\assets\\left_arrow.png");
@@ -651,29 +645,17 @@ int main(int, char**) {
 						if (dist < epsilon && dist > -epsilon) dist = epsilon;
 						if (dist <= 10000*(ships[i]->radius + ships[j]->radius)) {
 
-							
-							double x_force = 1000000.0/(ship->x_pos - ships[j]->x_pos);
+							double total_force = 700000000000000.0 / pow(dist, 2);
+							//double x_force = 1000000000.0/(ship->x_pos - ships[j]->x_pos);
+							double x_force = (ship->x_pos - ships[j]->x_pos) * total_force / dist;
+							//double x_force = 10000;
 							ship->x_vel += x_force;
-							double y_force = 1000000.0/(ship->y_pos - ships[j]->y_pos);
+							ships[j]->x_vel -= x_force;
+							//double y_force = 1000000000.0/(ship->y_pos - ships[j]->y_pos);
+							double y_force = (ship->y_pos - ships[j]->y_pos) * total_force / dist;
+							//double y_force = 10000;
 							ship->y_vel += y_force;
-							/*
-							double vel_mag_1 = sqrt(pow(ships[i]->x_vel, 2) + pow(ships[i]->y_vel, 2));
-							double vel_mag_2 = sqrt(pow(ships[j]->x_vel, 2) + pow(ships[j]->y_vel, 2));
-
-							double dot_product = (ship->x_vel - ships[j]->x_vel) * (ship->x_pos - ships[j]->x_pos) + (ship->y_vel - ships[j]->y_vel) * (ship->y_pos - ships[j]->y_pos);
-							//double dot_product_2 = (ships[j]->x_vel - ship->x_vel) * (ships[j]->x_pos - ship->x_pos) + (ships[j]->y_vel - ship->y_vel) * (ships[j]->y_pos - ship->y_pos);
-							//std::cout << dot_product_1 - dot_product_2 << std::endl;
-
-							double weight_ratio = ((double)ships[j]->weight / (ships[j]->weight + ship->weight));
-							double term = (dot_product / pow(dist, 2));
-							double coeff = 2 * weight_ratio * term;
-							std::cout << "x_vel:\t" << ship->x_vel << "\ty_vel:\t" << ship->x_vel << "\tweight ratio:\t" << weight_ratio << "\tterm:\t" << term << "\tdot_product\t" << dot_product << "\tcoeff:\t" << coeff << std::endl;
-							ship->x_vel += coeff * (ship->x_pos - ships[j]->x_pos);
-							ship->y_vel += coeff * (ship->y_pos - ships[j]->y_pos);
-
-							ships[j]->x_vel += (2 * ((double)ship->weight / (ship->weight + ships[j]->weight)) * (dot_product / pow(dist, 2)) * (ships[j]->x_pos - ship->x_pos));
-							ships[j]->y_vel += (2 * ((double)ship->weight / (ship->weight + ships[j]->weight)) * (dot_product / pow(dist, 2)) * (ships[j]->y_pos - ship->y_pos));
-							*/
+							ships[j]->y_vel -= y_force;
 						
 						}
 					}
