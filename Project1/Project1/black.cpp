@@ -146,7 +146,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int
 void Black::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
 		double angle = calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, bullets[j]->radius/5);
+		render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, (double)bullets[j]->radius/5);
 	}
 }
 
@@ -163,7 +163,7 @@ void Black::fire_2() {
 	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 0) {
 		int MUZZLE_VEL = 100000;
 		int spread = 1;
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, charge_shot_charge/3, charge_shot_charge, charge_shot_charge/2);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
 		for (int i = 0; i < spread; i++) {
 			new_bullets[i]->radius = charge_shot_charge / 4;
 			bullets[num_bullets] = new_bullets[i];

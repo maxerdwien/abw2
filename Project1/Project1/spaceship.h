@@ -10,6 +10,10 @@ class Ship {
 		SDL_Texture* ship_invincible_tex;
 		SDL_Texture* cannon_tex;
 
+		
+
+		
+
 	public:
 		// units of one ten thousandth of a pixel
 		int x_pos = 0;
@@ -40,6 +44,11 @@ class Ship {
 		bool do_fire_1 = false;
 		bool do_fire_2 = false;
 		bool do_fire_3 = false;
+
+		bool do_speed_boost = false;
+
+		const int speed_boost_delay = 120;
+		int speed_boost_cooldown = 0;
 
 		int percent = 0;
 

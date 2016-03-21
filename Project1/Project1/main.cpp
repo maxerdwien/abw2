@@ -426,6 +426,8 @@ int main(int, char**) {
 							ship->do_fire_1 = true;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 							ship->do_fire_3 = true;
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSTICK) {
+							ship->do_speed_boost = true;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 							currentState = pause;
 						}
@@ -437,6 +439,8 @@ int main(int, char**) {
 							ship->do_fire_1 = false;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 							ship->do_fire_3 = false;
+						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSTICK) {
+							ship->do_speed_boost = false;
 						}
 						break;
 					case SDL_CONTROLLERAXISMOTION:
@@ -566,10 +570,19 @@ int main(int, char**) {
 				// update ship itself
 				{
 
+					if (ship->speed_boost_cooldown > 0) {
+						ship->speed_boost_cooldown--;
+					}
+
 					// update acceleration
 					double accel_mag = 0.3*sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
 					if (accel_mag > ship->max_accel) {
 						accel_mag = ship->max_accel;
+					}
+					if (ship->do_speed_boost && ship->speed_boost_cooldown == 0) {
+						accel_mag = ship->max_accel * 40;
+						ship->speed_boost_cooldown += ship->speed_boost_delay;
+						ship->do_speed_boost = false;
 					}
 
 					if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
