@@ -10,10 +10,6 @@ class Ship {
 		SDL_Texture* ship_invincible_tex;
 		SDL_Texture* cannon_tex;
 
-		
-
-		
-
 	public:
 		// units of one ten thousandth of a pixel
 		int x_pos = 0;
@@ -70,12 +66,16 @@ class Ship {
 		void render();
 
 		virtual void fire_1() = 0;
-		virtual void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[]) = 0;
+		virtual void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) = 0;
 		virtual void render_projectiles_1() = 0;
 
 		virtual void fire_2() = 0;
-		virtual void update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[]) = 0;
+		virtual void update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) = 0;
 		virtual void render_projectiles_2() = 0;
+
+		virtual void fire_3() = 0;
+		virtual void update_projectiles_3(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) = 0;
+		virtual void render_projectiles_3() = 0;
 };
 
 

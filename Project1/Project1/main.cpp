@@ -24,8 +24,14 @@ const int STATUS_BAR_WIDTH = 150;
 bool quit = false;
 bool is_fullscreen = false;
 
+int num_players = 0;
+
+SDL_GameController* controllers[4];
+SDL_Haptic* haptics[4];
+
 bool read_global_input(SDL_Event* e);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, SDL_Texture* right_arrow, SDL_Texture* left_arrow);
+void poll_for_controllers();
 
 int main(int, char**) {
 	int test = TTF_Init(); // todo: delete or rename
@@ -106,33 +112,8 @@ int main(int, char**) {
 	}
 
 	// register controllers
-	SDL_GameController* controllers[4];
-	SDL_Haptic* haptics[4];
-
-	const int num_players = 2;
-	//const int num_players = SDL_NumJoysticks();
-	std::cout << "controllers detected: " << num_players << std::endl;
-	for (int i = 0; i < num_players; i++) {
+	for (int i = 0; i < 4; i++) {
 		controllers[i] = NULL;
-		{
-			if (SDL_IsGameController(i)) {
-				controllers[i] = SDL_GameControllerOpen(i);
-				// todo: fix this hack
-				haptics[i] = SDL_HapticOpen((i + 1) % 2);
-				{
-					if (!haptics[i]) {
-						std::cout << "could not connect haptic device" << std::endl;
-					}
-					if (SDL_HapticRumbleInit(haptics[i]) != 0) {
-						std::cout << "could not init haptic device" << std::endl;
-					}
-				}
-			}
-			if (!controllers[i]) {
-				std::cout << "could not connect controller " << i << std::endl;
-			}
-		}
-
 	}
 
 	// load textures
@@ -178,7 +159,7 @@ int main(int, char**) {
 	
 	int winner;
 
-	Ship* ships[2];
+	Ship* ships[4];
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -211,6 +192,7 @@ int main(int, char**) {
 
 		// start of main menu state
 		if (currentState == mainMenu) {
+			poll_for_controllers();
 			while (SDL_PollEvent(&e)) {
 				if (read_global_input(&e)) continue;
 				switch (e.type) {
@@ -278,7 +260,7 @@ int main(int, char**) {
 
 			int controller_index;
 			
-			
+			poll_for_controllers();
 
 
 			while (SDL_PollEvent(&e)) {
@@ -286,6 +268,7 @@ int main(int, char**) {
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					controller_index = e.cbutton.which;
+					
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						currentState = stageSelect;
 					}
@@ -317,6 +300,8 @@ int main(int, char**) {
 							selections[controller_index] = grizzly;
 							break;
 						}
+					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+						
 					}
 					break;
 				}
@@ -398,6 +383,18 @@ int main(int, char**) {
 			case polar:
 				// todo: do the obvious thing
 				ships[1] = new Grizzly(1, 10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			}
+			switch (selections[2]) {
+			case black:
+				ships[2] = new Black(2, 10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			case grizzly:
+				ships[2] = new Grizzly(2, 10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			case polar:
+				// todo: do the obvious thing
+				ships[2] = new Grizzly(2, 10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
 				break;
 			}
 
@@ -545,6 +542,8 @@ int main(int, char**) {
 
 				ship->fire_2();
 
+				ship->fire_3();
+
 				/*
 				
 
@@ -583,6 +582,7 @@ int main(int, char**) {
 						accel_mag = ship->max_accel * 40;
 						ship->speed_boost_cooldown += ship->speed_boost_delay;
 						ship->do_speed_boost = false;
+						ship->stamina -= 200;
 					}
 
 					if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
@@ -641,25 +641,31 @@ int main(int, char**) {
 
 					// handle death
 					if (ship->x_pos < STATUS_BAR_WIDTH * 10000 || ship->x_pos > WINDOW_WIDTH * 10000 || ship->y_pos < 0 || ship->y_pos > WINDOW_HEIGHT * 10000) {
+						
+						ship->lives--;
+						SDL_HapticRumblePlay(haptics[i], 1, 300);
+
+						if (ship->lives <= 0) {
+							ship->lives = 0;
+							// todo: something
+						}
+
+						ship->invincibility_cooldown += ship->respawn_invincibility_delay;
+
 						ship->x_pos = ship->respawn_x;
 						ship->y_pos = ship->respawn_y;
 						ship->x_vel = 0;
 						ship->y_vel = 0;
 
 						ship->percent = 0;
-						ship->lives--;
-						ship->invincibility_cooldown += ship->respawn_invincibility_delay;
-
-						SDL_HapticRumblePlay(haptics[i], 1, 300);
 					}
 
 				}
 
-				// update bullets
-				ship->update_projectiles_1(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, num_players, ships);
-
-				// update missiles
-				ship->update_projectiles_2(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, num_players, ships);
+				// update projectiles
+				ship->update_projectiles_1(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, num_players, ships, haptics);
+				ship->update_projectiles_2(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, num_players, ships, haptics);
+				ship->update_projectiles_3(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, num_players, ships, haptics);
 
 				// Check to see if the game is over
 				int victoryCheck = 0;
@@ -700,12 +706,10 @@ int main(int, char**) {
 
 					ship->render();
 
-					// render bullets
+					// render projectiles
 					ship->render_projectiles_1();
-
-					// render missiles
 					ship->render_projectiles_2();
-					
+					ship->render_projectiles_3();
 
 				}
 
@@ -735,9 +739,9 @@ int main(int, char**) {
 							} else if (ship->id == 1) {
 								SDL_SetRenderDrawColor(renderer, 0, 0, 160, SDL_ALPHA_OPAQUE);
 							} else if (ship->id == 2) {
-								SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
-							} else {
 								SDL_SetRenderDrawColor(renderer, 210, 210, 0, SDL_ALPHA_OPAQUE);
+							} else {
+								SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
 							}
 
 							SDL_Rect r;
@@ -952,4 +956,30 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, SDL_Texture*
 	render_texture(ship_tex, x+300, y+150, 0, 4);
 	render_texture(right_arrow, x+400, y+150, 0, 1);
 	render_texture(left_arrow, x+200, y+150, 0, 1);
+}
+
+void poll_for_controllers() {
+	// check for additional controllers
+	int num_joysticks = SDL_NumJoysticks();
+	for (int i = 0; i < num_joysticks; i++) {
+		if (SDL_IsGameController(i) && controllers[i] == NULL) {
+			std::cout << "connecting new controller " << i << std::endl;
+			num_players++;
+			controllers[i] = SDL_GameControllerOpen(i);
+			// haptic seem to have the reverse order of controllers
+			haptics[i] = SDL_HapticOpen(num_joysticks - 1 - i);
+			{
+				if (!haptics[i]) {
+					std::cout << "could not connect haptic device" << std::endl;
+				}
+				if (SDL_HapticRumbleInit(haptics[i]) != 0) {
+					std::cout << "could not init haptic device" << std::endl;
+				}
+			}
+			if (!controllers[i]) {
+				std::cout << "could not connect controller" << std::endl;
+			}
+		}
+		
+	}
 }

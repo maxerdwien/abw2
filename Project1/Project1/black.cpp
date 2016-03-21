@@ -86,7 +86,7 @@ void Black::fire_1() {
 	}
 }
 
-void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[]) {
+void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -130,7 +130,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int
 					if (haptic_amount > 1) {
 						haptic_amount = 1;
 					}
-					//SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
+					SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
 				}
 				// delete bullet
 				num_bullets--;
@@ -177,10 +177,22 @@ void Black::fire_2() {
 	}
 }
 
-void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[]) {
+void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
 	// do nothing, because update_projectiles_1 does all the work
 }
 
 void Black::render_projectiles_2() {
 	
+}
+
+void Black::fire_3() {
+
+}
+
+void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
+
+}
+
+void Black::render_projectiles_3() {
+
 }

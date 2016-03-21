@@ -1,12 +1,9 @@
-﻿  main.cpp
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(245): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(246): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(255): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(265): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(266): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(632): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(634): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(875): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(876): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\main.cpp(885): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+﻿  grizzly.cpp
+c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(101): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(176): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(177): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(226): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(308): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(309): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(362): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe

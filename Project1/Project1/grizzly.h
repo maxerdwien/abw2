@@ -13,11 +13,17 @@ public:
 	struct missile* missiles[100];
 	int num_missiles = 0;
 
+	struct missile* mines[100];
+	int num_mines = 0;
+
 	const int cannon_delay = 10;
 	int cannon_cooldown = 0;
 
 	const int missile_delay = 50;
 	int missile_cooldown = 0;
+
+	const int mine_delay = 100;
+	int mine_cooldown = 0;
 
 	Grizzly(int identifier, int x, int y);
 
@@ -25,10 +31,14 @@ public:
 	//void render();
 
 	void fire_1();
-	void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[]);
+	void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]);
 	void render_projectiles_1();
 
 	void fire_2();
-	void update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[]);
+	void update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]);
 	void render_projectiles_2();
+
+	void fire_3();
+	void update_projectiles_3(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]);
+	void render_projectiles_3();
 };

@@ -71,7 +71,7 @@ void Grizzly::fire_1() {
 	}
 }
 
-void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[]) {
+void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -113,7 +113,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, i
 					if (haptic_amount > 1) {
 						haptic_amount = 1;
 					}
-					//SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
+					SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
 				}
 				// delete bullet
 				num_bullets--;
@@ -151,7 +151,7 @@ void Grizzly::fire_2() {
 	}
 }
 
-void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[]) {
+void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_missiles; j++) {
 		struct missile* missile = missiles[j];
 
@@ -238,7 +238,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, i
 						if (haptic_amount > 1) {
 							haptic_amount = 1;
 						}
-						//SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
+						SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
 					}
 				}
 			}
@@ -258,6 +258,143 @@ void Grizzly::render_projectiles_2() {
 			rect.h = missiles[j]->radius * 2;
 			rect.x = missiles[j]->x_pos / 10000 - rect.w / 2;
 			rect.y = missiles[j]->y_pos / 10000 - rect.h / 2;
+
+			RenderCopyEx(explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+		}
+	}
+}
+
+void Grizzly::fire_3() {
+	if (mine_cooldown > 0) {
+		mine_cooldown--;
+	}
+	if (do_fire_3 && stamina > 0 && mine_cooldown <= 0) {
+		// todo: make this zero
+		int MUZZLE_VEL = -1000;
+		int spread = 1;
+		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 25, 200, 300);
+		for (int i = 0; i < spread; i++) {
+			mines[num_mines] = new_missiles[i];
+			num_mines++;
+		}
+		free(new_missiles);
+		mine_cooldown += mine_delay;
+		stamina -= 300;
+	}
+}
+
+void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
+	for (int j = 0; j < num_mines; j++) {
+		struct missile* mine = mines[j];
+
+		if (!mine->exploded) {
+			// find the closest enemy player. this is the one to lock on to.
+			double min_dist = 10000 * 200;
+			int target_player = -1;
+			for (int k = 0; k < num_players; k++) {
+				if (ships[k]->id == id) continue;
+				double dist = sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2));
+				if (dist < min_dist) {
+					min_dist = dist;
+					target_player = k;
+				}
+			}
+			if (target_player != -1) {
+
+				// accelerate towards target player
+				double delta_x = ships[target_player]->x_pos - mine->x_pos;
+				double delta_y = ships[target_player]->y_pos - mine->y_pos;
+				double delta_mag = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+
+				mine->x_accel = MISSILE_ACCEL * delta_x / delta_mag;
+				mine->y_accel = MISSILE_ACCEL * delta_y / delta_mag;
+			} else {
+				mine->x_accel = 0;
+				mine->y_accel = 0;
+			}
+
+			mine->x_vel += mine->x_accel;
+			mine->y_vel += mine->y_accel;
+
+			mine->x_pos += mine->x_vel;
+			mine->y_pos += mine->y_vel;
+		}
+
+		// check for missile going out of bounds
+		if (mine->x_pos < min_x || mine->x_pos > max_x || mine->y_pos < min_y || mine->y_pos > max_y) {
+			num_mines--;
+			free(mines[j]);
+			mines[j] = mines[num_mines];
+			j--;
+			continue;
+		}
+
+		// expand missile radius
+		if (mine->exploded) {
+			mine->radius += MISSILE_RADIUS_PER_FRAME;
+			if (mine->radius > MISSILE_MAX_RADIUS) {
+				num_mines--;
+				free(mines[j]);
+				mines[j] = mines[num_mines];
+				j--;
+				continue;
+			}
+		}
+
+		// check for collisions with enemies
+		for (int k = 0; k < num_players; k++) {
+			//if (i == k) continue;
+
+			double dist = sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2));
+			if (!mine->exploded) {
+				if (ships[k]->id == id) continue;
+				if (dist <= MISSILE_ACTIVATION_RADIUS * 10000) {
+					mine->exploded = true;
+					mine->x_vel = 0;
+					mine->y_vel = 0;
+				}
+			} else {
+				if (dist <= (ships[k]->radius + mine->radius) * 10000) {
+					if (mine->players_hit[k]) continue;
+					mine->players_hit[k] = true;
+					if (ships[k]->invincibility_cooldown == 0) {
+
+						// knockback
+						int total_knockback = (int)100 * ((mine->base_knockback + (ships[k]->percent / 100.0)*mine->knockback_scaling) / ships[k]->weight);
+						ships[k]->x_vel += (int)(1000.0*total_knockback*(ships[k]->x_pos - mine->x_pos) / sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2)));
+						ships[k]->y_vel += (int)(1000.0*total_knockback*(ships[k]->y_pos - mine->y_pos) / sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2)));
+
+						// damage
+						ships[k]->percent += mine->damage;
+						if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
+							ships[k]->percent = SPACESHIP_MAX_PERCENT;
+						}
+
+						// haptic
+						float haptic_amount = 0.03f + total_knockback / 100.0f;
+						if (haptic_amount > 1) {
+							haptic_amount = 1;
+						}
+						SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
+					}
+				}
+			}
+		}
+	}
+}
+
+void Grizzly::render_projectiles_3() {
+	for (int j = 0; j < num_mines; j++) {
+		if (!mines[j]->exploded) {
+			double angle = calculate_angle(mines[j]->x_vel, mines[j]->y_vel);
+			render_texture(missile_tex, mines[j]->x_pos / 10000, mines[j]->y_pos / 10000, angle, 1.8);
+		} else {
+			SDL_Rect rect;
+
+			rect.w = mines[j]->radius * 2;
+			rect.h = mines[j]->radius * 2;
+			rect.x = mines[j]->x_pos / 10000 - rect.w / 2;
+			rect.y = mines[j]->y_pos / 10000 - rect.h / 2;
 
 			RenderCopyEx(explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
 		}
