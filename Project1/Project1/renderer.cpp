@@ -29,7 +29,7 @@ int RenderCopyEx(SDL_Texture* texture,	const SDL_Rect* srcrect, const SDL_Rect* 
 SDL_Texture* LoadTexture(const char* file) {
 	SDL_Texture* tex =  IMG_LoadTexture(renderer, file);
 	if (!tex) {
-		std::cout << "error loading texture from " << file << "\n\terror number: " << SDL_GetError() << std::endl;
+		std::cout << SDL_GetError() << std::endl;
 	}
 	return tex;
 }

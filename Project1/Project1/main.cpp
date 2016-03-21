@@ -8,14 +8,24 @@
 
 
 #include "spaceship.h"
+#include "grizzly.h"
+#include "black.h"
 
 #include "renderer.h"
 
 SDL_Renderer* renderer;
 
+SDL_Window* window;
+
 int WINDOW_WIDTH;
 int WINDOW_HEIGHT;
 const int STATUS_BAR_WIDTH = 150;
+
+bool quit = false;
+bool is_fullscreen = false;
+
+bool read_global_input(SDL_Event* e);
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, SDL_Texture* right_arrow, SDL_Texture* left_arrow);
 
 int main(int, char**) {
 	int test = TTF_Init(); // todo: delete or rename
@@ -25,13 +35,14 @@ int main(int, char**) {
 		options,
 		characterSelect,
 		stageSelect,
+		initGame,
 		inGame,
 		results,
 		pause
 	};
 
-	//gameState currentState = mainMenu;
-	gameState currentState = inGame;
+	gameState currentState = mainMenu;
+	//gameState currentState = inGame;
 
 	// init SDL
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
@@ -79,7 +90,7 @@ int main(int, char**) {
 	
 	const int playerUiWidth = 10;
 
-	SDL_Window* window = SDL_CreateWindow("hl2.exe", 1000, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("hl2.exe", 1000, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
 		std::cout << "SDL_CreateWindow error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
@@ -126,34 +137,48 @@ int main(int, char**) {
 
 	// load textures
 	SDL_Texture* bg = LoadTexture("..\\Project1\\assets\\background.png");
-	SDL_Texture* medium_blue_tex = LoadTexture("..\\Project1\\assets\\spaceshipBlue.png");
-	SDL_Texture* medium_yellow_tex = LoadTexture("..\\Project1\\assets\\spaceshipYellow.png");
-	SDL_Texture* medium_red_tex = LoadTexture("..\\Project1\\assets\\spaceshipRed.png");
-	SDL_Texture* medium_green_tex = LoadTexture("..\\Project1\\assets\\spaceshipGreen.png");
-	SDL_Texture* medium_white_tex = LoadTexture("..\\Project1\\assets\\spaceshipWhite.png");
-
 	SDL_Texture* sun_tex = LoadTexture("..\\Project1\\assets\\sun.png");
-	SDL_Texture* cannon = LoadTexture("..\\Project1\\assets\\cannon.png");
+
+	enum color {
+		red = 0,
+		blue = 1,
+		yellow = 2,
+		green = 3
+	};
+	enum ship_type {
+		black = 0,
+		grizzly = 1,
+		polar = 2
+	};
+
+	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
+
+	SDL_Texture* ship_textures[3][4];
+	ship_textures[black][red] = LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
+	ship_textures[black][blue] = LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
+	ship_textures[black][yellow] = LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
+	ship_textures[black][green] = LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
+
+	ship_textures[grizzly][red] = LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
+	ship_textures[grizzly][blue] = LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
+	ship_textures[grizzly][yellow] = LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
+	ship_textures[grizzly][green] = LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
+
+	ship_textures[polar][red] = LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
+	ship_textures[polar][blue] = LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+	ship_textures[polar][yellow] = LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
+	ship_textures[polar][green] = LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
+	
 	SDL_Texture* right_arrow = LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
 	TTF_Font* caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
 
 	SDL_Event e;
-	bool quit = false;
-	SDL_Keycode k;
+	
 	int winner;
 
-	// init game objects
-	//struct spaceship* ships[2];
-	//ships[0] = init_spaceship(300 * 10000, 300 * 10000, 1);
-	//ships[1] = init_spaceship(700 * 10000, 300 * 10000, 1);
-	//ships[2] = init_spaceship(300*10000, 700*10000, 1);
-	//ships[3] = init_spaceship(700*10000, 700*10000);
-
 	Ship* ships[2];
-	ships[0] = new Grizzly(0, 300 * 10000, 300 * 10000);
-	ships[1] = new Grizzly(1, 700 * 10000, 300 * 10000);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -162,7 +187,7 @@ int main(int, char**) {
 	int frame_time[frame_counter_size + 1];
 	int frame_counter = 0;
 
-	bool is_fullscreen = false;
+	
 	if (is_fullscreen) {
 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 		SDL_ShowCursor(0);
@@ -187,6 +212,7 @@ int main(int, char**) {
 		// start of main menu state
 		if (currentState == mainMenu) {
 			while (SDL_PollEvent(&e)) {
+				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
@@ -251,15 +277,15 @@ int main(int, char**) {
 		else if (currentState == characterSelect) {
 
 			int controller_index;
-			int selection;
-			int selections[4];
+			
+			
 
 
 			while (SDL_PollEvent(&e)) {
+				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					controller_index = e.cbutton.which;
-					selection = selections[controller_index];
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						currentState = stageSelect;
 					}
@@ -267,10 +293,30 @@ int main(int, char**) {
 						currentState = mainMenu;
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
-
+						switch (selections[controller_index]) {
+						case black:
+							selections[controller_index] = grizzly;
+							break;
+						case grizzly:
+							selections[controller_index] = polar;
+							break;
+						case polar:
+							selections[controller_index] = black;
+							break;
+						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
-
+						switch (selections[controller_index]) {
+						case black:
+							selections[controller_index] = polar;
+							break;
+						case grizzly:
+							selections[controller_index] = black;
+							break;
+						case polar:
+							selections[controller_index] = grizzly;
+							break;
+						}
 					}
 					break;
 				}
@@ -311,32 +357,13 @@ int main(int, char**) {
 				s.h = 25;
 				SDL_RenderFillRect(renderer, &s);
 			}
-		
-
-			// render ships 
+			
+			// render ships selections
 			{
-				//p1
-				render_texture(medium_red_tex, 300, 150, 0, 4);
-				render_texture(right_arrow, 400, 150, 0, 1);
-				render_texture(left_arrow, 200, 150, 0, 1);
-
-
-				//p2
-				render_texture(medium_blue_tex, 1000, 150, 0, 4);
-				render_texture(right_arrow, 1100, 150, 0, 1);
-				render_texture(left_arrow, 900, 150, 0, 1);
-
-
-				//p3
-				render_texture(medium_yellow_tex, 300, 550, 0, 4);
-				render_texture(right_arrow, 400, 550, 0, 1);
-				render_texture(left_arrow, 200, 550, 0, 1);
-
-
-				//p4
-				render_texture(medium_green_tex, 1000, 550, 0, 4);
-				render_texture(right_arrow, 1100, 550, 0, 1);
-				render_texture(left_arrow, 900, 550, 0, 1);
+				render_character_selector(0, 0,								ship_textures[selections[0]][red], right_arrow, left_arrow);
+				render_character_selector(WINDOW_WIDTH/2, 0,				ship_textures[selections[1]][blue], right_arrow, left_arrow);
+				render_character_selector(0, WINDOW_HEIGHT/2,				ship_textures[selections[2]][yellow], right_arrow, left_arrow);
+				render_character_selector(WINDOW_WIDTH/2, WINDOW_HEIGHT/2,	ship_textures[selections[3]][green], right_arrow, left_arrow);
 			}
 
 			SDL_RenderPresent(renderer);
@@ -344,6 +371,36 @@ int main(int, char**) {
 		}
 		// start of stage select state
 		else if (currentState == stageSelect) {
+			currentState = initGame;
+			
+		}
+		else if (currentState == initGame) {
+			// init game objects
+			switch(selections[0]) {
+			case black:
+				ships[0] = new Black(0, 10000 * ((WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			case grizzly:
+				ships[0] = new Grizzly(0, 10000 * ((WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			case polar:
+				// todo: do the obvious thing
+				ships[0] = new Grizzly(0, 10000 * ((WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			}
+			switch (selections[1]) {
+			case black:
+				ships[1] = new Black(1, 10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			case grizzly:
+				ships[1] = new Grizzly(1, 10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			case polar:
+				// todo: do the obvious thing
+				ships[1] = new Grizzly(1, 10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
+				break;
+			}
+
 			currentState = inGame;
 			
 		}
@@ -354,29 +411,8 @@ int main(int, char**) {
 				int controller_index;
 				Ship* ship;
 				while (SDL_PollEvent(&e)) {
+					if (read_global_input(&e)) continue;
 					switch (e.type) {
-					case SDL_QUIT:
-						quit = true;
-						break;
-					case SDL_KEYDOWN:
-						k = e.key.keysym.sym;
-						if (k == SDLK_f) {
-							if (is_fullscreen) {
-								SDL_SetWindowFullscreen(window, 0);
-								SDL_ShowCursor(1);
-							} else {
-								SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
-								SDL_ShowCursor(0);
-							}
-							is_fullscreen = !is_fullscreen;
-						} else if (k == SDLK_ESCAPE) {
-							if (is_fullscreen) {
-								SDL_SetWindowFullscreen(window, 0);
-								is_fullscreen = !is_fullscreen;
-								SDL_ShowCursor(1);
-							}
-						}
-						break;
 					case SDL_CONTROLLERBUTTONDOWN:
 						controller_index = e.cbutton.which;
 						ship = ships[controller_index];
@@ -389,11 +425,9 @@ int main(int, char**) {
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
 							ship->do_fire_1 = true;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
-							ship->fire_burst = true;
+							ship->do_fire_3 = true;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 							currentState = pause;
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
-							quit = true;
 						}
 						break;
 					case SDL_CONTROLLERBUTTONUP:
@@ -402,7 +436,7 @@ int main(int, char**) {
 						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
 							ship->do_fire_1 = false;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
-							ship->fire_burst = false;
+							ship->do_fire_3 = false;
 						}
 						break;
 					case SDL_CONTROLLERAXISMOTION:
@@ -473,9 +507,9 @@ int main(int, char**) {
 							int min_activation = 20000;
 							//std::cout << e.caxis.value << std::endl;
 							if (e.caxis.value < min_activation) {
-								ship->fire_spread = false;
+								ship->do_fire_2 = false;
 							} else {
-								ship->fire_spread = true;
+								ship->do_fire_2 = true;
 							}
 						}
 						break;
@@ -492,7 +526,7 @@ int main(int, char**) {
 				Ship* ship = ships[i];
 
 				// regen stamina
-				ship->stamina += SPACESHIP_STAMINA_PER_FRAME;
+				ship->stamina += ship->stamina_per_frame;
 				if (ship->stamina > ship->stamina_max) {
 					ship->stamina = ship->stamina_max;
 				}
@@ -507,42 +541,8 @@ int main(int, char**) {
 
 				ship->fire_2();
 
-				// handle burst fire spawns
 				/*
-				if (ship->burst_cooldown_1 > 0) {
-					ship->burst_cooldown_1--;
-				}
-				if (ship->burst_shot_current != 0 && ship->burst_cooldown_2 > 0) {
-					ship->burst_cooldown_2--;
-				}
-				if (ship->fire_burst && ship->stamina > 0 && ship->burst_cooldown_1 <= 0) {
-					int MUZZLE_VEL = 90000;
-					int spread = 1;
-					bullet** new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 3, 150, 0);
-					for (int i = 0; i < spread; i++) {
-						ship->bullets[ship->num_bullets] = new_bullets[i];
-						ship->num_bullets++;
-					}
-					free(new_bullets);
-					ship->burst_cooldown_1 += ship->burst_delay_1;
-					ship->burst_shot_current++;
-					ship->stamina -= 320;
-				}
-				if (ship->burst_cooldown_2 <= 0) {
-					int MUZZLE_VEL = 90000;
-					int spread = 1;
-					bullet** new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 3, 150, 0);
-					for (int i = 0; i < spread; i++) {
-						ship->bullets[ship->num_bullets] = new_bullets[i];
-						ship->num_bullets++;
-					}
-					free(new_bullets);
-					ship->burst_cooldown_2 += ship->burst_delay_2;
-					ship->burst_shot_current++;
-					if (ship->burst_shot_current == ship->burst_shot_number) {
-						ship->burst_shot_current = 0;
-					}
-				}
+				
 
 				// handle spread fire spawns
 				if (ship->spread_cooldown > 0) {
@@ -568,8 +568,8 @@ int main(int, char**) {
 
 					// update acceleration
 					double accel_mag = 0.3*sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
-					if (accel_mag > SPACESHIP_MAX_ACCEL) {
-						accel_mag = SPACESHIP_MAX_ACCEL;
+					if (accel_mag > ship->max_accel) {
+						accel_mag = ship->max_accel;
 					}
 
 					if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
@@ -585,24 +585,24 @@ int main(int, char**) {
 
 					// friction
 					if (ship->x_vel > 0) {
-						ship->x_vel -= (int)((pow(ship->x_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION));
+						ship->x_vel -= (int)((pow(ship->x_vel, 2) + ship->constant_friction) / ship->friction_limiter);
 						if (ship->x_vel < 0) {
 							ship->x_vel = 0;
 						}
 					} else if (ship->x_vel < 0) {
-						ship->x_vel += (int)((pow(ship->x_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION));
+						ship->x_vel += (int)((pow(ship->x_vel, 2) + ship->constant_friction) / ship->friction_limiter);
 						if (ship->x_vel > 0) {
 							ship->x_vel = 0;
 						}
 					}
 
 					if (ship->y_vel > 0) {
-						ship->y_vel -= (int)((pow(ship->y_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION));
+						ship->y_vel -= (int)((pow(ship->y_vel, 2) + ship->constant_friction) / ship->friction_limiter);
 						if (ship->y_vel < 0) {
 							ship->y_vel = 0;
 						}
 					} else if (ship->y_vel < 0) {
-						ship->y_vel += (int)((pow(ship->y_vel, 2) + SPACESHIP_STEADY_FRICTION) / (10000 * SPACESHIP_MAX_FRICTION));
+						ship->y_vel += (int)((pow(ship->y_vel, 2) + ship->constant_friction) / ship->friction_limiter);
 						if (ship->y_vel > 0) {
 							ship->y_vel = 0;
 						}
@@ -610,18 +610,15 @@ int main(int, char**) {
 
 					// handle collisions between ships
 					for (int j = 0; j < num_players; j++) {
-						// todo: make ship weight a factor
 						if (i == j) continue;
 						double dist = sqrt(pow(ship->x_pos - ships[j]->x_pos, 2) + pow(ship->y_pos - ships[j]->y_pos, 2));
 						if (dist == 0) dist = 1;
 						if (dist <= 10000*(ships[i]->radius + ships[j]->radius)) {
-							double total_force = 700000000000000.0 / pow(dist, 2);
+							double total_force = 140000000000000000.0 / pow(dist, 2);
 							double x_force = (ship->x_pos - ships[j]->x_pos) * total_force / dist;
-							ship->x_vel += x_force;
-							ships[j]->x_vel -= x_force;
+							ship->x_vel += x_force/ship->weight;
 							double y_force = (ship->y_pos - ships[j]->y_pos) * total_force / dist;
-							ship->y_vel += y_force;
-							ships[j]->y_vel -= y_force;
+							ship->y_vel += y_force/ship->weight;
 						}
 					}
 
@@ -631,8 +628,8 @@ int main(int, char**) {
 
 					// handle death
 					if (ship->x_pos < STATUS_BAR_WIDTH * 10000 || ship->x_pos > WINDOW_WIDTH * 10000 || ship->y_pos < 0 || ship->y_pos > WINDOW_HEIGHT * 10000) {
-						ship->x_pos = 10000 * WINDOW_WIDTH / 2;
-						ship->y_pos = 10000 * WINDOW_HEIGHT / 2;
+						ship->x_pos = ship->respawn_x;
+						ship->y_pos = ship->respawn_y;
 						ship->x_vel = 0;
 						ship->y_vel = 0;
 
@@ -681,53 +678,14 @@ int main(int, char**) {
 			{
 				// render background
 				render_texture(bg, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
-				render_texture(sun_tex, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
+				render_texture(sun_tex, (WINDOW_WIDTH-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, WINDOW_HEIGHT / 2, 0, 1);
 
 				// render all ship elements
 				for (int i = 0; i < num_players; i++) {
 
-					// choose textures
-					SDL_Texture* ship_tex;
-					if (i == 0) {
-						ship_tex = medium_red_tex;
-					} else if (i == 1) {
-						ship_tex = medium_blue_tex;
-					} else if (i == 2) {
-						ship_tex = medium_yellow_tex;
-					} else {
-						ship_tex = medium_green_tex;
-					}
-
-					if (ships[i]->invincibility_cooldown > 0) {
-						ship_tex = medium_white_tex;
-					}
-
-
-					// todo: relocate this
-					if (!caladea36) {
-						std::cout << TTF_GetError() << std::endl;
-					}
-
-					// render ship
 					Ship* ship = ships[i];
-					double angle = calculate_angle(ship->face_dir_x, ship->face_dir_y);
 
-					render_texture(ship_tex, ship->x_pos / 10000, ship->y_pos / 10000, angle, 3);
-
-					// render gun
-					{
-						SDL_Rect rect;
-
-						SDL_QueryTexture(cannon, NULL, NULL, &rect.w, &rect.h);
-						rect.x = ship->x_pos / 10000 - rect.w;
-						rect.y = ship->y_pos / 10000 - rect.h;
-						//std::cout << rect.x << std::endl;
-						SDL_Point* point = new SDL_Point;
-						point->x = 2;
-						point->y = 11;
-						SDL_RenderCopyEx(renderer, cannon, NULL, &rect, calculate_angle(ship->gun_dir_x, ship->gun_dir_y), point, SDL_FLIP_NONE);
-						free(point);
-					}
+					ship->render();
 
 					// render bullets
 					ship->render_projectiles_1();
@@ -759,11 +717,11 @@ int main(int, char**) {
 						{
 							// todo: match these to the real colors
 							// set stamina bar color
-							if (i == 0) {
+							if (ship->id == 0) {
 								SDL_SetRenderDrawColor(renderer, 160, 0, 0, SDL_ALPHA_OPAQUE);
-							} else if (i == 1) {
+							} else if (ship->id == 1) {
 								SDL_SetRenderDrawColor(renderer, 0, 0, 160, SDL_ALPHA_OPAQUE);
-							} else if (i == 2) {
+							} else if (ship->id == 2) {
 								SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
 							} else {
 								SDL_SetRenderDrawColor(renderer, 210, 210, 0, SDL_ALPHA_OPAQUE);
@@ -818,6 +776,7 @@ int main(int, char**) {
 		else if (currentState == pause) {
 
 			while (SDL_PollEvent(&e)) {
+				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
@@ -869,6 +828,7 @@ int main(int, char**) {
 		// start of results state
 		else if (currentState == results) {
 			while (SDL_PollEvent(&e)) {
+				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
@@ -933,4 +893,50 @@ int main(int, char**) {
 
 	SDL_Quit();
 	return 0;
+}
+
+
+bool read_global_input(SDL_Event* e) {
+	bool event_eaten = false;
+	SDL_Keycode k;
+	switch (e->type) {
+	case SDL_QUIT:
+		quit = true;
+		event_eaten = true;
+		break;
+	case SDL_KEYDOWN:
+		k = e->key.keysym.sym;
+		if (k == SDLK_f) {
+			if (is_fullscreen) {
+				SDL_SetWindowFullscreen(window, 0);
+				SDL_ShowCursor(1);
+			} else {
+				SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+				SDL_ShowCursor(0);
+			}
+			is_fullscreen = !is_fullscreen;
+			event_eaten = true;
+		} else if (k == SDLK_ESCAPE) {
+			if (is_fullscreen) {
+				SDL_SetWindowFullscreen(window, 0);
+				is_fullscreen = !is_fullscreen;
+				SDL_ShowCursor(1);
+			}
+			event_eaten = true;
+		}
+		break;
+	case SDL_CONTROLLERBUTTONDOWN:
+		if (e->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+			quit = true;
+			event_eaten = true;
+		}
+		break;
+	}
+	return event_eaten;
+}
+
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, SDL_Texture* right_arrow, SDL_Texture* left_arrow) {
+	render_texture(ship_tex, x+300, y+150, 0, 4);
+	render_texture(right_arrow, x+400, y+150, 0, 1);
+	render_texture(left_arrow, x+200, y+150, 0, 1);
 }
