@@ -561,6 +561,7 @@ int main(int, char**) {
 					ship->spread_cooldown += ship->spread_delay;
 					ship->stamina -= 250;
 				}
+				*/
 
 				// update ship itself
 				{
