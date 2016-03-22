@@ -1,9 +1,9 @@
-﻿  grizzly.cpp
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(101): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(176): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(177): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(226): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(308): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(309): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(362): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+﻿  main.cpp
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(226): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(228): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(230): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(626): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(628): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(840): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(842): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe
