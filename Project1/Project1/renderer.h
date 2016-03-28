@@ -13,4 +13,6 @@ int RenderCopyEx(SDL_Texture* texture, const SDL_Rect* srcrect, const SDL_Rect* 
 SDL_Texture* LoadTexture(const char* file);
 
 void render_text(int x, int y, const std::string& s);
+void render_text_centered(int x, int y, const std::string& s);
+
 void render_line(int x_start, int y_start, int x_dir, int y_dir);

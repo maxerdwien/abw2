@@ -21,6 +21,7 @@ SDL_Window* window;
 
 int WINDOW_WIDTH;
 int WINDOW_HEIGHT;
+const int BARSIZE = 26;
 const int STATUS_BAR_WIDTH = 150;
 
 bool quit = false;
@@ -32,8 +33,15 @@ SDL_GameController* controllers[4] = { NULL, NULL, NULL, NULL };
 SDL_Haptic* haptics[4];
 
 bool read_global_input(SDL_Event* e);
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, SDL_Texture* right_arrow, SDL_Texture* left_arrow);
-void render_press_start_to_join(int x, int y);
+
+enum ship_type {
+	black = 0,
+	grizzly = 1,
+	polar = 2
+};
+
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType,  SDL_Texture* right_arrow, SDL_Texture* left_arrow);
+void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
 
 int main(int, char**) {
@@ -49,6 +57,15 @@ int main(int, char**) {
 		results,
 		pause
 	};
+
+	enum color {
+		red = 0,
+		blue = 1,
+		yellow = 2,
+		green = 3
+	};
+
+
 
 	gameState currentState = mainMenu;
 	//gameState currentState = inGame;
@@ -123,17 +140,7 @@ int main(int, char**) {
 	SDL_Texture* bg = LoadTexture("..\\Project1\\assets\\background.png");
 	//SDL_Texture* sun_tex = LoadTexture("..\\Project1\\assets\\sun.png");
 
-	enum color {
-		red = 0,
-		blue = 1,
-		yellow = 2,
-		green = 3
-	};
-	enum ship_type {
-		black = 0,
-		grizzly = 1,
-		polar = 2
-	};
+
 
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
@@ -222,11 +229,11 @@ int main(int, char**) {
 
 			// render title name and prompt to move forward
 			{
-				render_text(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2.5, "Alaskan Cosmobear Spacefighting");
+				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2.5, "Alaskan Cosmobear Spacefighting");
 
-				render_text(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2, "Press the A button to start.");
+				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Press the A button to start.");
 
-				render_text(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 1.7, "Press the B button to quit.");
+				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 1.7, "Press the B button to quit.");
 			}
 
 			SDL_RenderPresent(renderer);
@@ -335,9 +342,9 @@ int main(int, char**) {
 			{
 				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
 				SDL_Rect s;
-				s.x = WINDOW_WIDTH/2;
+				s.x = WINDOW_WIDTH/2 - BARSIZE/2;
 				s.y = 0;
-				s.w = 25;
+				s.w = BARSIZE;
 				s.h = WINDOW_HEIGHT;
 				SDL_RenderFillRect(renderer, &s);
 			}
@@ -347,33 +354,33 @@ int main(int, char**) {
 				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
 				SDL_Rect s;
 				s.x = 0;
-				s.y = WINDOW_HEIGHT / 2;
+				s.y = WINDOW_HEIGHT / 2 - BARSIZE/2;
 				s.w = WINDOW_WIDTH;
-				s.h = 25;
+				s.h = BARSIZE;
 				SDL_RenderFillRect(renderer, &s);
 			}
 			
 			// render ships selections
 			{
 				if (controllers[0]) {
-					render_character_selector(0, 0, ship_textures[selections[0]][red], right_arrow, left_arrow);
+					render_character_selector(0, 0, ship_textures[selections[0]][red],selections[0],right_arrow, left_arrow);
 				} else {
-					render_press_start_to_join(0, 0);
+					render_plugin_to_join(0, 0);
 				}
 				if (controllers[1]) {
-					render_character_selector(WINDOW_WIDTH / 2, 0, ship_textures[selections[1]][blue], right_arrow, left_arrow);
+					render_character_selector(WINDOW_WIDTH / 2 + BARSIZE/2, 0, ship_textures[selections[1]][blue],selections[1],right_arrow, left_arrow);
 				} else {
-					render_press_start_to_join(WINDOW_WIDTH / 2, 0);
+					render_plugin_to_join(WINDOW_WIDTH / 2 + BARSIZE/2, 0);
 				}
 				if (controllers[2]) {
-					render_character_selector(0, WINDOW_HEIGHT / 2, ship_textures[selections[2]][yellow], right_arrow, left_arrow);
+					render_character_selector(0, WINDOW_HEIGHT / 2 + BARSIZE, ship_textures[selections[2]][yellow],selections[2], right_arrow, left_arrow);
 				} else {
-					render_press_start_to_join(0, WINDOW_HEIGHT / 2);
+					render_plugin_to_join(0, WINDOW_HEIGHT / 2 + BARSIZE/2);
 				}
 				if (controllers[3]) {
-					render_character_selector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, ship_textures[selections[3]][green], right_arrow, left_arrow);
+					render_character_selector(WINDOW_WIDTH / 2 + BARSIZE, WINDOW_HEIGHT / 2 + BARSIZE, ship_textures[selections[3]][green],selections[3], right_arrow, left_arrow);
 				} else {
-					render_press_start_to_join(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+					render_plugin_to_join(WINDOW_WIDTH / 2 + BARSIZE/2, WINDOW_HEIGHT / 2 + BARSIZE/2);
 				}
 			}
 
@@ -863,9 +870,9 @@ int main(int, char**) {
 			{
 				char winnerMessage[15];
 				sprintf_s(winnerMessage, "Player %d wins!", winner);
-				render_text(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2.5, winnerMessage);
+				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2.5, winnerMessage);
 
-				render_text(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2, "Press the A button to continue.");
+				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Press the A button to continue.");
 			}
 			SDL_RenderPresent(renderer);
 		}
@@ -971,60 +978,34 @@ bool read_global_input(SDL_Event* e) {
 	return event_eaten;
 }
 
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, SDL_Texture* right_arrow, SDL_Texture* left_arrow) {
-	render_texture(ship_tex, x+300, y+150, 0, 4);
-	render_texture(right_arrow, x+400, y+150, 0, 1);
-	render_texture(left_arrow, x+200, y+150, 0, 1);
-}
-
-void render_press_start_to_join(int x, int y) {
-	render_text(x+100, y+100, "press start to join");
-}
-
-/*
-void poll_for_controllers() {
-	// check for additional controllers
-	int num_joysticks = SDL_NumJoysticks();
-	for (int i = 0; i < num_joysticks; i++) {
-		if (SDL_IsGameController(i) && controllers[i] == NULL) {
-			std::cout << "connecting new controller " << i << std::endl;
-			num_players++;
-			controllers[i] = SDL_GameControllerOpen(i);
-			// haptic seem to have the reverse order of controllers
-			haptics[i] = SDL_HapticOpen(num_joysticks - 1 - i);
-			{
-				if (!haptics[i]) {
-					std::cout << "could not connect haptic device" << std::endl;
-				}
-				if (SDL_HapticRumbleInit(haptics[i]) != 0) {
-					std::cout << "could not init haptic device" << std::endl;
-				}
-			}
-			if (!controllers[i]) {
-				std::cout << "could not connect controller" << std::endl;
-			}
-		}
+void render_character_selector(int x, int y, SDL_Texture* ship_tex,  ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow) {
+	render_texture(ship_tex, x+300, y+70, 0, 4);
+	render_texture(right_arrow, x+400, y+70,0, 1);
+	render_texture(left_arrow, x+200, y+70, 0, 1);
+	if (shipType == 0) {
+		render_text_centered(x + 300, y + 125, "BLACK");
+		render_text(x + 100, y + 155, "Weapon 1: Burst Shot");
+		render_text(x + 100, y + 185, "Weapon 2: Melee Weapon");
+		render_text(x + 100, y + 215, "Weapon 3: Charge Shot");
 	}
-
-	// disconnect lost controllers
-	for (int i = 0; i < 4; i++) {
-		if (!SDL_GameControllerGetAttached(controllers[i]) && controllers[i] != NULL) {
-			std::cout << "disconnecting controller " << i << std::endl;
-				
-			SDL_GameControllerClose(controllers[i]);
-			std::cout << SDL_NumJoysticks() << SDL_IsGameController(2) << std::endl;
-			//controllers[i] = controllers[num_players-1];
-			controllers[i] = NULL;
-				
-			SDL_HapticClose(haptics[i]);
-			haptics[i] = NULL;
-			//haptics[i] = haptics[num_players-1];
-
-			num_players--;
-		}
+	else if (shipType == 1) {
+		render_text_centered(x + 300, y + 125, "GRIZZLY");
+		render_text(x + 100, y + 155, "Weapon 1: Normal Shot");
+		render_text(x + 100, y + 185, "Weapon 2: Normal Missles");
+		render_text(x + 100, y + 215, "Weapon 3: Mines");
+	}
+	else {
+		render_text_centered(x + 300, y + 125, "POLAR");
+		render_text(x + 100, y + 155, "Weapon 1: Spread Shot");
+		render_text(x + 100, y + 185, "Weapon 2: Gravity Missles");
+		render_text(x + 100, y + 215, "Weapon 3: Laser");
 	}
 }
-*/
+
+void render_plugin_to_join(int x, int y) {
+	render_text(x+100, y+100, "Plug in controller to join");
+}
+
 
 int lookup_controller(int instanceID) {
 	for (int i = 0; i < 4; i++) {
