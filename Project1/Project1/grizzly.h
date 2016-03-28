@@ -4,6 +4,7 @@ class Grizzly : public Ship {
 private:
 	SDL_Texture* bullet_tex;
 	SDL_Texture* missile_tex;
+	SDL_Texture* mine_tex;
 	SDL_Texture* explosion_tex;
 
 public:

@@ -31,20 +31,25 @@ Grizzly::Grizzly(int identifier, int x, int y) {
 	if (id == 0) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
 		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletRed.png");
+		mine_tex = LoadTexture("..\\Project1\\assets\\mineRed.png");
 	} else if (id == 1) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
 		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletBlue.png");
+		mine_tex = LoadTexture("..\\Project1\\assets\\mineBlue.png");
 	} else if (id == 2) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
 		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletYellow.png");
+		mine_tex = LoadTexture("..\\Project1\\assets\\mineYellow.png");
 	} else {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
 		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletGreen.png");
+		mine_tex = LoadTexture("..\\Project1\\assets\\mineGreen.png");
 	}
 
 	ship_invincible_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-white.png");
 
 	cannon_tex = LoadTexture("..\\Project1\\assets\\cannon.png");
+	
 	missile_tex = LoadTexture("..\\Project1\\assets\\missile.png");
 	explosion_tex = LoadTexture("..\\Project1\\assets\\explosion.png");
 }
@@ -237,7 +242,7 @@ void Grizzly::fire_3() {
 	}
 	if (do_fire_3 && stamina > 0 && mine_cooldown <= 0) {
 		// todo: make this zero
-		int MUZZLE_VEL = -1000;
+		int MUZZLE_VEL = 1000;
 		int spread = 1;
 		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 25, 200, 300);
 		for (int i = 0; i < spread; i++) {
@@ -337,7 +342,7 @@ void Grizzly::render_projectiles_3() {
 	for (int j = 0; j < num_mines; j++) {
 		if (!mines[j]->exploded) {
 			double angle = calculate_angle(mines[j]->x_vel, mines[j]->y_vel);
-			render_texture(missile_tex, mines[j]->x_pos / 10000, mines[j]->y_pos / 10000, angle, 1.8);
+			render_texture(mine_tex, mines[j]->x_pos / 10000, mines[j]->y_pos / 10000, angle, 1.8);
 		} else {
 			SDL_Rect rect;
 
