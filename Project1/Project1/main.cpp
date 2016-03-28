@@ -10,6 +10,7 @@
 #include "spaceship.h"
 #include "grizzly.h"
 #include "black.h"
+#include "polar.h"
 
 #include "renderer.h"
 
@@ -408,7 +409,7 @@ int main(int, char**) {
 					break;
 				case polar:
 					// todo: do the obvious thing
-					ships[i] = new Grizzly(i, spawn_locations_x[i], spawn_locations_y[i]);
+					ships[i] = new Polar(i, spawn_locations_x[i], spawn_locations_y[i]);
 					break;
 				}
 				if (!controllers[i]) {
@@ -476,7 +477,7 @@ int main(int, char**) {
 							//std::cout << old_gun_mag << std::endl;
 							ship->left_stick_x = (int)(10000 * circle_x);
 							double left_stick_mag = sqrt(pow(ship->left_stick_x, 2) + pow(ship->left_stick_y, 2));
-							std::cout << left_stick_mag << std::endl;
+							//std::cout << left_stick_mag << std::endl;
 							if (left_stick_mag > DEAD_ZONE) {
 								ship->move_dir_x = ship->left_stick_x;
 								ship->face_dir_x = ship->left_stick_x;
@@ -575,28 +576,6 @@ int main(int, char**) {
 				ship->fire_2();
 
 				ship->fire_3();
-
-				/*
-				
-
-				// handle spread fire spawns
-				if (ship->spread_cooldown > 0) {
-					ship->spread_cooldown--;
-				}
-				if (ship->fire_spread && ship->stamina > 0 && ship->spread_cooldown <= 0) {
-
-					int MUZZLE_VEL = 40000;
-					int spread = 5;
-					bullet** new_bullets = spawn_bullets(ship, MUZZLE_VEL, spread, 5, 10, 100);
-					for (int i = 0; i < spread; i++) {
-						ship->bullets[ship->num_bullets] = new_bullets[i];
-						ship->num_bullets++;
-					}
-					free(new_bullets);
-					ship->spread_cooldown += ship->spread_delay;
-					ship->stamina -= 250;
-				}
-				*/
 
 				// update ship itself
 				{
@@ -861,7 +840,7 @@ int main(int, char**) {
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						currentState = mainMenu;
+						currentState = characterSelect;
 					}
 					break;
 				}

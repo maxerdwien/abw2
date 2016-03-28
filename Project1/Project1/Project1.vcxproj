@@ -73,18 +73,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="black.cpp" />
+    <ClCompile Include="gravity-missile.cpp" />
     <ClCompile Include="grizzly.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="missile.cpp" />
+    <ClCompile Include="polar.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="spaceship.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="black.h" />
     <ClInclude Include="bullet.h" />
+    <ClInclude Include="gravity-missile.h" />
     <ClInclude Include="grizzly.h" />
     <ClInclude Include="missile.h" />
+    <ClInclude Include="polar.h" />
     <ClInclude Include="renderer.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="spaceship.h" />

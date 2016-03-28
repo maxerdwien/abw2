@@ -28,21 +28,24 @@ Black::Black(int identifier, int x, int y) {
 
 	if (id == 0) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletRed.png");
+		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
 	} else if (id == 1) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletBlue.png");
+		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
 	} else if (id == 2) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletYellow.png");
+		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
 	} else {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletGreen.png");
+		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
 	}
 
 	ship_invincible_tex = LoadTexture("..\\Project1\\assets\\ships\\black-white.png");
 
 	cannon_tex = LoadTexture("..\\Project1\\assets\\cannon.png");
+
+	flame_tex_1 = LoadTexture("..\\Project1\\assets\\attacks\\flame1.png");
+	flame_tex_2 = LoadTexture("..\\Project1\\assets\\attacks\\flame2.png");
 }
 
 void Black::update() {
@@ -169,13 +172,57 @@ void Black::render_projectiles_2() {
 }
 
 void Black::fire_3() {
-
+	if (do_fire_3 && stamina > 0) {
+		flame_active = true;
+		stamina -= 10;
+	} else {
+		flame_active = false;
+	}
 }
 
 void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+	if (!flame_active) return;
+	double angle = atan2(gun_dir_y, gun_dir_x);
+	for (int i = 0; i < num_flame_hitboxes; i++) {
+		int hb_x = x_pos + flame_dists[i] * cos(angle);
+		int hb_y = y_pos + flame_dists[i] * sin(angle);
 
+		for (int j = 0; j < 4; j++) {
+			if (!ships[j]) continue;
+			if (ships[j]->id == id) continue;
+			Ship* target_ship = ships[j];
+			double dist = sqrt(pow(hb_x - target_ship->x_pos, 2) + pow(hb_y - target_ship->y_pos, 2));
+			if (dist <= (10000 * target_ship->radius + flame_radii[i])) {
+				target_ship->take_knockback(target_ship->x_pos - hb_x, target_ship->y_pos - hb_y, 0, 6, 1, haptics[j]);
+			}
+		}
+	}
+	 
 }
 
 void Black::render_projectiles_3() {
+	if (flame_active) {
+		if (flame_switch_cooldown > 0) {
+			flame_switch_cooldown--;
+		}
+		if (flame_switch_cooldown == 0) {
+			current_flame = (current_flame + 1) % 2;
+			flame_switch_cooldown = flame_switch_delay;
+		}
+		SDL_Rect rect;
 
+		SDL_QueryTexture(flame_tex_1, NULL, NULL, &rect.w, &rect.h);
+		rect.w *= 2;
+		rect.h *= 2;
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		rect.x = x_pos/10000 - rect.w / 2 + (12 + rect.h / 2)*cos(angle);
+		rect.y = y_pos/10000 - rect.h / 2 + (12 + rect.h / 2)*sin(angle);
+
+		if (current_flame == 0) {
+			RenderCopyEx(flame_tex_1, NULL, &rect, calculate_angle(gun_dir_x, gun_dir_y), NULL, SDL_FLIP_NONE);
+		} else {
+			// works since the textures are the same size
+			RenderCopyEx(flame_tex_2, NULL, &rect, calculate_angle(gun_dir_x, gun_dir_y), NULL, SDL_FLIP_NONE);
+		}
+	}
 }

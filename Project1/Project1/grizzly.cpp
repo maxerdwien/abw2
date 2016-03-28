@@ -30,28 +30,28 @@ Grizzly::Grizzly(int identifier, int x, int y) {
 
 	if (id == 0) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletRed.png");
-		mine_tex = LoadTexture("..\\Project1\\assets\\mineRed.png");
+		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
+		mine_tex = LoadTexture("..\\Project1\\assets\\attacks\\mineRed.png");
 	} else if (id == 1) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletBlue.png");
-		mine_tex = LoadTexture("..\\Project1\\assets\\mineBlue.png");
+		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		mine_tex = LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
 	} else if (id == 2) {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletYellow.png");
-		mine_tex = LoadTexture("..\\Project1\\assets\\mineYellow.png");
+		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+		mine_tex = LoadTexture("..\\Project1\\assets\\attacks\\mineYellow.png");
 	} else {
 		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\bulletGreen.png");
-		mine_tex = LoadTexture("..\\Project1\\assets\\mineGreen.png");
+		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+		mine_tex = LoadTexture("..\\Project1\\assets\\attacks\\mineGreen.png");
 	}
 
 	ship_invincible_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-white.png");
 
 	cannon_tex = LoadTexture("..\\Project1\\assets\\cannon.png");
 	
-	missile_tex = LoadTexture("..\\Project1\\assets\\missile.png");
-	explosion_tex = LoadTexture("..\\Project1\\assets\\explosion.png");
+	missile_tex = LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
+	explosion_tex = LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
 }
 
 void Grizzly::update() {

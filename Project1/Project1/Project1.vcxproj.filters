@@ -36,6 +36,12 @@
     <ClCompile Include="black.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="polar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gravity-missile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="spaceship.h">
@@ -57,6 +63,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="black.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="polar.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gravity-missile.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,17 +1,18 @@
 #pragma once
 
+const int num_flame_hitboxes = 2;
+const int flame_radii[num_flame_hitboxes] = { 10000*20, 10000*18 };
+const int flame_dists[num_flame_hitboxes] = { 10000*88, 10000*80 };
+
 class Black : public Ship {
 private:
 	SDL_Texture* bullet_tex;
-	SDL_Texture* missile_tex;
-	SDL_Texture* explosion_tex;
+	SDL_Texture* flame_tex_1;
+	SDL_Texture* flame_tex_2;
 
 public:
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
-
-	struct missile* missiles[100];
-	int num_missiles = 0;
 
 	const int burst_delay_1 = 120;
 	int burst_cooldown_1 = 0;
@@ -24,6 +25,11 @@ public:
 
 	// in frames
 	int charge_shot_charge = 0;
+
+	bool flame_active;
+	const int flame_switch_delay = 5;
+	int flame_switch_cooldown = 0;
+	int current_flame = 0;
 
 	Black(int identifier, int x, int y);
 
