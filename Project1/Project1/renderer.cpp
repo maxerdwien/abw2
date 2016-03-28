@@ -56,3 +56,28 @@ void render_text(int x, int y, const std::string& s) {
 
 	TTF_CloseFont(caladea36);
 }
+
+void render_line(int x_start, int y_start, int x_dir, int y_dir) {
+	// set color to red, cause lasers are red
+	SDL_SetRenderDrawColor(renderer, 128, 0, 0, SDL_ALPHA_OPAQUE);
+	/*
+	int red = (std::rand()*256) / RAND_MAX;
+	int green = (std::rand() * 256) / RAND_MAX;
+	int blue = (std::rand() * 256) / RAND_MAX;
+	SDL_SetRenderDrawColor(renderer, red, green, blue, SDL_ALPHA_OPAQUE);
+	*/
+	
+	int x_end = x_start+x_dir*100000;
+	int y_end = y_start+y_dir*100000;
+	/*
+	if (x_end > WINDOW_WIDTH) {
+		y_end *= ((double)WINDOW_WIDTH / x_end);
+		x_end = WINDOW_WIDTH;
+	}
+	if (y_end > WINDOW_HEIGHT) {
+		x_end *= ((double)WINDOW_HEIGHT / y_end);
+		y_end = WINDOW_HEIGHT;
+	}
+	*/
+	SDL_RenderDrawLine(renderer, x_start/10000, y_start/10000, x_end/10000, y_end/10000);
+}

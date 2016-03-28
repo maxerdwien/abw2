@@ -20,8 +20,8 @@ Black::Black(int identifier, int x, int y) {
 	stamina_per_frame = 8;
 
 	max_accel = 7000;
-	friction_limiter = 1600000;
-	constant_friction = 200000000;
+	friction_limiter = 1200000;
+	constant_friction = 12000000000;
 
 	radius = 40;
 	weight = 60;
@@ -86,7 +86,7 @@ void Black::fire_1() {
 	}
 }
 
-void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -106,32 +106,15 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int
 		}
 
 		// check for collisions with enemies
-		for (int k = 0; k < num_players; k++) {
+		for (int k = 0; k < 4; k++) {
+			if (!ships[k]) continue;
 			if (ships[k]->id == id) continue;
 			double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 			//std::cout << dist << std::endl;
 			if (dist <= (ships[k]->radius + bullet->radius) * 10000) {
-				if (ships[k]->invincibility_cooldown == 0) {
-					// knockback
-					int total_knockback = (int)(100 * (bullet->base_knockback + (ships[k]->percent / 100.0)*bullet->knockback_scaling) / ships[k]->weight);
-					
-					ships[k]->x_vel += (int)(1000.0*total_knockback*bullet->x_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
-					ships[k]->y_vel += (int)(1000.0*total_knockback*bullet->y_vel / sqrt(pow(bullet->x_vel, 2) + pow(bullet->y_vel, 2)));
-					//printf("bullet x_vel:%d\tbullet y_vel:%d\tship x_vel:%d\tship y_vel:%d\n", bullet->x_vel, bullet->y_vel, ships[k]->x_vel, ships[k]->y_vel);
 
-					// damage
-					ships[k]->percent += bullet->damage;
-					if (ships[k]->percent > SPACESHIP_MAX_PERCENT) {
-						ships[k]->percent = SPACESHIP_MAX_PERCENT;
-					}
+				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
 
-					// haptic
-					float haptic_amount = 0.03f + total_knockback / 100.0f;
-					if (haptic_amount > 1) {
-						haptic_amount = 1;
-					}
-					SDL_HapticRumblePlay(haptics[k], haptic_amount, 160);
-				}
 				// delete bullet
 				num_bullets--;
 				free(bullets[j]);
@@ -160,7 +143,7 @@ void Black::fire_2() {
 		}
 		stamina -= 10;
 	}
-	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 0) {
+	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 10) {
 		int MUZZLE_VEL = 100000;
 		int spread = 1;
 		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
@@ -177,7 +160,7 @@ void Black::fire_2() {
 	}
 }
 
-void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
 	// do nothing, because update_projectiles_1 does all the work
 }
 
@@ -189,7 +172,7 @@ void Black::fire_3() {
 
 }
 
-void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
 
 }
 

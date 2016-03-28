@@ -24,16 +24,16 @@ const int STATUS_BAR_WIDTH = 150;
 
 bool quit = false;
 bool is_fullscreen = false;
+bool xp_mode = false;
 
-int num_players = 0;
-
-SDL_GameController* controllers[4];
+int controller_mappings[4] = { -1, -1, -1, -1 };
+SDL_GameController* controllers[4] = { NULL, NULL, NULL, NULL };
 SDL_Haptic* haptics[4];
 
 bool read_global_input(SDL_Event* e);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, SDL_Texture* right_arrow, SDL_Texture* left_arrow);
 void render_press_start_to_join(int x, int y);
-void poll_for_controllers();
+int lookup_controller(int instanceID);
 
 int main(int, char**) {
 	int test = TTF_Init(); // todo: delete or rename
@@ -93,12 +93,12 @@ int main(int, char**) {
 		WINDOW_HEIGHT = 720;
 	}
 
-
+	const double CONTROLLER_MAX_ANGLE = M_PI / 6;
 	const int DEAD_ZONE = 5000;
 	
 	const int playerUiWidth = 10;
 
-	window = SDL_CreateWindow("hl2.exe", 1000, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("hl2.exe", 675, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
 		std::cout << "SDL_CreateWindow error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
@@ -120,7 +120,7 @@ int main(int, char**) {
 
 	// load textures
 	SDL_Texture* bg = LoadTexture("..\\Project1\\assets\\background.png");
-	SDL_Texture* sun_tex = LoadTexture("..\\Project1\\assets\\sun.png");
+	//SDL_Texture* sun_tex = LoadTexture("..\\Project1\\assets\\sun.png");
 
 	enum color {
 		red = 0,
@@ -135,6 +135,7 @@ int main(int, char**) {
 	};
 
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
+	bool analog_stick_moved[4] = { false, false, false, false };
 
 	SDL_Texture* ship_textures[3][4];
 	ship_textures[black][red] = LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
@@ -194,15 +195,13 @@ int main(int, char**) {
 
 		// start of main menu state
 		if (currentState == mainMenu) {
-			poll_for_controllers();
 			while (SDL_PollEvent(&e)) {
 				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						currentState = characterSelect;
-					}
-					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
 						quit = true;
 					}
 					break;
@@ -222,7 +221,6 @@ int main(int, char**) {
 
 			// render title name and prompt to move forward
 			{
-
 				render_text(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2.5, "Alaskan Cosmobear Spacefighting");
 
 				render_text(WINDOW_WIDTH / 3.5, WINDOW_HEIGHT / 2, "Press the A button to start.");
@@ -237,15 +235,12 @@ int main(int, char**) {
 		else if (currentState == characterSelect) {
 
 			int controller_index;
-			
-			poll_for_controllers();
-
 
 			while (SDL_PollEvent(&e)) {
 				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
-					controller_index = e.cbutton.which;
+					controller_index = lookup_controller(e.cbutton.which);
 					
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						currentState = stageSelect;
@@ -280,6 +275,42 @@ int main(int, char**) {
 						}
 					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						
+					}
+					break;
+				case SDL_CONTROLLERAXISMOTION:
+					controller_index = lookup_controller(e.caxis.which);
+					if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
+						int min_angle = 26000;
+
+						if (e.caxis.value > min_angle && !analog_stick_moved[controller_index]) {
+							analog_stick_moved[controller_index] = true;
+							switch (selections[controller_index]) {
+							case black:
+								selections[controller_index] = polar;
+								break;
+							case grizzly:
+								selections[controller_index] = black;
+								break;
+							case polar:
+								selections[controller_index] = grizzly;
+								break;
+							}
+						} else if (e.caxis.value < -min_angle && !analog_stick_moved[controller_index]) {
+							analog_stick_moved[controller_index] = true;
+							switch (selections[controller_index]) {
+							case black:
+								selections[controller_index] = grizzly;
+								break;
+							case grizzly:
+								selections[controller_index] = polar;
+								break;
+							case polar:
+								selections[controller_index] = black;
+								break;
+							}
+						} else if (e.caxis.value < min_angle && e.caxis.value > -min_angle) {
+							analog_stick_moved[controller_index] = false;
+						}
 					}
 					break;
 				}
@@ -323,22 +354,22 @@ int main(int, char**) {
 			
 			// render ships selections
 			{
-				if (num_players >= 1) {
+				if (controllers[0]) {
 					render_character_selector(0, 0, ship_textures[selections[0]][red], right_arrow, left_arrow);
 				} else {
 					render_press_start_to_join(0, 0);
 				}
-				if (num_players >= 2) {
+				if (controllers[1]) {
 					render_character_selector(WINDOW_WIDTH / 2, 0, ship_textures[selections[1]][blue], right_arrow, left_arrow);
 				} else {
 					render_press_start_to_join(WINDOW_WIDTH / 2, 0);
 				}
-				if (num_players >= 3) {
+				if (controllers[2]) {
 					render_character_selector(0, WINDOW_HEIGHT / 2, ship_textures[selections[2]][yellow], right_arrow, left_arrow);
 				} else {
 					render_press_start_to_join(0, WINDOW_HEIGHT / 2);
 				}
-				if (num_players >= 4) {
+				if (controllers[3]) {
 					render_character_selector(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, ship_textures[selections[3]][green], right_arrow, left_arrow);
 				} else {
 					render_press_start_to_join(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
@@ -355,42 +386,43 @@ int main(int, char**) {
 		}
 		else if (currentState == initGame) {
 			// init game objects
-			switch(selections[0]) {
-			case black:
-				ships[0] = new Black(0, 10000 * ((WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
-			case grizzly:
-				ships[0] = new Grizzly(0, 10000 * ((WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
-			case polar:
-				// todo: do the obvious thing
-				ships[0] = new Grizzly(0, 10000 * ((WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
+			const int spawn_locations_x[4] = {
+				10000 * ((WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH) ,
+				10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH),
+				10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH),
+				10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH)
+			};
+			const int spawn_locations_y[4] = {
+				10000 * (WINDOW_HEIGHT / 2),
+				10000 * (WINDOW_HEIGHT / 2),
+				10000 * (WINDOW_HEIGHT / 4),
+				10000 * (3 * WINDOW_HEIGHT / 4)
+			};
+			for (int i = 0; i < 4; i++) {
+				switch (selections[i]) {
+				case black:
+					ships[i] = new Black(i, spawn_locations_x[i], spawn_locations_y[i]);
+					break;
+				case grizzly:
+					ships[i] = new Grizzly(i, spawn_locations_x[i], spawn_locations_y[i]);
+					break;
+				case polar:
+					// todo: do the obvious thing
+					ships[i] = new Grizzly(i, spawn_locations_x[i], spawn_locations_y[i]);
+					break;
+				}
+				if (!controllers[i]) {
+					ships[i] = NULL;
+				}
 			}
-			switch (selections[1]) {
-			case black:
-				ships[1] = new Black(1, 10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
-			case grizzly:
-				ships[1] = new Grizzly(1, 10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
-			case polar:
-				// todo: do the obvious thing
-				ships[1] = new Grizzly(1, 10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
-			}
-			switch (selections[2]) {
-			case black:
-				ships[2] = new Black(2, 10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
-			case grizzly:
-				ships[2] = new Grizzly(2, 10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
-			case polar:
-				// todo: do the obvious thing
-				ships[2] = new Grizzly(2, 10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH), 10000 * WINDOW_HEIGHT / 2);
-				break;
-			}
+
+			// render background once; this is needed for xp mode
+			SDL_Rect r;
+			r.x = 0;
+			r.y = 0;
+			r.w = WINDOW_WIDTH;
+			r.h = WINDOW_HEIGHT;
+			RenderCopyEx(bg, NULL, &r, 0, NULL, SDL_FLIP_NONE);
 
 			currentState = inGame;
 			
@@ -405,7 +437,7 @@ int main(int, char**) {
 					if (read_global_input(&e)) continue;
 					switch (e.type) {
 					case SDL_CONTROLLERBUTTONDOWN:
-						controller_index = e.cbutton.which;
+						controller_index = lookup_controller(e.cbutton.which);
 						ship = ships[controller_index];
 						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
@@ -424,7 +456,7 @@ int main(int, char**) {
 						}
 						break;
 					case SDL_CONTROLLERBUTTONUP:
-						controller_index = e.cbutton.which;
+						controller_index = lookup_controller(e.cbutton.which);
 						ship = ships[controller_index];
 						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
 							ship->do_fire_1 = false;
@@ -435,61 +467,66 @@ int main(int, char**) {
 						}
 						break;
 					case SDL_CONTROLLERAXISMOTION:
-						controller_index = e.caxis.which;
+						controller_index = lookup_controller(e.caxis.which);
 						ship = ships[controller_index];
 						if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
-							if (abs(e.caxis.value) > DEAD_ZONE) {
-								ship->move_dir_x = (int)e.caxis.value;
-								ship->face_dir_x = (int)e.caxis.value;
+							double value = (double)e.caxis.value / 32767;
+
+							double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+							//std::cout << old_gun_mag << std::endl;
+							ship->left_stick_x = (int)(10000 * circle_x);
+							double left_stick_mag = sqrt(pow(ship->left_stick_x, 2) + pow(ship->left_stick_y, 2));
+							std::cout << left_stick_mag << std::endl;
+							if (left_stick_mag > DEAD_ZONE) {
+								ship->move_dir_x = ship->left_stick_x;
+								ship->face_dir_x = ship->left_stick_x;
+								ship->move_dir_y = ship->left_stick_y;
+								ship->face_dir_y = ship->left_stick_y;
 							} else {
 								ship->move_dir_x = 0;
+								ship->move_dir_y = 0;
 							}
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
-							if (abs(e.caxis.value) > DEAD_ZONE) {
-								ship->move_dir_y = (int)e.caxis.value;
-								ship->face_dir_y = (int)e.caxis.value;
+							double value = (double)e.caxis.value / 32768;
+
+							double circle_y = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+							//std::cout << old_gun_mag << std::endl;
+							ship->left_stick_y = (int)(10000 * circle_y);
+							double left_stick_mag = sqrt(pow(ship->left_stick_x, 2) + pow(ship->left_stick_y, 2));
+							//std::cout << left_stick_mag << std::endl;
+							if (left_stick_mag > DEAD_ZONE) {
+								ship->move_dir_x = ship->left_stick_x;
+								ship->face_dir_x = ship->left_stick_x;
+								ship->move_dir_y = ship->left_stick_y;
+								ship->face_dir_y = ship->left_stick_y;
 							} else {
+								ship->move_dir_x = 0;
 								ship->move_dir_y = 0;
 							}
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
-							double old_gun_mag = sqrt(pow(ship->gun_dir_x, 2) + pow(ship->gun_dir_y, 2));
-							//if (controller_index == 1) std::cout << "x\t" << new_gun_mag << std::endl;
-							int value = e.caxis.value / 16;
-							//if (value > 2000) value = 2000;
-							//if (value < -2000) value = -2000;
-							double angle = ((double)value / 2000) * (3.14159 / 96);
-							//std::cout << old_gun_mag << std::endl;
-							ship->gun_dir_x = (int)(10000 * sin(angle));
-							/*
-							if (new_gun_mag >= SPACESHIP_MIN_GUN_DIR) {
-								ship->gun_dir_x = (int)(e.caxis.value);
-							} else {
-								ship->gun_dir_x = (int)sqrt(pow(SPACESHIP_MIN_GUN_DIR, 2) - pow(ship->gun_dir_y, 2));
-								if (e.caxis.value < 0) {
-									//std::cout << new_gun_mag- SPACESHIP_MIN_GUN_DIR << std::endl;
-									ship->gun_dir_x *= -1;
-								}
+							double value = (double)e.caxis.value / 32767;
+
+							double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+							ship->right_stick_x = (int)(10000 * circle_x);
+							double right_stick_mag = sqrt(pow(ship->right_stick_x, 2) + pow(ship->right_stick_y, 2));
+							//std::cout << right_stick_mag << std::endl;
+							if (right_stick_mag > DEAD_ZONE) {
+								ship->gun_dir_x = ship->right_stick_x;
+								ship->gun_dir_y = ship->right_stick_y;
 							}
-							*/
+
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
-							double new_gun_mag = sqrt(pow(e.caxis.value, 2) + pow(ship->gun_dir_x, 2));
-							//if (controller_index == 1) std::cout << "y\t" << new_gun_mag << std::endl;
-							int value = e.caxis.value / 16;
-							//if (value > 2000) value = 2000;
-							//if (value < -2000) value = -2000;
-							double angle = ((double)value / 2000) * (3.14159 / 96);
-							//std::cout << angle << std::endl;
-							ship->gun_dir_y = (int)(10000 * sin(angle));
-							/*
-							if (new_gun_mag >= SPACESHIP_MIN_GUN_DIR) {
-								ship->gun_dir_y = (int)(e.caxis.value);
-							} else {
-								ship->gun_dir_y = (int)sqrt(pow(SPACESHIP_MIN_GUN_DIR,2) - pow(ship->gun_dir_x, 2));
-								if (e.caxis.value < 0) {
-									ship->gun_dir_y *= -1;
-								}
+							double value = (double)e.caxis.value / 32768;
+
+							double circle_y = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+							ship->right_stick_y = (int)(10000 * circle_y);
+							double right_stick_mag = sqrt(pow(ship->right_stick_x, 2) + pow(ship->right_stick_y, 2));
+							//std::cout << right_stick_mag << std::endl;
+							if (right_stick_mag > DEAD_ZONE) {
+								ship->gun_dir_x = ship->right_stick_x;
+								ship->gun_dir_y = ship->right_stick_y;
 							}
-							*/
+
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
 							int min_activation = 20000;
 							//std::cout << e.caxis.value << std::endl;
@@ -517,7 +554,8 @@ int main(int, char**) {
 			}
 
 			// update
-			for (int i = 0; i < num_players; i++) {
+			for (int i = 0; i < 4; i++) {
+				if (!ships[i]) continue;
 				Ship* ship = ships[i];
 
 				// regen stamina
@@ -531,7 +569,7 @@ int main(int, char**) {
 					ship->invincibility_cooldown--;
 				}
 
-				// handle normal bullet spawns
+				// handle projectile spawns
 				ship->fire_1();
 
 				ship->fire_2();
@@ -568,7 +606,7 @@ int main(int, char**) {
 					}
 
 					// update acceleration
-					double accel_mag = 0.3*sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
+					double accel_mag = sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
 					if (accel_mag > ship->max_accel) {
 						accel_mag = ship->max_accel;
 					}
@@ -591,32 +629,44 @@ int main(int, char**) {
 					ship->y_vel += ship->y_accel;
 
 					// friction
-					if (ship->x_vel > 0) {
-						ship->x_vel -= (int)((pow(ship->x_vel, 2) + ship->constant_friction) / ship->friction_limiter);
-						if (ship->x_vel < 0) {
-							ship->x_vel = 0;
-						}
-					} else if (ship->x_vel < 0) {
-						ship->x_vel += (int)((pow(ship->x_vel, 2) + ship->constant_friction) / ship->friction_limiter);
-						if (ship->x_vel > 0) {
-							ship->x_vel = 0;
-						}
-					}
+					int iterations_per_frame = 40;
+					for (int j = 0; j < iterations_per_frame; j++) {
+						double total_vel = sqrt(pow(ship->x_vel, 2) + pow(ship->y_vel, 2));
+						//double friction_accel = ((pow(total_vel, 2) + (double)ship->constant_friction) / (double)ship->friction_limiter) / iterations_per_frame;
+						// todo: make this use the constants instead of literals
+						// todo: scale linearly with velocity?
+						double friction_accel = ((pow(total_vel, 2) + 1500000000) / 2000000) / iterations_per_frame;
 
-					if (ship->y_vel > 0) {
-						ship->y_vel -= (int)((pow(ship->y_vel, 2) + ship->constant_friction) / ship->friction_limiter);
-						if (ship->y_vel < 0) {
-							ship->y_vel = 0;
+						int friction_accel_x = ((double)friction_accel * ship->x_vel) / total_vel;
+						if (ship->x_vel > 0) {
+							ship->x_vel -= friction_accel_x;
+							if (ship->x_vel < 0) {
+								ship->x_vel = 0;
+							}
+						} else if (ship->x_vel < 0) {
+							ship->x_vel -= friction_accel_x;
+							if (ship->x_vel > 0) {
+								ship->x_vel = 0;
+							}
 						}
-					} else if (ship->y_vel < 0) {
-						ship->y_vel += (int)((pow(ship->y_vel, 2) + ship->constant_friction) / ship->friction_limiter);
+
+						int friction_accel_y = ((double)friction_accel * ship->y_vel) / total_vel;
 						if (ship->y_vel > 0) {
-							ship->y_vel = 0;
+							ship->y_vel -= friction_accel_y;
+							if (ship->y_vel < 0) {
+								ship->y_vel = 0;
+							}
+						} else if (ship->y_vel < 0) {
+							ship->y_vel -= friction_accel_y;
+							if (ship->y_vel > 0) {
+								ship->y_vel = 0;
+							}
 						}
 					}
 
 					// handle collisions between ships
-					for (int j = 0; j < num_players; j++) {
+					for (int j = 0; j < 4; j++) {
+						if (!ships[j]) continue;
 						if (i == j) continue;
 						double dist = sqrt(pow(ship->x_pos - ships[j]->x_pos, 2) + pow(ship->y_pos - ships[j]->y_pos, 2));
 						if (dist == 0) dist = 1;
@@ -657,31 +707,21 @@ int main(int, char**) {
 				}
 
 				// update projectiles
-				ship->update_projectiles_1(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, num_players, ships, haptics);
-				ship->update_projectiles_2(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, num_players, ships, haptics);
-				ship->update_projectiles_3(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, num_players, ships, haptics);
+				ship->update_projectiles_1(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, ships, haptics);
+				ship->update_projectiles_2(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, ships, haptics);
+				ship->update_projectiles_3(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, ships, haptics);
 
 				// Check to see if the game is over
-				int victoryCheck = 0;
-				for (int i = 0; i < num_players; i++) {
-					ship = ships[i];
-					if (ship->lives == 0) {
-						victoryCheck++;
+				int number_alive = 0;
+				winner = -1;
+				for (int i = 0; i < 4; i++) {
+					if (!ships[i]) continue;
+					if (ships[i]->lives != 0) {
+						number_alive++;
+						winner = i+1;
 					}
 				}
-				if (victoryCheck == num_players - 1) {
-					for (int j = 0; j < num_players; j++) {
-						ship = ships[j];
-						if (ship->lives != 0) {
-							winner = j + 1;
-						}
-					}
-					for (int k = 0; k < num_players; k++) {
-						ship = ships[k];
-						ship->lives = 4;
-						ship->percent = 0;
-						ship->stamina = ship->stamina_max;
-					}
+				if (number_alive == 1) {
 					currentState = results;
 				}
 
@@ -690,12 +730,18 @@ int main(int, char**) {
 			// begin rendering
 			{
 				// render background
-				render_texture(bg, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, 0, 1);
-				render_texture(sun_tex, (WINDOW_WIDTH-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, WINDOW_HEIGHT / 2, 0, 1);
+				if (!xp_mode) {
+					SDL_Rect r;
+					r.x = 0;
+					r.y = 0;
+					r.w = WINDOW_WIDTH;
+					r.h = WINDOW_HEIGHT;
+					RenderCopyEx(bg, NULL, &r, 0, NULL, SDL_FLIP_NONE);
+				}
 
 				// render all ship elements
-				for (int i = 0; i < num_players; i++) {
-
+				for (int i = 0; i < 4; i++) {
+					if (!ships[i]) continue;
 					Ship* ship = ships[i];
 
 					ship->render();
@@ -715,13 +761,14 @@ int main(int, char**) {
 					s.x = 0;
 					s.y = 0;
 					s.w = STATUS_BAR_WIDTH;
-					s.h = 1000;
+					s.h = WINDOW_HEIGHT;
 					SDL_RenderFillRect(renderer, &s);
 
 					int textAdjustment = 50; // todo: rename this shit
 
 					// render each ship's UI elements
-					for (int i = 0; i < num_players; i++) {
+					for (int i = 0; i < 4; i++) {
+						if (!ships[i]) continue;
 						Ship* ship = ships[i];
 						
 						// render stamina bar
@@ -847,10 +894,10 @@ int main(int, char**) {
 		
 	} //end of loop
 
-	for (int i = 0; i < num_players; i++) {
+	//for (int i = 0; i < num_players; i++) {
 		// todo: close the controllers themselves?
-		SDL_HapticClose(haptics[i]);
-	}
+	//	SDL_HapticClose(haptics[i]);
+	//}
 	SDL_DestroyTexture(bg);
 	// todo: destroy other textures?
 	SDL_DestroyRenderer(renderer);
@@ -891,11 +938,56 @@ bool read_global_input(SDL_Event* e) {
 		}
 		break;
 	case SDL_CONTROLLERBUTTONDOWN:
-		if (e->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+		if (e->cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
 			quit = true;
 			event_eaten = true;
+		} else if (e->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+			xp_mode = !xp_mode;
 		}
 		break;
+	case SDL_CONTROLLERDEVICEADDED:
+	{
+		SDL_GameController* temp = SDL_GameControllerOpen(e->cdevice.which);
+		if (!temp) {
+			std::cout << "could not connect controller" << std::endl;
+		}
+		SDL_Joystick* joy = SDL_GameControllerGetJoystick(temp);
+		int instanceID = SDL_JoystickInstanceID(joy);
+		// find first empty slot
+		for (int i = 0; i < 4; i++) {
+			if (controller_mappings[i] == -1) {
+				controller_mappings[i] = instanceID;
+				controllers[i] = temp;
+
+				haptics[i] = SDL_HapticOpen(e->cdevice.which);
+				if (SDL_HapticRumbleInit(haptics[i]) != 0) {
+					std::cout << "could not init haptic device" << std::endl;
+				}
+				SDL_HapticRumblePlay(haptics[i], 1.0f, 500);
+				if (!haptics[i]) {
+					printf(SDL_GetError());
+				}
+				std::cout << "connecting new controller " << instanceID << " in slot " << i << std::endl;
+				break;
+			}
+		}
+		event_eaten = true;
+		break;
+	}
+	case SDL_CONTROLLERDEVICEREMOVED:
+	{
+		int instanceID = e->cdevice.which;
+		int slot = lookup_controller(instanceID);
+		if (slot == -1) printf("something went terribly wrong for controller with instanceID %d", instanceID);
+		std::cout << "disconnecting controller " << instanceID << " from slot " << slot << std::endl;
+		controller_mappings[slot] = -1;
+		SDL_GameControllerClose(controllers[slot]);
+		controllers[slot] = NULL;
+		SDL_HapticClose(haptics[slot]);
+		haptics[slot] = NULL;
+		event_eaten = true;
+		break;
+	}
 	}
 	return event_eaten;
 }
@@ -910,6 +1002,7 @@ void render_press_start_to_join(int x, int y) {
 	render_text(x+100, y+100, "press start to join");
 }
 
+/*
 void poll_for_controllers() {
 	// check for additional controllers
 	int num_joysticks = SDL_NumJoysticks();
@@ -932,6 +1025,33 @@ void poll_for_controllers() {
 				std::cout << "could not connect controller" << std::endl;
 			}
 		}
-		
 	}
+
+	// disconnect lost controllers
+	for (int i = 0; i < 4; i++) {
+		if (!SDL_GameControllerGetAttached(controllers[i]) && controllers[i] != NULL) {
+			std::cout << "disconnecting controller " << i << std::endl;
+				
+			SDL_GameControllerClose(controllers[i]);
+			std::cout << SDL_NumJoysticks() << SDL_IsGameController(2) << std::endl;
+			//controllers[i] = controllers[num_players-1];
+			controllers[i] = NULL;
+				
+			SDL_HapticClose(haptics[i]);
+			haptics[i] = NULL;
+			//haptics[i] = haptics[num_players-1];
+
+			num_players--;
+		}
+	}
+}
+*/
+
+int lookup_controller(int instanceID) {
+	for (int i = 0; i < 4; i++) {
+		if (controller_mappings[i] == instanceID) {
+			return i;
+		}
+	}
+	return -1;
 }

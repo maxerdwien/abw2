@@ -31,14 +31,14 @@ public:
 	//void render();
 
 	void fire_1();
-	void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]);
+	void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]);
 	void render_projectiles_1();
 
 	void fire_2();
-	void update_projectiles_2(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]);
+	void update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]);
 	void render_projectiles_2();
 
 	void fire_3();
-	void update_projectiles_3(int min_x, int max_x, int min_y, int max_y, int num_players, Ship* ships[], SDL_Haptic* haptics[]);
+	void update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]);
 	void render_projectiles_3();
 };
