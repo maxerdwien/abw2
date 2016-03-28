@@ -40,9 +40,6 @@ void render_text(int x, int y, const std::string& s) {
 	// todo: don't reopen this every time
 	TTF_Font* caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
 
-	//char* cstr = new char[s.length() + 1];
-	//std::strcpy(cstr, s.c_str());
-
 	SDL_Color White = { 255, 255, 255 };
 	SDL_Surface* surface = TTF_RenderText_Blended(caladea36, s.c_str(), White); //Create the sdl surface
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface); //Convert to texture
@@ -50,6 +47,25 @@ void render_text(int x, int y, const std::string& s) {
 	rect.x = x;
 	rect.y = y;
 	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
+
+	TTF_CloseFont(caladea36);
+}
+
+void render_text_centered(int x, int y, const std::string& s) {
+	// todo: don't reopen this every time
+	TTF_Font* caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
+
+	SDL_Color White = { 255, 255, 255 };
+	SDL_Surface* surface = TTF_RenderText_Blended(caladea36, s.c_str(), White); //Create the sdl surface
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface); //Convert to texture
+	SDL_Rect rect; //create a rect
+	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+	rect.x = x - rect.w/2;
+	rect.y = y;
+	
 	SDL_RenderCopy(renderer, texture, NULL, &rect);
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);
