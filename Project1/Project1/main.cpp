@@ -985,7 +985,7 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex,  ship_type s
 	if (shipType == 0) {
 		render_text_centered(x + 300, y + 125, "BLACK");
 		render_text(x + 100, y + 155, "Weapon 1: Burst Shot");
-		render_text(x + 100, y + 185, "Weapon 2: Melee Weapon");
+		render_text(x + 100, y + 185, "Weapon 2: Flamethrower");
 		render_text(x + 100, y + 215, "Weapon 3: Charge Shot");
 	}
 	else if (shipType == 1) {

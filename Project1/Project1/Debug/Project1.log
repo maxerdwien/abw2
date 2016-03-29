@@ -1,16 +1,1 @@
-<<<<<<< HEAD
-﻿  polar.cpp
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(24): warning C4305: '=': truncation from '__int64' to 'int'
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(24): warning C4309: '=': truncation of constant value
-  Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe
-=======
-﻿  main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(231): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(235): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(647): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(660): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(683): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(685): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(894): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
->>>>>>> origin/master
+﻿  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe

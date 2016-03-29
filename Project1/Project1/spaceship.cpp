@@ -29,7 +29,7 @@ void Ship::render() {
 	}
 
 	// render laser sight
-	render_line(x_pos, y_pos, gun_dir_x, gun_dir_y);
+	//render_line(x_pos, y_pos, gun_dir_x, gun_dir_y);
 }
 
 void Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockback_scaling, int damage, SDL_Haptic* haptic) {
