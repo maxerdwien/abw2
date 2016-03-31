@@ -113,6 +113,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;
 			if (ships[k]->id == id) continue;
+			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 			//std::cout << dist << std::endl;
 			if (dist <= (ships[k]->radius + bullet->radius)) {
@@ -191,6 +192,7 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 		for (int j = 0; j < 4; j++) {
 			if (!ships[j]) continue;
 			if (ships[j]->id == id) continue;
+			if (ships[j]->lives == 0) continue;
 			Ship* target_ship = ships[j];
 			double dist = sqrt(pow(hb_x - target_ship->x_pos, 2) + pow(hb_y - target_ship->y_pos, 2));
 			if (dist <= (target_ship->radius + flame_radii[i])) {

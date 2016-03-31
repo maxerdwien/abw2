@@ -28,10 +28,13 @@ const int STATUS_BAR_WIDTH = 150;
 bool quit = false;
 bool is_fullscreen = false;
 bool xp_mode = false;
+bool muted = true;
 
 int controller_mappings[4] = { -1, -1, -1, -1 };
 SDL_GameController* controllers[4] = { NULL, NULL, NULL, NULL };
 SDL_Haptic* haptics[4];
+
+Mix_Music* music;
 
 bool read_global_input(SDL_Event* e);
 
@@ -82,9 +85,6 @@ int main(int, char**) {
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
 		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
 	}
-
-	Mix_Chunk* m = Mix_LoadWAV("..\\Project1\\assets\\sounds\\wilhelm.wav");
-	Mix_PlayChannel(-1, m, 0);
 
 	// set resolution
 	enum Resolution {
@@ -141,19 +141,8 @@ int main(int, char**) {
 		return 1;
 	}
 
-	// register controllers
-	for (int i = 0; i < 4; i++) {
-		controllers[i] = NULL;
-	}
-
 	// load textures
 	SDL_Texture* bg = LoadTexture("..\\Project1\\assets\\background.png");
-	//SDL_Texture* sun_tex = LoadTexture("..\\Project1\\assets\\sun.png");
-
-
-
-	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
-	bool analog_stick_moved[4] = { false, false, false, false };
 
 	SDL_Texture* ship_textures[3][4];
 	ship_textures[black][red] = LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
@@ -174,7 +163,20 @@ int main(int, char**) {
 	SDL_Texture* right_arrow = LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
-	caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
+	caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36);
+
+	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
+	// "Cyborg Ninja" Kevin MacLeod (incompetech.com)
+	// Licensed under Creative Commons : By Attribution 3.0 License
+	// http ://creativecommons.org/licenses/by/3.0/
+	if (!muted) {
+		Mix_PlayMusic(music, -1);
+	}
+	Mix_Chunk* m = Mix_LoadWAV("..\\Project1\\assets\\sounds\\wilhelm.wav");
+	Mix_PlayChannel(-1, m, 0);
+
+	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
+	bool analog_stick_moved[4] = { false, false, false, false };
 
 	SDL_Event e;
 	
@@ -261,6 +263,9 @@ int main(int, char**) {
 					controller_index = lookup_controller(e.cbutton.which);
 					
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+						currentState = stageSelect;
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						currentState = stageSelect;
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
@@ -576,6 +581,7 @@ int main(int, char**) {
 			for (int i = 0; i < 4; i++) {
 				if (!ships[i]) continue;
 				Ship* ship = ships[i];
+				if (ship->lives == 0) continue;
 
 				// regen stamina
 				ship->stamina += ship->stamina_per_frame;
@@ -667,6 +673,7 @@ int main(int, char**) {
 					for (int j = 0; j < 4; j++) {
 						if (!ships[j]) continue;
 						if (i == j) continue;
+						if (ships[j]->lives == 0) continue;
 						double dist = sqrt(pow(ship->x_pos - ships[j]->x_pos, 2) + pow(ship->y_pos - ships[j]->y_pos, 2));
 						if (dist == 0) dist = 1;
 						if (dist <= (ships[i]->radius + ships[j]->radius)) {
@@ -742,12 +749,14 @@ int main(int, char**) {
 				for (int i = 0; i < 4; i++) {
 					if (!ships[i]) continue;
 					Ship* ship = ships[i];
+					if (ship->lives == 0) continue;
 					ship->render();
 
 				}
 				for (int i = 0; i < 4; i++) {
 					if (!ships[i]) continue;
 					Ship* ship = ships[i];
+					if (ship->lives == 0) continue;
 
 					// render projectiles
 					ship->render_projectiles_1();
@@ -772,6 +781,7 @@ int main(int, char**) {
 					for (int i = 0; i < 4; i++) {
 						if (!ships[i]) continue;
 						Ship* ship = ships[i];
+						if (ship->lives == 0) continue;
 						
 						// render stamina bar
 						{
@@ -906,14 +916,15 @@ int main(int, char**) {
 
 bool read_global_input(SDL_Event* e) {
 	bool event_eaten = false;
-	SDL_Keycode k;
+	
 	switch (e->type) {
 	case SDL_QUIT:
 		quit = true;
 		event_eaten = true;
 		break;
 	case SDL_KEYDOWN:
-		k = e->key.keysym.sym;
+	{
+		SDL_Keycode k = e->key.keysym.sym;
 		if (k == SDLK_f) {
 			if (is_fullscreen) {
 				SDL_SetWindowFullscreen(window, 0);
@@ -931,8 +942,18 @@ bool read_global_input(SDL_Event* e) {
 				SDL_ShowCursor(1);
 			}
 			event_eaten = true;
+		} else if (k == SDLK_m) {
+			muted = !muted;
+			if (muted) {
+				Mix_HaltMusic();
+			} else {
+				Mix_PlayMusic(music, -1);
+			}
+			
+			event_eaten = true;
 		}
 		break;
+	}
 	case SDL_CONTROLLERBUTTONDOWN:
 		if (e->cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
 			quit = true;

@@ -132,6 +132,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;
 			if (ships[k]->id == id) continue;
+			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 			//std::cout << dist << std::endl;
 			if (dist <= (ships[k]->radius + bullet->radius)) {
@@ -207,6 +208,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 		// check for collisions with enemies
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;
+			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(m->x_pos - ships[k]->x_pos, 2) + pow(m->y_pos - ships[k]->y_pos, 2));
 			if (!m->exploded) {
 				if (ships[k]->id == id) continue;
@@ -217,7 +219,6 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				}
 			} else {
 				if (dist <= (ships[k]->radius + m->radius)) {
-
 					ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
 				}
 
@@ -228,8 +229,6 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				ships[k]->x_vel += force * cos(angle);
 				ships[k]->y_vel += force * sin(angle);
 			}
-
-			
 		}
 	}
 }
@@ -276,6 +275,7 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 		for (int i = 0; i < 4; i++) {
 			if (!ships[i]) continue;
 			if (ships[i]->id == id) continue;
+			if (ships[i]->lives == 0) continue;
 			Ship* target_ship = ships[i];
 			double dist = get_dist(laser_start_x, laser_start_y, laser_end_x, laser_end_y, target_ship->x_pos, target_ship->y_pos);
 
