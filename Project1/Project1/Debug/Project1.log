@@ -1,1 +1,18 @@
-﻿  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
+﻿  main.cpp
+c:\users\max_000\desktop\abw2\project1\project1\polar.h(4): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(242): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(246): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(639): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(652): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(675): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(677): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(889): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+spark.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'spark.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+spaceship.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'spaceship.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+renderer.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'renderer.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+missile.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'missile.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+bullet.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'bullet.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+grizzly.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'grizzly.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+gravity-missile.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'gravity-missile.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+black.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'black.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe

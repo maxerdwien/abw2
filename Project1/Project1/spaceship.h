@@ -36,6 +36,9 @@ class Ship {
 		int left_stick_x = 1;
 		int left_stick_y = 0;
 
+		int desired_gun_dir_x = 1;
+		int desired_gun_dir_y = 0;
+
 		int gun_dir_x = 1;
 		int gun_dir_y = 0;
 
@@ -69,6 +72,8 @@ class Ship {
 		int weight;
 
 		int id;
+
+		const int GUN_LENGTH = 12 * 10000;
 
 		virtual void update() = 0;
 		void render();

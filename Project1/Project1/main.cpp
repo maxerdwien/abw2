@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 
 #include "spaceship.h"
@@ -45,6 +46,7 @@ void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
 
 int main(int, char**) {
+
 	int test = TTF_Init(); // todo: delete or rename
 
 	enum gameState {
@@ -75,6 +77,14 @@ int main(int, char**) {
 		std::cout << "SDL_Init error: " << SDL_GetError() << std::endl;
 		return 1;
 	}
+
+	// init sound
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+	}
+
+	Mix_Chunk* m = Mix_LoadWAV("..\\Project1\\assets\\sounds\\wilhelm.wav");
+	Mix_PlayChannel(-1, m, 0);
 
 	// set resolution
 	enum Resolution {
@@ -294,26 +304,26 @@ int main(int, char**) {
 							analog_stick_moved[controller_index] = true;
 							switch (selections[controller_index]) {
 							case black:
-								selections[controller_index] = polar;
+								selections[controller_index] = grizzly;
 								break;
 							case grizzly:
-								selections[controller_index] = black;
+								selections[controller_index] = polar;
 								break;
 							case polar:
-								selections[controller_index] = grizzly;
+								selections[controller_index] = black;
 								break;
 							}
 						} else if (e.caxis.value < -min_angle && !analog_stick_moved[controller_index]) {
 							analog_stick_moved[controller_index] = true;
 							switch (selections[controller_index]) {
 							case black:
-								selections[controller_index] = grizzly;
-								break;
-							case grizzly:
 								selections[controller_index] = polar;
 								break;
-							case polar:
+							case grizzly:
 								selections[controller_index] = black;
+								break;
+							case polar:
+								selections[controller_index] = grizzly;
 								break;
 							}
 						} else if (e.caxis.value < min_angle && e.caxis.value > -min_angle) {
@@ -515,12 +525,13 @@ int main(int, char**) {
 							double value = (double)e.caxis.value / 32767;
 
 							double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+							//std::cout << circle_x << std::endl;
 							ship->right_stick_x = (int)(10000 * circle_x);
 							double right_stick_mag = sqrt(pow(ship->right_stick_x, 2) + pow(ship->right_stick_y, 2));
 							//std::cout << right_stick_mag << std::endl;
 							if (right_stick_mag > DEAD_ZONE) {
-								ship->gun_dir_x = ship->right_stick_x;
-								ship->gun_dir_y = ship->right_stick_y;
+								ship->desired_gun_dir_x = ship->right_stick_x;
+								ship->desired_gun_dir_y = ship->right_stick_y;
 							}
 
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
@@ -531,8 +542,8 @@ int main(int, char**) {
 							double right_stick_mag = sqrt(pow(ship->right_stick_x, 2) + pow(ship->right_stick_y, 2));
 							//std::cout << right_stick_mag << std::endl;
 							if (right_stick_mag > DEAD_ZONE) {
-								ship->gun_dir_x = ship->right_stick_x;
-								ship->gun_dir_y = ship->right_stick_y;
+								ship->desired_gun_dir_x = ship->right_stick_x;
+								ship->desired_gun_dir_y = ship->right_stick_y;
 							}
 
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
@@ -576,6 +587,8 @@ int main(int, char**) {
 				if (ship->invincibility_cooldown > 0) {
 					ship->invincibility_cooldown--;
 				}
+
+				ship->update();
 
 				// handle projectile spawns
 				ship->fire_1();
@@ -656,7 +669,7 @@ int main(int, char**) {
 						if (i == j) continue;
 						double dist = sqrt(pow(ship->x_pos - ships[j]->x_pos, 2) + pow(ship->y_pos - ships[j]->y_pos, 2));
 						if (dist == 0) dist = 1;
-						if (dist <= 10000*(ships[i]->radius + ships[j]->radius)) {
+						if (dist <= (ships[i]->radius + ships[j]->radius)) {
 							double total_force = 140000000000000000.0 / pow(dist, 2);
 							double x_force = (ship->x_pos - ships[j]->x_pos) * total_force / dist;
 							ship->x_vel += x_force/ship->weight;
@@ -729,14 +742,17 @@ int main(int, char**) {
 				for (int i = 0; i < 4; i++) {
 					if (!ships[i]) continue;
 					Ship* ship = ships[i];
-
 					ship->render();
+
+				}
+				for (int i = 0; i < 4; i++) {
+					if (!ships[i]) continue;
+					Ship* ship = ships[i];
 
 					// render projectiles
 					ship->render_projectiles_1();
 					ship->render_projectiles_2();
 					ship->render_projectiles_3();
-
 				}
 
 				// render UI elements
@@ -880,12 +896,6 @@ int main(int, char**) {
 		
 	} //end of loop
 
-	//for (int i = 0; i < num_players; i++) {
-		// todo: close the controllers themselves?
-	//	SDL_HapticClose(haptics[i]);
-	//}
-	SDL_DestroyTexture(bg);
-	// todo: destroy other textures?
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 
@@ -984,26 +994,26 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex,  ship_type s
 	render_texture(left_arrow, x+200, y+70, 0, 1);
 	if (shipType == 0) {
 		render_text_centered(x + 300, y + 125, "BLACK");
-		render_text(x + 100, y + 155, "Weapon 1: Burst Shot");
-		render_text(x + 100, y + 185, "Weapon 2: Flamethrower");
-		render_text(x + 100, y + 215, "Weapon 3: Charge Shot");
+		render_text(x + 100, y + 170, "Weapon 1: Burst Shot");
+		render_text(x + 100, y + 200, "Weapon 2: Flamethrower");
+		render_text(x + 100, y + 230, "Weapon 3: Charge Shot");
 	}
 	else if (shipType == 1) {
 		render_text_centered(x + 300, y + 125, "GRIZZLY");
-		render_text(x + 100, y + 155, "Weapon 1: Normal Shot");
-		render_text(x + 100, y + 185, "Weapon 2: Normal Missles");
-		render_text(x + 100, y + 215, "Weapon 3: Mines");
+		render_text(x + 100, y + 170, "Weapon 1: Normal Shot");
+		render_text(x + 100, y + 200, "Weapon 2: Normal Missles");
+		render_text(x + 100, y + 230, "Weapon 3: Mines");
 	}
 	else {
 		render_text_centered(x + 300, y + 125, "POLAR");
-		render_text(x + 100, y + 155, "Weapon 1: Spread Shot");
-		render_text(x + 100, y + 185, "Weapon 2: Gravity Missles");
-		render_text(x + 100, y + 215, "Weapon 3: Laser");
+		render_text(x + 100, y + 170, "Weapon 1: Spread Shot");
+		render_text(x + 100, y + 200, "Weapon 2: Gravity Missles");
+		render_text(x + 100, y + 230, "Weapon 3: Laser");
 	}
 }
 
 void render_plugin_to_join(int x, int y) {
-	render_text(x+100, y+100, "Plug in controller to join");
+	render_text_centered(x + WINDOW_WIDTH / 4 - BARSIZE / 2, y+100, "Plug in controller to join");
 }
 
 

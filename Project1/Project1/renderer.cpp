@@ -74,14 +74,8 @@ void render_text_centered(int x, int y, const std::string& s) {
 }
 
 void render_line(int x_start, int y_start, int x_dir, int y_dir) {
-	// set color to red, cause lasers are red
-	SDL_SetRenderDrawColor(renderer, 128, 0, 0, SDL_ALPHA_OPAQUE);
-	/*
-	int red = (std::rand()*256) / RAND_MAX;
-	int green = (std::rand() * 256) / RAND_MAX;
-	int blue = (std::rand() * 256) / RAND_MAX;
-	SDL_SetRenderDrawColor(renderer, red, green, blue, SDL_ALPHA_OPAQUE);
-	*/
+	// set color to yellow, cause sparks are yellow
+	SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
 	
 	int x_end = x_start+x_dir*100000;
 	int y_end = y_start+y_dir*100000;
@@ -96,4 +90,27 @@ void render_line(int x_start, int y_start, int x_dir, int y_dir) {
 	}
 	*/
 	SDL_RenderDrawLine(renderer, x_start/10000, y_start/10000, x_end/10000, y_end/10000);
+}
+
+void render_line_thick(int x_start, int y_start, int x_dir, int y_dir) {
+	// set color to red, cause lasers are red
+	SDL_SetRenderDrawColor(renderer, 128, 0, 0, SDL_ALPHA_OPAQUE);
+
+	int x_end = x_start + x_dir * 100000;
+	int y_end = y_start + y_dir * 100000;
+	/*
+	if (x_end > WINDOW_WIDTH) {
+	y_end *= ((double)WINDOW_WIDTH / x_end);
+	x_end = WINDOW_WIDTH;
+	}
+	if (y_end > WINDOW_HEIGHT) {
+	x_end *= ((double)WINDOW_HEIGHT / y_end);
+	y_end = WINDOW_HEIGHT;
+	}
+	*/
+	SDL_RenderDrawLine(renderer, x_start / 10000, y_start / 10000, x_end / 10000, y_end / 10000);
+	SDL_RenderDrawLine(renderer, x_start / 10000+1, y_start / 10000, x_end / 10000+1, y_end / 10000);
+	SDL_RenderDrawLine(renderer, x_start / 10000-1, y_start / 10000, x_end / 10000-1, y_end / 10000);
+	SDL_RenderDrawLine(renderer, x_start / 10000, y_start / 10000+1, x_end / 10000, y_end / 10000+1);
+	SDL_RenderDrawLine(renderer, x_start / 10000, y_start / 10000-1, x_end / 10000, y_end / 10000-1);
 }

@@ -28,7 +28,6 @@ bullet** spawn_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int v
 	} else {
 		double straight_theta = atan2(gun_dir_y, gun_dir_x);
 
-
 		for (int i = 0; i < spread; i++) {
 			double theta;
 			if (i % 2 == 0) {

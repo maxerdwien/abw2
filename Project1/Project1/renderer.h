@@ -16,3 +16,4 @@ void render_text(int x, int y, const std::string& s);
 void render_text_centered(int x, int y, const std::string& s);
 
 void render_line(int x_start, int y_start, int x_dir, int y_dir);
+void render_line_thick(int x_start, int y_start, int x_dir, int y_dir);

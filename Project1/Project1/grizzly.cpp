@@ -25,7 +25,7 @@ Grizzly::Grizzly(int identifier, int x, int y) {
 	friction_limiter = 9000000;
 	constant_friction = 25000000000;
 
-	radius = 40;
+	radius = 40 * 10000;
 	weight = 100;
 
 	if (id == 0) {
@@ -55,7 +55,8 @@ Grizzly::Grizzly(int identifier, int x, int y) {
 }
 
 void Grizzly::update() {
-	return;
+	gun_dir_x = desired_gun_dir_x;
+	gun_dir_y = desired_gun_dir_y;
 }
 
 void Grizzly::fire_1() {
@@ -101,7 +102,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 			if (ships[k]->id == id) continue;
 			double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 			//std::cout << dist << std::endl;
-			if (dist <= (ships[k]->radius + bullet->radius) * 10000) {
+			if (dist <= (ships[k]->radius + bullet->radius)) {
 
 				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
 
@@ -201,13 +202,13 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 			double dist = sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2));
 			if (!missile->exploded) {
 				if (ships[k]->id == id) continue;
-				if (dist <= MISSILE_ACTIVATION_RADIUS * 10000) {
+				if (dist <= MISSILE_ACTIVATION_RADIUS) {
 					missile->exploded = true;
 					missile->x_vel = 0;
 					missile->y_vel = 0;
 				}
 			} else {
-				if (dist <= (ships[k]->radius + missile->radius) * 10000) {
+				if (dist <= (ships[k]->radius + missile->radius)) {
 					if (missile->players_hit[k]) continue;
 					missile->players_hit[k] = true;
 
@@ -226,8 +227,8 @@ void Grizzly::render_projectiles_2() {
 		} else {
 			SDL_Rect rect;
 
-			rect.w = missiles[j]->radius * 2;
-			rect.h = missiles[j]->radius * 2;
+			rect.w = missiles[j]->radius/10000 * 2;
+			rect.h = missiles[j]->radius/10000 * 2;
 			rect.x = missiles[j]->x_pos / 10000 - rect.w / 2;
 			rect.y = missiles[j]->y_pos / 10000 - rect.h / 2;
 
@@ -251,7 +252,7 @@ void Grizzly::fire_3() {
 		}
 		free(new_missiles);
 		mine_cooldown += mine_delay;
-		stamina -= 300;
+		stamina -= 450;
 	}
 }
 
@@ -321,13 +322,13 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 			double dist = sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2));
 			if (!mine->exploded) {
 				if (ships[k]->id == id) continue;
-				if (dist <= MISSILE_ACTIVATION_RADIUS * 10000) {
+				if (dist <= MISSILE_ACTIVATION_RADIUS) {
 					mine->exploded = true;
 					mine->x_vel = 0;
 					mine->y_vel = 0;
 				}
 			} else {
-				if (dist <= (ships[k]->radius + mine->radius) * 10000) {
+				if (dist <= (ships[k]->radius + mine->radius)) {
 					if (mine->players_hit[k]) continue;
 					mine->players_hit[k] = true;
 
@@ -346,8 +347,8 @@ void Grizzly::render_projectiles_3() {
 		} else {
 			SDL_Rect rect;
 
-			rect.w = mines[j]->radius * 2;
-			rect.h = mines[j]->radius * 2;
+			rect.w = mines[j]->radius/10000 * 2;
+			rect.h = mines[j]->radius/10000 * 2;
 			rect.x = mines[j]->x_pos / 10000 - rect.w / 2;
 			rect.y = mines[j]->y_pos / 10000 - rect.h / 2;
 

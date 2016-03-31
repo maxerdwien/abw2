@@ -1,8 +1,14 @@
 #pragma once
 
+// in radians per frame
+const int polar_gun_turn_speed = M_PI / 30;
+
+
 class Polar : public Ship {
 private:
 	SDL_Texture* bullet_tex;
+	SDL_Texture* missile_tex;
+	SDL_Texture* vortex_tex;
 
 public:
 	struct bullet* bullets[1000];
@@ -10,6 +16,22 @@ public:
 
 	const int spread_delay = 30;
 	int spread_cooldown = 0;
+
+	class Gravity_Missile* g_missiles[100];
+	int num_g_missiles = 0;
+
+	const int missile_delay = 100;
+	int missile_cooldown = 0;
+
+	bool laser_active = false;
+
+	int laser_start_x;
+	int laser_start_y;
+	int laser_end_x;
+	int laser_end_y;
+
+	class Spark* sparks[1000];
+	int num_sparks = 0;
 
 	Polar(int identifier, int x, int y);
 
@@ -26,4 +48,6 @@ public:
 	void fire_3();
 	void update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]);
 	void render_projectiles_3();
+
+	double Polar::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_0);
 };

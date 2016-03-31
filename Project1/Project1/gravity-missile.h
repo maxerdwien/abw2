@@ -1,5 +1,11 @@
 #pragma once
 
+const int G_MISSILE_ACTIVATION_RADIUS = 200 * 10000;
+const int G_MISSILE_MAX_RADIUS = 200 * 10000;
+const int G_MISSILE_RADIUS_PER_FRAME = 2 * 10000;
+// in degrees per frame
+const int vortex_turn_rate = 10;
+
 class Gravity_Missile {
 public:
 	int x_pos;
@@ -12,12 +18,14 @@ public:
 	int y_accel;
 
 	int damage;
-	int base_knockback;
-	int knockback_scaling;
+	int base_knockback = 1;
+	int knockback_scaling = 1;
 
 	bool exploded = false;
 
-	const int radius = 5;
+	int radius = 5 * 10000;
 
-	Gravity_Missile();
+	double vortex_angle = 0;
+
+	Gravity_Missile(int x, int y, int x_v, int y_v);
 };
