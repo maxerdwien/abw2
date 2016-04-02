@@ -33,7 +33,7 @@ public:
 	class Spark* sparks[1000];
 	int num_sparks = 0;
 
-	Polar(int identifier, int x, int y);
+	Polar(int identifier, int x, int y, Renderer* rend);
 
 	void update();
 

@@ -26,7 +26,7 @@ public:
 	const int mine_delay = 100;
 	int mine_cooldown = 0;
 
-	Grizzly(int identifier, int x, int y);
+	Grizzly(int identifier, int x, int y, Renderer* rend);
 
 	void update();
 	//void render();

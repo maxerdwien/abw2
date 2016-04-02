@@ -6,11 +6,10 @@
 #include "polar.h"
 #include "renderer.h"
 
-
 #include "bullet.h"
 
 
-Polar::Polar(int identifier, int x, int y) {
+Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 	id = identifier;
 
 	x_pos = x;
@@ -30,26 +29,28 @@ Polar::Polar(int identifier, int x, int y) {
 	radius = 40 * 10000;
 	weight = 60;
 
+	r = rend;
+
 	if (id == 0) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
 	} else if (id == 1) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
 	} else if (id == 2) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
 	} else {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
 	}
 
-	ship_invincible_tex = LoadTexture("..\\Project1\\assets\\ships\\polar-white.png");
+	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-white.png");
 
-	cannon_tex = LoadTexture("..\\Project1\\assets\\cannon.png");
+	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 
-	missile_tex = LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
-	vortex_tex = LoadTexture("..\\Project1\\assets\\unused\\baddie.png");
+	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
+	vortex_tex = r->LoadTexture("..\\Project1\\assets\\unused\\baddie.png");
 	SDL_SetTextureAlphaMod(vortex_tex, 100);
 
 }
@@ -152,8 +153,8 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 void Polar::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
-		double angle = calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, 1);
+		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
+		r->render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, 1);
 	}
 }
 
@@ -225,7 +226,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				// do gravity effect
 				double force = 20000000000000000.0 / pow(dist, 2);
 				if (force > 70000) force = 70000;
-				double angle = calculate_angle(m->x_pos - ships[k]->x_pos, m->y_pos - ships[k]->y_pos);
+				double angle = r->calculate_angle(m->x_pos - ships[k]->x_pos, m->y_pos - ships[k]->y_pos);
 				ships[k]->x_vel += force * cos(angle);
 				ships[k]->y_vel += force * sin(angle);
 			}
@@ -236,8 +237,8 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 void Polar::render_projectiles_2() {
 	for (int j = 0; j < num_g_missiles; j++) {
 		if (!g_missiles[j]->exploded) {
-			double angle = calculate_angle(g_missiles[j]->x_vel, g_missiles[j]->y_vel);
-			render_texture(missile_tex, g_missiles[j]->x_pos / 10000, g_missiles[j]->y_pos / 10000, angle, 3);
+			double angle = r->calculate_angle(g_missiles[j]->x_vel, g_missiles[j]->y_vel);
+			r->render_texture(missile_tex, g_missiles[j]->x_pos / 10000, g_missiles[j]->y_pos / 10000, angle, 3);
 		} else {
 			SDL_Rect rect;
 
@@ -246,10 +247,10 @@ void Polar::render_projectiles_2() {
 			rect.x = g_missiles[j]->x_pos / 10000 - rect.w / 2;
 			rect.y = g_missiles[j]->y_pos / 10000 - rect.h / 2;
 
-			RenderCopyEx(vortex_tex, NULL, &rect, g_missiles[j]->vortex_angle, NULL, SDL_FLIP_NONE);
-			RenderCopyEx(vortex_tex, NULL, &rect, -g_missiles[j]->vortex_angle, NULL, SDL_FLIP_NONE);
-			RenderCopyEx(vortex_tex, NULL, &rect, g_missiles[j]->vortex_angle+180, NULL, SDL_FLIP_NONE);
-			RenderCopyEx(vortex_tex, NULL, &rect, -g_missiles[j]->vortex_angle+180, NULL, SDL_FLIP_NONE);
+			r->RenderCopyEx(vortex_tex, NULL, &rect, g_missiles[j]->vortex_angle, NULL, SDL_FLIP_NONE);
+			r->RenderCopyEx(vortex_tex, NULL, &rect, -g_missiles[j]->vortex_angle, NULL, SDL_FLIP_NONE);
+			r->RenderCopyEx(vortex_tex, NULL, &rect, g_missiles[j]->vortex_angle+180, NULL, SDL_FLIP_NONE);
+			r->RenderCopyEx(vortex_tex, NULL, &rect, -g_missiles[j]->vortex_angle+180, NULL, SDL_FLIP_NONE);
 		}
 	}
 }
@@ -309,14 +310,13 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 void Polar::render_projectiles_3() {
 	if (laser_active) {
-		render_line_thick(laser_start_x, laser_start_y, gun_dir_x, gun_dir_y);
+		r->render_line_thick(laser_start_x, laser_start_y, gun_dir_x, gun_dir_y);
 	}
 
 	for (int i = 0; i < num_sparks; i++) {
 		Spark* s = sparks[i];
-		// set color to yellow, cause sparks are yellow
-		SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
-		SDL_RenderDrawLine(renderer, s->x_1 / 10000, s->y_1 / 10000, s->x_2 / 10000, s->y_2 / 10000);
+		r->render_sparks(s->x_1, s->y_1, s->x_2, s->y_2);
+		
 	}
 }
 

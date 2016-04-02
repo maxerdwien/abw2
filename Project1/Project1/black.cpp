@@ -6,7 +6,7 @@
 
 #include "bullet.h"
 
-Black::Black(int identifier, int x, int y) {
+Black::Black(int identifier, int x, int y, Renderer* rend) {
 	id = identifier;
 
 	x_pos = x;
@@ -26,26 +26,28 @@ Black::Black(int identifier, int x, int y) {
 	radius = 40 * 10000;
 	weight = 60;
 
+	r = rend;
+
 	if (id == 0) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
 	} else if (id == 1) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
 	} else if (id == 2) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
 	} else {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
 	}
 
-	ship_invincible_tex = LoadTexture("..\\Project1\\assets\\ships\\black-white.png");
+	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-white.png");
 
-	cannon_tex = LoadTexture("..\\Project1\\assets\\cannon.png");
+	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 
-	flame_tex_1 = LoadTexture("..\\Project1\\assets\\attacks\\flame1.png");
-	flame_tex_2 = LoadTexture("..\\Project1\\assets\\attacks\\flame2.png");
+	flame_tex_1 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame1.png");
+	flame_tex_2 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame2.png");
 }
 
 void Black::update() {
@@ -133,8 +135,8 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 void Black::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
-		double angle = calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, ((double)bullets[j]->radius/10000.0)/5);
+		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
+		r->render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, ((double)bullets[j]->radius/10000.0)/5);
 	}
 }
 
@@ -222,10 +224,10 @@ void Black::render_projectiles_3() {
 		rect.y = y_pos/10000 - rect.h / 2 + (12 + rect.h / 2)*sin(angle);
 
 		if (current_flame == 0) {
-			RenderCopyEx(flame_tex_1, NULL, &rect, calculate_angle(gun_dir_x, gun_dir_y), NULL, SDL_FLIP_NONE);
+			r->RenderCopyEx(flame_tex_1, NULL, &rect, r->calculate_angle(gun_dir_x, gun_dir_y), NULL, SDL_FLIP_NONE);
 		} else {
 			// works since the textures are the same size
-			RenderCopyEx(flame_tex_2, NULL, &rect, calculate_angle(gun_dir_x, gun_dir_y), NULL, SDL_FLIP_NONE);
+			r->RenderCopyEx(flame_tex_2, NULL, &rect, r->calculate_angle(gun_dir_x, gun_dir_y), NULL, SDL_FLIP_NONE);
 		}
 	}
 }

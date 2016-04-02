@@ -8,7 +8,7 @@
 #include "bullet.h"
 #include "missile.h"
 
-Grizzly::Grizzly(int identifier, int x, int y) {
+Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	id = identifier;
 
 	x_pos = x;
@@ -28,30 +28,32 @@ Grizzly::Grizzly(int identifier, int x, int y) {
 	radius = 40 * 10000;
 	weight = 100;
 
+	r = rend;
+
 	if (id == 0) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
-		mine_tex = LoadTexture("..\\Project1\\assets\\attacks\\mineRed.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
+		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineRed.png");
 	} else if (id == 1) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
-		mine_tex = LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
 	} else if (id == 2) {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
-		mine_tex = LoadTexture("..\\Project1\\assets\\attacks\\mineYellow.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineYellow.png");
 	} else {
-		ship_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
-		bullet_tex = LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
-		mine_tex = LoadTexture("..\\Project1\\assets\\attacks\\mineGreen.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
+		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineGreen.png");
 	}
 
-	ship_invincible_tex = LoadTexture("..\\Project1\\assets\\ships\\grizzly-white.png");
+	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-white.png");
 
-	cannon_tex = LoadTexture("..\\Project1\\assets\\cannon.png");
+	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 	
-	missile_tex = LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
-	explosion_tex = LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
+	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
+	explosion_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
 }
 
 void Grizzly::update() {
@@ -120,8 +122,8 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 
 void Grizzly::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
-		double angle = calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, 1);
+		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
+		r->render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, 1);
 	}
 }
 
@@ -225,8 +227,8 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 void Grizzly::render_projectiles_2() {
 	for (int j = 0; j < num_missiles; j++) {
 		if (!missiles[j]->exploded) {
-			double angle = calculate_angle(missiles[j]->x_vel, missiles[j]->y_vel);
-			render_texture(missile_tex, missiles[j]->x_pos / 10000, missiles[j]->y_pos / 10000, angle, 1.8);
+			double angle = r->calculate_angle(missiles[j]->x_vel, missiles[j]->y_vel);
+			r->render_texture(missile_tex, missiles[j]->x_pos / 10000, missiles[j]->y_pos / 10000, angle, 1.8);
 		} else {
 			SDL_Rect rect;
 
@@ -235,7 +237,7 @@ void Grizzly::render_projectiles_2() {
 			rect.x = missiles[j]->x_pos / 10000 - rect.w / 2;
 			rect.y = missiles[j]->y_pos / 10000 - rect.h / 2;
 
-			RenderCopyEx(explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+			r->RenderCopyEx(explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
 		}
 	}
 }
@@ -347,8 +349,8 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 void Grizzly::render_projectiles_3() {
 	for (int j = 0; j < num_mines; j++) {
 		if (!mines[j]->exploded) {
-			double angle = calculate_angle(mines[j]->x_vel, mines[j]->y_vel);
-			render_texture(mine_tex, mines[j]->x_pos / 10000, mines[j]->y_pos / 10000, angle, 1.8);
+			double angle = r->calculate_angle(mines[j]->x_vel, mines[j]->y_vel);
+			r->render_texture(mine_tex, mines[j]->x_pos / 10000, mines[j]->y_pos / 10000, angle, 1.8);
 		} else {
 			SDL_Rect rect;
 
@@ -357,7 +359,7 @@ void Grizzly::render_projectiles_3() {
 			rect.x = mines[j]->x_pos / 10000 - rect.w / 2;
 			rect.y = mines[j]->y_pos / 10000 - rect.h / 2;
 
-			RenderCopyEx(explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+			r->RenderCopyEx(explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
 		}
 	}
 }

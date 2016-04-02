@@ -1,18 +1,40 @@
-#include <SDL_image.h>
-#include <SDL_ttf.h>
 #include <iostream>
 #include <string>
 
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
+
 #include "renderer.h"
 
-double calculate_angle(int x_vel, int y_vel) {
+Renderer::Renderer(SDL_Renderer* r, int w, int h) {
+	renderer = r;
+
+	WINDOW_WIDTH = w;
+	WINDOW_HEIGHT = h;
+
+	TTF_Init();
+
+	TTF_Font *font;
+	font = TTF_OpenFont("font.ttf", 16);
+	if (!font) {
+		printf("TTF_OpenFont: %s\n", TTF_GetError());
+		// handle error
+	}
+
+	TTF_Font* f = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); // for 720p
+	caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); // for 720p
+	caladea54 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 54); // for 1080p
+}
+
+double Renderer::calculate_angle(int x_vel, int y_vel) {
 	double angle;
 	double conversion = 180 / M_PI;
 	angle = atan2(y_vel, x_vel) * conversion + 90;
 	return angle;
 }
 
-void render_texture(SDL_Texture* texture, int x, int y, double angle, double scaling) {
+void Renderer::render_texture(SDL_Texture* texture, int x, int y, double angle, double scaling) {
 	SDL_Rect rect;
 
 	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
@@ -24,11 +46,11 @@ void render_texture(SDL_Texture* texture, int x, int y, double angle, double sca
 	RenderCopyEx(texture, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
 }
 
-int RenderCopyEx(SDL_Texture* texture,	const SDL_Rect* srcrect, const SDL_Rect* dstrect, const double angle, const SDL_Point* center, const SDL_RendererFlip flip) {
+int Renderer::RenderCopyEx(SDL_Texture* texture, const SDL_Rect* srcrect, const SDL_Rect* dstrect, const double angle, const SDL_Point* center, const SDL_RendererFlip flip) {
 	return SDL_RenderCopyEx(renderer, texture, srcrect, dstrect, angle, center, flip);
 }
 
-SDL_Texture* LoadTexture(const char* file) {
+SDL_Texture* Renderer::LoadTexture(const char* file) {
 	SDL_Texture* tex =  IMG_LoadTexture(renderer, file);
 	if (!tex) {
 		std::cout << SDL_GetError() << std::endl;
@@ -36,9 +58,7 @@ SDL_Texture* LoadTexture(const char* file) {
 	return tex;
 }
 
-void render_text(int x, int y, const std::string& s) {
-	// todo: don't reopen this every time
-	TTF_Font* caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
+void Renderer::render_text(int x, int y, const std::string& s) {
 
 	SDL_Color White = { 255, 255, 255 };
 	SDL_Surface* surface = TTF_RenderText_Blended(caladea36, s.c_str(), White); //Create the sdl surface
@@ -50,13 +70,9 @@ void render_text(int x, int y, const std::string& s) {
 	SDL_RenderCopy(renderer, texture, NULL, &rect);
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);
-
-	TTF_CloseFont(caladea36);
 }
 
-void render_text_centered(int x, int y, const std::string& s) {
-	// todo: don't reopen this every time
-	TTF_Font* caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); //this opens a font style and sets a size
+void Renderer::render_text_centered(int x, int y, const std::string& s) {
 
 	SDL_Color White = { 255, 255, 255 };
 	SDL_Surface* surface = TTF_RenderText_Blended(caladea36, s.c_str(), White); //Create the sdl surface
@@ -69,11 +85,9 @@ void render_text_centered(int x, int y, const std::string& s) {
 	SDL_RenderCopy(renderer, texture, NULL, &rect);
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);
-
-	TTF_CloseFont(caladea36);
 }
 
-void render_line(int x_start, int y_start, int x_dir, int y_dir) {
+void Renderer::render_line(int x_start, int y_start, int x_dir, int y_dir) {
 	// set color to yellow, cause sparks are yellow
 	SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
 	
@@ -92,7 +106,7 @@ void render_line(int x_start, int y_start, int x_dir, int y_dir) {
 	SDL_RenderDrawLine(renderer, x_start/10000, y_start/10000, x_end/10000, y_end/10000);
 }
 
-void render_line_thick(int x_start, int y_start, int x_dir, int y_dir) {
+void Renderer::render_line_thick(int x_start, int y_start, int x_dir, int y_dir) {
 	// set color to red, cause lasers are red
 	SDL_SetRenderDrawColor(renderer, 128, 0, 0, SDL_ALPHA_OPAQUE);
 
@@ -113,4 +127,9 @@ void render_line_thick(int x_start, int y_start, int x_dir, int y_dir) {
 	SDL_RenderDrawLine(renderer, x_start / 10000-1, y_start / 10000, x_end / 10000-1, y_end / 10000);
 	SDL_RenderDrawLine(renderer, x_start / 10000, y_start / 10000+1, x_end / 10000, y_end / 10000+1);
 	SDL_RenderDrawLine(renderer, x_start / 10000, y_start / 10000-1, x_end / 10000, y_end / 10000-1);
+}
+
+void Renderer::render_sparks(int x1, int y1, int x2, int y2) {
+	SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderDrawLine(renderer, x1 / 10000, y1 / 10000, x2 / 10000, y2 / 10000);
 }

@@ -31,7 +31,7 @@ public:
 	int flame_switch_cooldown = 0;
 	int current_flame = 0;
 
-	Black(int identifier, int x, int y);
+	Black(int identifier, int x, int y, Renderer* rend);
 
 	void update();
 

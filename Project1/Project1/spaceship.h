@@ -6,6 +6,7 @@ const int SPACESHIP_MAX_PERCENT = 999;
 
 class Ship {
 	protected:
+		class Renderer* r;
 		SDL_Texture* ship_tex;
 		SDL_Texture* ship_invincible_tex;
 		SDL_Texture* cannon_tex;
@@ -59,7 +60,7 @@ class Ship {
 
 		int percent = 0;
 
-		int lives = 1;
+		int lives = 3;
 
 		const int respawn_invincibility_delay = 120;
 		int invincibility_cooldown = 0;

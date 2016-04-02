@@ -1,12 +1,11 @@
 #include <iostream>
 #include <string>
-
 #include <math.h>
+
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-
 
 #include "spaceship.h"
 #include "grizzly.h"
@@ -16,14 +15,13 @@
 #include "renderer.h"
 
 SDL_Renderer* renderer;
-TTF_Font* caladea36;
 
 SDL_Window* window;
 
-int WINDOW_WIDTH;
-int WINDOW_HEIGHT;
 const int BARSIZE = 26;
 const int STATUS_BAR_WIDTH = 150;
+
+Renderer* r;
 
 bool quit = false;
 bool is_fullscreen = false;
@@ -50,8 +48,6 @@ int lookup_controller(int instanceID);
 
 int main(int, char**) {
 
-	int test = TTF_Init(); // todo: delete or rename
-
 	enum gameState {
 		mainMenu,
 		options,
@@ -70,10 +66,7 @@ int main(int, char**) {
 		green = 3
 	};
 
-
-
 	gameState currentState = mainMenu;
-	//gameState currentState = inGame;
 
 	// init SDL
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
@@ -85,6 +78,10 @@ int main(int, char**) {
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
 		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
 	}
+	
+
+	int WINDOW_WIDTH;
+	int WINDOW_HEIGHT;
 
 	// set resolution
 	enum Resolution {
@@ -94,7 +91,7 @@ int main(int, char**) {
 		_1440p,
 		_2160p // 4k
 	};
-	const Resolution res = _720p;
+	const Resolution res = _1080p;
 	switch (res) {
 	case _480p:
 		WINDOW_WIDTH = 640;
@@ -121,10 +118,7 @@ int main(int, char**) {
 		WINDOW_HEIGHT = 720;
 	}
 
-	const double CONTROLLER_MAX_ANGLE = M_PI / 6;
-	const int DEAD_ZONE = 5000;
 	
-	const int playerUiWidth = 10;
 
 	window = SDL_CreateWindow("hl2.exe", 675, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
@@ -141,29 +135,35 @@ int main(int, char**) {
 		return 1;
 	}
 
+	const double CONTROLLER_MAX_ANGLE = M_PI / 6;
+	const int DEAD_ZONE = 5000;
+
+	const int playerUiWidth = 10;
+
+	r = new Renderer(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
+
 	// load textures
-	SDL_Texture* bg = LoadTexture("..\\Project1\\assets\\background.png");
+	SDL_Texture* bg = r->LoadTexture("..\\Project1\\assets\\background.png");
 
 	SDL_Texture* ship_textures[3][4];
-	ship_textures[black][red] = LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
-	ship_textures[black][blue] = LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-	ship_textures[black][yellow] = LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
-	ship_textures[black][green] = LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
+	ship_textures[black][red] = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
+	ship_textures[black][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
+	ship_textures[black][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
+	ship_textures[black][green] = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
 
-	ship_textures[grizzly][red] = LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
-	ship_textures[grizzly][blue] = LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
-	ship_textures[grizzly][yellow] = LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
-	ship_textures[grizzly][green] = LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
+	ship_textures[grizzly][red] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
+	ship_textures[grizzly][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
+	ship_textures[grizzly][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
+	ship_textures[grizzly][green] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
 
-	ship_textures[polar][red] = LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
-	ship_textures[polar][blue] = LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
-	ship_textures[polar][yellow] = LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
-	ship_textures[polar][green] = LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
+	ship_textures[polar][red] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
+	ship_textures[polar][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+	ship_textures[polar][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
+	ship_textures[polar][green] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
 	
-	SDL_Texture* right_arrow = LoadTexture("..\\Project1\\assets\\right_arrow.png");
-	SDL_Texture* left_arrow = LoadTexture("..\\Project1\\assets\\left_arrow.png");
+	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
+	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
-	caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36);
 
 	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
 	// "Cyborg Ninja" Kevin MacLeod (incompetech.com)
@@ -241,11 +241,11 @@ int main(int, char**) {
 
 			// render title name and prompt to move forward
 			{
-				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2.5, "Alaskan Cosmobear Spacefighting");
+				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2.5, "Alaskan Cosmobear Spacefighting");
 
-				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Press the A button to start.");
+				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Press the A button to start.");
 
-				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 1.7, "Press the B button to quit.");
+				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 1.7, "Press the B button to quit.");
 			}
 
 			SDL_RenderPresent(renderer);
@@ -424,14 +424,14 @@ int main(int, char**) {
 			for (int i = 0; i < 4; i++) {
 				switch (selections[i]) {
 				case black:
-					ships[i] = new Black(i, spawn_locations_x[i], spawn_locations_y[i]);
+					ships[i] = new Black(i, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				case grizzly:
-					ships[i] = new Grizzly(i, spawn_locations_x[i], spawn_locations_y[i]);
+					ships[i] = new Grizzly(i, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				case polar:
 					// todo: do the obvious thing
-					ships[i] = new Polar(i, spawn_locations_x[i], spawn_locations_y[i]);
+					ships[i] = new Polar(i, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				}
 				if (!controllers[i]) {
@@ -440,12 +440,12 @@ int main(int, char**) {
 			}
 
 			// render background once; this is needed for xp mode
-			SDL_Rect r;
-			r.x = 0;
-			r.y = 0;
-			r.w = WINDOW_WIDTH;
-			r.h = WINDOW_HEIGHT;
-			RenderCopyEx(bg, NULL, &r, 0, NULL, SDL_FLIP_NONE);
+			SDL_Rect rect;
+			rect.x = 0;
+			rect.y = 0;
+			rect.w = WINDOW_WIDTH;
+			rect.h = WINDOW_HEIGHT;
+			r->RenderCopyEx(bg, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
 
 			currentState = inGame;
 			
@@ -737,12 +737,12 @@ int main(int, char**) {
 			{
 				// render background
 				if (!xp_mode) {
-					SDL_Rect r;
-					r.x = 0;
-					r.y = 0;
-					r.w = WINDOW_WIDTH;
-					r.h = WINDOW_HEIGHT;
-					RenderCopyEx(bg, NULL, &r, 0, NULL, SDL_FLIP_NONE);
+					SDL_Rect rect;
+					rect.x = 0;
+					rect.y = 0;
+					rect.w = WINDOW_WIDTH;
+					rect.h = WINDOW_HEIGHT;
+					r->RenderCopyEx(bg, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
 				}
 
 				// render all ship elements
@@ -809,14 +809,14 @@ int main(int, char**) {
 						{
 							char str[10];
 							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
-							render_text(0, (60 + 100 * i + 1) + textAdjustment * i, str);
+							r->render_text(0, (60 + 100 * i + 1) + textAdjustment * i, str);
 						}
 
 						// render stock counter
 						{
 							char playerLives[20];
 							sprintf_s(playerLives, "Lives: %d", ship->lives);
-							render_text(0, (10 + 150 * i), playerLives);
+							r->render_text(0, (10 + 150 * i), playerLives);
 						}
 					}
 				}
@@ -850,7 +850,7 @@ int main(int, char**) {
 			}
 
 			// render word "paused"
-			render_text(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Paused");
+			r->render_text(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Paused");
 
 			SDL_RenderPresent(renderer);
 
@@ -896,9 +896,9 @@ int main(int, char**) {
 			{
 				char winnerMessage[15];
 				sprintf_s(winnerMessage, "Player %d wins!", winner);
-				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2.5, winnerMessage);
+				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2.5, winnerMessage);
 
-				render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Press the A button to continue.");
+				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Press the A button to continue.");
 			}
 			SDL_RenderPresent(renderer);
 		}
@@ -1010,31 +1010,31 @@ bool read_global_input(SDL_Event* e) {
 }
 
 void render_character_selector(int x, int y, SDL_Texture* ship_tex,  ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow) {
-	render_texture(ship_tex, x+300, y+70, 0, 4);
-	render_texture(right_arrow, x+400, y+70,0, 1);
-	render_texture(left_arrow, x+200, y+70, 0, 1);
+	r->render_texture(ship_tex, x+300, y+70, 0, 4);
+	r->render_texture(right_arrow, x+400, y+70,0, 1);
+	r->render_texture(left_arrow, x+200, y+70, 0, 1);
 	if (shipType == 0) {
-		render_text_centered(x + 300, y + 125, "BLACK");
-		render_text(x + 100, y + 170, "Weapon 1: Burst Shot");
-		render_text(x + 100, y + 200, "Weapon 2: Flamethrower");
-		render_text(x + 100, y + 230, "Weapon 3: Charge Shot");
+		r->render_text_centered(x + 300, y + 125, "BLACK");
+		r->render_text(x + 100, y + 170, "Weapon 1: Burst Shot");
+		r->render_text(x + 100, y + 200, "Weapon 2: Flamethrower");
+		r->render_text(x + 100, y + 230, "Weapon 3: Charge Shot");
 	}
 	else if (shipType == 1) {
-		render_text_centered(x + 300, y + 125, "GRIZZLY");
-		render_text(x + 100, y + 170, "Weapon 1: Normal Shot");
-		render_text(x + 100, y + 200, "Weapon 2: Normal Missles");
-		render_text(x + 100, y + 230, "Weapon 3: Mines");
+		r->render_text_centered(x + 300, y + 125, "GRIZZLY");
+		r->render_text(x + 100, y + 170, "Weapon 1: Normal Shot");
+		r->render_text(x + 100, y + 200, "Weapon 2: Normal Missles");
+		r->render_text(x + 100, y + 230, "Weapon 3: Mines");
 	}
 	else {
-		render_text_centered(x + 300, y + 125, "POLAR");
-		render_text(x + 100, y + 170, "Weapon 1: Spread Shot");
-		render_text(x + 100, y + 200, "Weapon 2: Gravity Missles");
-		render_text(x + 100, y + 230, "Weapon 3: Laser");
+		r->render_text_centered(x + 300, y + 125, "POLAR");
+		r->render_text(x + 100, y + 170, "Weapon 1: Spread Shot");
+		r->render_text(x + 100, y + 200, "Weapon 2: Gravity Missles");
+		r->render_text(x + 100, y + 230, "Weapon 3: Laser");
 	}
 }
 
 void render_plugin_to_join(int x, int y) {
-	render_text_centered(x + WINDOW_WIDTH / 4 - BARSIZE / 2, y+100, "Plug in controller to join");
+	//r->render_text_centered(x + WINDOW_WIDTH / 4 - BARSIZE / 2, y+WINDOW_HEIGHT/4, "Plug in controller to join");
 }
 
 
