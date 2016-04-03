@@ -12,19 +12,11 @@ Renderer::Renderer(SDL_Renderer* r, int w, int h) {
 
 	WINDOW_WIDTH = w;
 	WINDOW_HEIGHT = h;
+	ratio = (double)WINDOW_HEIGHT / 720.0;
 
 	TTF_Init();
 
-	TTF_Font *font;
-	font = TTF_OpenFont("font.ttf", 16);
-	if (!font) {
-		printf("TTF_OpenFont: %s\n", TTF_GetError());
-		// handle error
-	}
-
-	TTF_Font* f = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); // for 720p
-	caladea36 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36); // for 720p
-	caladea54 = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 54); // for 1080p
+	caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36 * ratio);
 }
 
 double Renderer::calculate_angle(int x_vel, int y_vel) {
@@ -35,11 +27,48 @@ double Renderer::calculate_angle(int x_vel, int y_vel) {
 }
 
 void Renderer::render_texture(SDL_Texture* texture, int x, int y, double angle, double scaling) {
-	SDL_Rect rect;
+	x *= ratio / 10000;
+	y *= ratio / 10000;
+	scaling *= ratio;
 
+	SDL_Rect rect;
 	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
 	rect.w *= scaling;
 	rect.h *= scaling;
+	rect.x = x - rect.w / 2;
+	rect.y = y - rect.h / 2;
+
+	RenderCopyEx(texture, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
+}
+
+void Renderer::render_texture_edge_spin(SDL_Texture* texture, int x, int y, double angle, double scaling) {
+	x *= ratio / 10000;
+	y *= ratio / 10000;
+	scaling *= ratio;
+
+	SDL_Rect rect;
+	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+	rect.w *= scaling;
+	rect.h *= scaling;
+	rect.x = x - rect.w / 2;
+	rect.y = y - rect.h;
+
+	SDL_Point p;
+	p.x = rect.w / 2;
+	p.y = rect.h;
+
+	RenderCopyEx(texture, NULL, &rect, angle, &p, SDL_FLIP_NONE);
+}
+
+void Renderer::render_texture_abs_size(SDL_Texture* texture, int x, int y, double angle, int radius) {
+	x *= ratio / 10000;
+	y *= ratio / 10000;
+	radius *= ratio / 10000;
+
+	SDL_Rect rect;
+	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+	rect.w = radius*2;
+	rect.h = radius*2;
 	rect.x = x - rect.w / 2;
 	rect.y = y - rect.h / 2;
 
@@ -59,9 +88,11 @@ SDL_Texture* Renderer::LoadTexture(const char* file) {
 }
 
 void Renderer::render_text(int x, int y, const std::string& s) {
+	x *= ratio / 10000;
+	y *= ratio / 10000;
 
 	SDL_Color White = { 255, 255, 255 };
-	SDL_Surface* surface = TTF_RenderText_Blended(caladea36, s.c_str(), White); //Create the sdl surface
+	SDL_Surface* surface = TTF_RenderText_Blended(caladea, s.c_str(), White); //Create the sdl surface
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface); //Convert to texture
 	SDL_Rect rect; //create a rect
 	rect.x = x;
@@ -73,9 +104,11 @@ void Renderer::render_text(int x, int y, const std::string& s) {
 }
 
 void Renderer::render_text_centered(int x, int y, const std::string& s) {
+	x *= ratio / 10000;
+	y *= ratio / 10000;
 
 	SDL_Color White = { 255, 255, 255 };
-	SDL_Surface* surface = TTF_RenderText_Blended(caladea36, s.c_str(), White); //Create the sdl surface
+	SDL_Surface* surface = TTF_RenderText_Blended(caladea, s.c_str(), White); //Create the sdl surface
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface); //Convert to texture
 	SDL_Rect rect; //create a rect
 	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
@@ -87,9 +120,18 @@ void Renderer::render_text_centered(int x, int y, const std::string& s) {
 	SDL_FreeSurface(surface);
 }
 
+void Renderer::render_line_w_end(int x_start, int y_start, int x_end, int y_end) {
+	x_start *= ratio / 10000;
+	y_start *= ratio / 10000;
+	x_end *= ratio / 10000;
+	y_end *= ratio / 10000;
+
+	SDL_RenderDrawLine(renderer, x_start, y_start, x_end, y_end);
+}
+
 void Renderer::render_line(int x_start, int y_start, int x_dir, int y_dir) {
-	// set color to yellow, cause sparks are yellow
-	SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
+	x_start *= ratio / 10000;
+	y_start *= ratio / 10000;
 	
 	int x_end = x_start+x_dir*100000;
 	int y_end = y_start+y_dir*100000;
@@ -103,12 +145,15 @@ void Renderer::render_line(int x_start, int y_start, int x_dir, int y_dir) {
 		y_end = WINDOW_HEIGHT;
 	}
 	*/
-	SDL_RenderDrawLine(renderer, x_start/10000, y_start/10000, x_end/10000, y_end/10000);
+	SDL_RenderDrawLine(renderer, x_start, y_start, x_end, y_end);
 }
 
 void Renderer::render_line_thick(int x_start, int y_start, int x_dir, int y_dir) {
+	x_start *= ratio / 10000;
+	y_start *= ratio / 10000;
+
 	// set color to red, cause lasers are red
-	SDL_SetRenderDrawColor(renderer, 128, 0, 0, SDL_ALPHA_OPAQUE);
+	//SDL_SetRenderDrawColor(renderer, 128, 0, 0, SDL_ALPHA_OPAQUE);
 
 	int x_end = x_start + x_dir * 100000;
 	int y_end = y_start + y_dir * 100000;
@@ -122,14 +167,76 @@ void Renderer::render_line_thick(int x_start, int y_start, int x_dir, int y_dir)
 	y_end = WINDOW_HEIGHT;
 	}
 	*/
-	SDL_RenderDrawLine(renderer, x_start / 10000, y_start / 10000, x_end / 10000, y_end / 10000);
-	SDL_RenderDrawLine(renderer, x_start / 10000+1, y_start / 10000, x_end / 10000+1, y_end / 10000);
-	SDL_RenderDrawLine(renderer, x_start / 10000-1, y_start / 10000, x_end / 10000-1, y_end / 10000);
-	SDL_RenderDrawLine(renderer, x_start / 10000, y_start / 10000+1, x_end / 10000, y_end / 10000+1);
-	SDL_RenderDrawLine(renderer, x_start / 10000, y_start / 10000-1, x_end / 10000, y_end / 10000-1);
+	SDL_RenderDrawLine(renderer, x_start, y_start, x_end, y_end);
+	SDL_RenderDrawLine(renderer, x_start+1, y_start, x_end+1, y_end);
+	SDL_RenderDrawLine(renderer, x_start-1, y_start, x_end-1, y_end);
+	SDL_RenderDrawLine(renderer, x_start, y_start+1, x_end, y_end+1);
+	SDL_RenderDrawLine(renderer, x_start, y_start-1, x_end, y_end-1);
 }
 
 void Renderer::render_sparks(int x1, int y1, int x2, int y2) {
+	x1 *= ratio / 10000;
+	y1 *= ratio / 10000;
+	x2 *= ratio / 10000;
+	y2 *= ratio / 10000;
+
 	SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderDrawLine(renderer, x1 / 10000, y1 / 10000, x2 / 10000, y2 / 10000);
+	SDL_RenderDrawLine(renderer, x1, y1, x2 / 10000, y2 / 10000);
+}
+
+void Renderer::render_solid_bg() {
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_Rect s;
+	s.x = 0;
+	s.y = 0;
+	s.w = WINDOW_WIDTH;
+	s.h = WINDOW_HEIGHT;
+	SDL_RenderFillRect(renderer, &s);
+}
+
+
+
+void Renderer::render_cross_bars(int width) {
+	width /= 10000;
+	width *= ratio;
+
+	// render character select dividers vertical
+	{
+		SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+		SDL_Rect s;
+		s.x = WINDOW_WIDTH / 2 - width / 2;
+		s.y = 0;
+		s.w = width;
+		s.h = WINDOW_HEIGHT;
+		SDL_RenderFillRect(renderer, &s);
+	}
+
+	// render character select dividers horizontal
+	{
+		SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+		SDL_Rect s;
+		s.x = 0;
+		s.y = WINDOW_HEIGHT / 2 - width / 2;
+		s.w = WINDOW_WIDTH;
+		s.h = width;
+		SDL_RenderFillRect(renderer, &s);
+	}
+}
+
+void Renderer::render_rect(int x, int y, int w, int h) {
+	x *= ratio / 10000;
+	y *= ratio / 10000;
+	w *= ratio / 10000;
+	h *= ratio / 10000;
+
+	SDL_Rect r;
+	r.x = x;
+	r.y = y;
+	r.w = w;
+	r.h = h;
+	SDL_RenderFillRect(renderer, &r);
+}
+
+int Renderer::SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+	return SDL_SetRenderDrawColor(renderer, r, g, b, a);
 }

@@ -1,4 +1,9 @@
-﻿  renderer.cpp
-c:\users\max_000\desktop\abw2\project1\project1\renderer.cpp(41): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\renderer.cpp(42): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+﻿  main.cpp
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(237): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(241): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(605): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(618): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(642): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(644): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(839): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
   Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe

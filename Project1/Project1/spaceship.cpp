@@ -8,25 +8,17 @@ void Ship::render() {
 	double angle = r->calculate_angle(face_dir_x, face_dir_y);
 
 	if (invincibility_cooldown > 0) {
-		r->render_texture(ship_invincible_tex, x_pos / 10000, y_pos / 10000, angle, 3);
+		if (invincibility_cooldown % invincibility_switch_rate < invincibility_switch_rate/3) {
+			r->render_texture(ship_invincible_tex, x_pos, y_pos, angle, 3);
+		} else {
+			r->render_texture(ship_tex, x_pos, y_pos, angle, 3);
+		}
 	} else {
-		r->render_texture(ship_tex, x_pos / 10000, y_pos / 10000, angle, 3);
+		r->render_texture(ship_tex, x_pos, y_pos, angle, 3);
 	}
 
 	// render gun
-	{
-		SDL_Rect rect;
-
-		SDL_QueryTexture(cannon_tex, NULL, NULL, &rect.w, &rect.h);
-		rect.x = x_pos / 10000 - rect.w;
-		rect.y = y_pos / 10000 - rect.h;
-		//std::cout << rect.x << std::endl;
-		SDL_Point* point = new SDL_Point;
-		point->x = 2;
-		point->y = 11;
-		r->RenderCopyEx(cannon_tex, NULL, &rect, r->calculate_angle(gun_dir_x, gun_dir_y), point, SDL_FLIP_NONE);
-		free(point);
-	}
+	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->calculate_angle(gun_dir_x, gun_dir_y), 1);
 
 	// render laser sight
 	//render_line(x_pos, y_pos, gun_dir_x, gun_dir_y);

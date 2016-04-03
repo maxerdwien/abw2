@@ -50,7 +50,8 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 
 	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
-	vortex_tex = r->LoadTexture("..\\Project1\\assets\\unused\\baddie.png");
+	//vortex_tex = r->LoadTexture("..\\Project1\\assets\\unused\\baddie.png");
+	vortex_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\blackholeGreen.png");
 	SDL_SetTextureAlphaMod(vortex_tex, 100);
 
 }
@@ -60,7 +61,7 @@ void Polar::update() {
 	double desired_angle = atan2(desired_gun_dir_y, desired_gun_dir_x);
 	double new_angle = angle;
 	
-	double polar_gun_turn_speed = M_PI / 30;
+	//double polar_gun_turn_speed = M_PI / 30;
 
 	double angle_diff = desired_angle - angle;
 	if (abs(angle_diff) > abs(angle - desired_angle + M_PI)) {
@@ -154,7 +155,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 void Polar::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
 		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		r->render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, 1);
+		r->render_texture(bullet_tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
 	}
 }
 
@@ -224,11 +225,13 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				}
 
 				// do gravity effect
-				double force = 20000000000000000.0 / pow(dist, 2);
-				if (force > 70000) force = 70000;
-				double angle = r->calculate_angle(m->x_pos - ships[k]->x_pos, m->y_pos - ships[k]->y_pos);
-				ships[k]->x_vel += force * cos(angle);
-				ships[k]->y_vel += force * sin(angle);
+				if (ships[k]->invincibility_cooldown == 0) {
+					double force = 20000000000000000.0 / pow(dist, 2);
+					if (force > 70000) force = 70000;
+					double angle = r->calculate_angle(m->x_pos - ships[k]->x_pos, m->y_pos - ships[k]->y_pos);
+					ships[k]->x_vel += force * cos(angle);
+					ships[k]->y_vel += force * sin(angle);
+				}
 			}
 		}
 	}
@@ -238,8 +241,13 @@ void Polar::render_projectiles_2() {
 	for (int j = 0; j < num_g_missiles; j++) {
 		if (!g_missiles[j]->exploded) {
 			double angle = r->calculate_angle(g_missiles[j]->x_vel, g_missiles[j]->y_vel);
-			r->render_texture(missile_tex, g_missiles[j]->x_pos / 10000, g_missiles[j]->y_pos / 10000, angle, 3);
+			r->render_texture(missile_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, angle, 3);
 		} else {
+			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle, g_missiles[j]->radius);
+			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle, g_missiles[j]->radius);
+			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle+180, g_missiles[j]->radius);
+			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle+180, g_missiles[j]->radius);
+			/*
 			SDL_Rect rect;
 
 			rect.w = g_missiles[j]->radius / 10000 * 2;
@@ -251,6 +259,7 @@ void Polar::render_projectiles_2() {
 			r->RenderCopyEx(vortex_tex, NULL, &rect, -g_missiles[j]->vortex_angle, NULL, SDL_FLIP_NONE);
 			r->RenderCopyEx(vortex_tex, NULL, &rect, g_missiles[j]->vortex_angle+180, NULL, SDL_FLIP_NONE);
 			r->RenderCopyEx(vortex_tex, NULL, &rect, -g_missiles[j]->vortex_angle+180, NULL, SDL_FLIP_NONE);
+			*/
 		}
 	}
 }
@@ -270,8 +279,8 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		laser_start_x = x_pos + GUN_LENGTH * cos(angle);
 		laser_start_y = y_pos + GUN_LENGTH * sin(angle);
-		laser_end_x = laser_start_x + gun_dir_x;
-		laser_end_y = laser_start_y + gun_dir_y;
+		laser_end_x = laser_start_x + 10000*gun_dir_x;
+		laser_end_y = laser_start_y + 10000*gun_dir_y;
 
 		for (int i = 0; i < 4; i++) {
 			if (!ships[i]) continue;
@@ -310,13 +319,14 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 void Polar::render_projectiles_3() {
 	if (laser_active) {
+		r->SetRenderDrawColor(128, 0, 0, SDL_ALPHA_OPAQUE);
 		r->render_line_thick(laser_start_x, laser_start_y, gun_dir_x, gun_dir_y);
 	}
 
 	for (int i = 0; i < num_sparks; i++) {
 		Spark* s = sparks[i];
-		r->render_sparks(s->x_1, s->y_1, s->x_2, s->y_2);
-		
+		r->SetRenderDrawColor(255, 255, 0, SDL_ALPHA_OPAQUE);
+		r->render_line_w_end(s->x_1, s->y_1, s->x_2, s->y_2);
 	}
 }
 

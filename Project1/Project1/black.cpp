@@ -48,6 +48,8 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 
 	flame_tex_1 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame1.png");
 	flame_tex_2 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame2.png");
+
+	hitbox_tex = r->LoadTexture("..\\Project1\\assets\\sun.png");
 }
 
 void Black::update() {
@@ -136,7 +138,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 void Black::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
 		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		r->render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, ((double)bullets[j]->radius/10000.0)/5);
+		r->render_texture(bullet_tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, ((double)bullets[j]->radius/10000.0)/5);
 	}
 }
 
@@ -198,7 +200,9 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 			Ship* target_ship = ships[j];
 			double dist = sqrt(pow(hb_x - target_ship->x_pos, 2) + pow(hb_y - target_ship->y_pos, 2));
 			if (dist <= (target_ship->radius + flame_radii[i])) {
-				target_ship->take_knockback(target_ship->x_pos - hb_x, target_ship->y_pos - hb_y, 0, 6, 1, haptics[j]);
+				int x_dir = (target_ship->x_pos - hb_x) + (target_ship->x_pos - x_pos);
+				int y_dir = (target_ship->y_pos - hb_y) + (target_ship->y_pos - y_pos);
+				target_ship->take_knockback(x_dir, y_dir, 0, 6, 1, haptics[j]);
 			}
 		}
 	}
@@ -214,20 +218,25 @@ void Black::render_projectiles_3() {
 			current_flame = (current_flame + 1) % 2;
 			flame_switch_cooldown = flame_switch_delay;
 		}
-		SDL_Rect rect;
 
-		SDL_QueryTexture(flame_tex_1, NULL, NULL, &rect.w, &rect.h);
-		rect.w *= 2;
-		rect.h *= 2;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		rect.x = x_pos/10000 - rect.w / 2 + (12 + rect.h / 2)*cos(angle);
-		rect.y = y_pos/10000 - rect.h / 2 + (12 + rect.h / 2)*sin(angle);
+
+		// render hitboxes
+		bool render_hitboxes = false;
+		if (render_hitboxes) {
+			for (int i = 0; i < num_flame_hitboxes; i++) {
+				int hb_x = x_pos + flame_dists[i] * cos(angle);
+				int hb_y = y_pos + flame_dists[i] * sin(angle);
+				r->render_texture_abs_size(hitbox_tex, hb_x, hb_y, 0, flame_radii[i]);
+			}
+		}
+
 
 		if (current_flame == 0) {
-			r->RenderCopyEx(flame_tex_1, NULL, &rect, r->calculate_angle(gun_dir_x, gun_dir_y), NULL, SDL_FLIP_NONE);
+			r->render_texture_edge_spin(flame_tex_1, x_pos + GUN_LENGTH*cos(angle), y_pos + GUN_LENGTH*sin(angle), angle * 180 / M_PI + 90, 4);
 		} else {
 			// works since the textures are the same size
-			r->RenderCopyEx(flame_tex_2, NULL, &rect, r->calculate_angle(gun_dir_x, gun_dir_y), NULL, SDL_FLIP_NONE);
+			r->render_texture_edge_spin(flame_tex_2, x_pos + GUN_LENGTH*cos(angle), y_pos + GUN_LENGTH*sin(angle), angle * 180 / M_PI + 90, 4);
 		}
 	}
 }

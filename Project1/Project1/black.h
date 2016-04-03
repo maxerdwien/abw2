@@ -1,14 +1,15 @@
 #pragma once
 
-const int num_flame_hitboxes = 2;
-const int flame_radii[num_flame_hitboxes] = { 10000*20, 10000*18 };
-const int flame_dists[num_flame_hitboxes] = { 10000*88, 10000*80 };
+const int num_flame_hitboxes = 5;
+const int flame_radii[num_flame_hitboxes] = { 10000*33, 10000*33, 10000*25, 10000*20, 10000*14 };
+const int flame_dists[num_flame_hitboxes] = { 10000*195, 10000*160, 10000*110, 10000*85, 10000* 60};
 
 class Black : public Ship {
 private:
 	SDL_Texture* bullet_tex;
 	SDL_Texture* flame_tex_1;
 	SDL_Texture* flame_tex_2;
+	SDL_Texture* hitbox_tex;
 
 public:
 	struct bullet* bullets[1000];

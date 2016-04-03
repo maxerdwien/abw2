@@ -11,6 +11,8 @@ class Ship {
 		SDL_Texture* ship_invincible_tex;
 		SDL_Texture* cannon_tex;
 
+		const int GUN_LENGTH = 10000 * 12;
+
 	public:
 		// units of one ten thousandth of a pixel
 		int x_pos = 0;
@@ -64,6 +66,7 @@ class Ship {
 
 		const int respawn_invincibility_delay = 120;
 		int invincibility_cooldown = 0;
+		const int invincibility_switch_rate = 20;
 
 		int stamina = 0;
 		int stamina_max = 0;
@@ -73,8 +76,6 @@ class Ship {
 		int weight;
 
 		int id;
-
-		const int GUN_LENGTH = 12 * 10000;
 
 		virtual void update() = 0;
 		void render();

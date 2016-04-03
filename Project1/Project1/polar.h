@@ -1,7 +1,7 @@
 #pragma once
 
 // in radians per frame
-const int polar_gun_turn_speed = M_PI / 30;
+const double polar_gun_turn_speed = M_PI / 30;
 
 
 class Polar : public Ship {

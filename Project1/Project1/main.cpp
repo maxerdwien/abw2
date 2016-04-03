@@ -4,7 +4,6 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
-#include <SDL_ttf.h>
 #include <SDL_mixer.h>
 
 #include "spaceship.h"
@@ -18,8 +17,10 @@ SDL_Renderer* renderer;
 
 SDL_Window* window;
 
-const int BARSIZE = 26;
-const int STATUS_BAR_WIDTH = 150;
+const int WIDTH_UNITS = 10000 * 1280;
+const int HEIGHT_UNITS = 10000 * 720;
+const int BARSIZE = 10000 * 26;
+const int STATUS_BAR_WIDTH = 10000 * 150;
 
 Renderer* r;
 
@@ -42,9 +43,9 @@ enum ship_type {
 	polar = 2
 };
 
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType,  SDL_Texture* right_arrow, SDL_Texture* left_arrow);
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow);
 
 int main(int, char**) {
 
@@ -118,8 +119,6 @@ int main(int, char**) {
 		WINDOW_HEIGHT = 720;
 	}
 
-	
-
 	window = SDL_CreateWindow("hl2.exe", 675, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
 		std::cout << "SDL_CreateWindow error: " << SDL_GetError() << std::endl;
@@ -141,6 +140,8 @@ int main(int, char**) {
 	const int playerUiWidth = 10;
 
 	r = new Renderer(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
 
 	// load textures
 	SDL_Texture* bg = r->LoadTexture("..\\Project1\\assets\\background.png");
@@ -173,7 +174,7 @@ int main(int, char**) {
 		Mix_PlayMusic(music, -1);
 	}
 	Mix_Chunk* m = Mix_LoadWAV("..\\Project1\\assets\\sounds\\wilhelm.wav");
-	Mix_PlayChannel(-1, m, 0);
+	//Mix_PlayChannel(-1, m, 0);
 
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
@@ -229,23 +230,15 @@ int main(int, char**) {
 			}
 
 			// render basic black background
-			{
-				SDL_SetRenderDrawColor(renderer, 00, 00, 00, SDL_ALPHA_OPAQUE);
-				SDL_Rect s;
-				s.x = 0;
-				s.y = 0;
-				s.w = WINDOW_WIDTH;
-				s.h = WINDOW_HEIGHT;
-				SDL_RenderFillRect(renderer, &s);
-			}
+			r->render_solid_bg();
 
 			// render title name and prompt to move forward
 			{
-				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2.5, "Alaskan Cosmobear Spacefighting");
+				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 2.5, "Alaskan Cosmobear Spacefighting");
 
-				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Press the A button to start.");
+				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to start.");
 
-				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 1.7, "Press the B button to quit.");
+				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 1.7, "Press the B button to quit.");
 			}
 
 			SDL_RenderPresent(renderer);
@@ -343,59 +336,31 @@ int main(int, char**) {
 			SDL_RenderClear(renderer);
 
 			// render basic black background
-			{
-				SDL_SetRenderDrawColor(renderer, 00, 00, 00, SDL_ALPHA_OPAQUE);
-				SDL_Rect s;
-				s.x = 0;
-				s.y = 0;
-				s.w = WINDOW_WIDTH;
-				s.h = WINDOW_HEIGHT;
-				SDL_RenderFillRect(renderer, &s);
-			}
+			r->render_solid_bg();
 
-			// render character select dividers vertical
-			{
-				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-				SDL_Rect s;
-				s.x = WINDOW_WIDTH/2 - BARSIZE/2;
-				s.y = 0;
-				s.w = BARSIZE;
-				s.h = WINDOW_HEIGHT;
-				SDL_RenderFillRect(renderer, &s);
-			}
-
-			// render character select dividers horizontal
-			{
-				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-				SDL_Rect s;
-				s.x = 0;
-				s.y = WINDOW_HEIGHT / 2 - BARSIZE/2;
-				s.w = WINDOW_WIDTH;
-				s.h = BARSIZE;
-				SDL_RenderFillRect(renderer, &s);
-			}
+			r->render_cross_bars(BARSIZE);
 			
 			// render ships selections
 			{
 				if (controllers[0]) {
-					render_character_selector(0, 0, ship_textures[selections[0]][red],selections[0],right_arrow, left_arrow);
+					render_character_selector(0, 0, ship_textures[selections[0]][red], selections[0], right_arrow, left_arrow);
 				} else {
 					render_plugin_to_join(0, 0);
 				}
 				if (controllers[1]) {
-					render_character_selector(WINDOW_WIDTH / 2 + BARSIZE/2, 0, ship_textures[selections[1]][blue],selections[1],right_arrow, left_arrow);
+					render_character_selector(WIDTH_UNITS / 2 + BARSIZE/2, 0, ship_textures[selections[1]][blue], selections[1], right_arrow, left_arrow);
 				} else {
-					render_plugin_to_join(WINDOW_WIDTH / 2 + BARSIZE/2, 0);
+					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, 0);
 				}
 				if (controllers[2]) {
-					render_character_selector(0, WINDOW_HEIGHT / 2 + BARSIZE, ship_textures[selections[2]][yellow],selections[2], right_arrow, left_arrow);
+					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[2]][yellow], selections[2], right_arrow, left_arrow);
 				} else {
-					render_plugin_to_join(0, WINDOW_HEIGHT / 2 + BARSIZE/2);
+					render_plugin_to_join(0, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
 				if (controllers[3]) {
-					render_character_selector(WINDOW_WIDTH / 2 + BARSIZE, WINDOW_HEIGHT / 2 + BARSIZE, ship_textures[selections[3]][green],selections[3], right_arrow, left_arrow);
+					render_character_selector(WIDTH_UNITS / 2 + BARSIZE, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[3]][green], selections[3], right_arrow, left_arrow);
 				} else {
-					render_plugin_to_join(WINDOW_WIDTH / 2 + BARSIZE/2, WINDOW_HEIGHT / 2 + BARSIZE/2);
+					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
 			}
 
@@ -410,16 +375,16 @@ int main(int, char**) {
 		else if (currentState == initGame) {
 			// init game objects
 			const int spawn_locations_x[4] = {
-				10000 * ((WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH) ,
-				10000 * (3 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH),
-				10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH),
-				10000 * (2 * (WINDOW_WIDTH - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH)
+				(WIDTH_UNITS - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH ,
+				3 * (WIDTH_UNITS - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH,
+				2 * (WIDTH_UNITS - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH,
+				2 * (WIDTH_UNITS - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH
 			};
 			const int spawn_locations_y[4] = {
-				10000 * (WINDOW_HEIGHT / 2),
-				10000 * (WINDOW_HEIGHT / 2),
-				10000 * (WINDOW_HEIGHT / 4),
-				10000 * (3 * WINDOW_HEIGHT / 4)
+				HEIGHT_UNITS / 2,
+				HEIGHT_UNITS / 2,
+				HEIGHT_UNITS / 4,
+				3 * HEIGHT_UNITS / 4
 			};
 			for (int i = 0; i < 4; i++) {
 				switch (selections[i]) {
@@ -440,12 +405,7 @@ int main(int, char**) {
 			}
 
 			// render background once; this is needed for xp mode
-			SDL_Rect rect;
-			rect.x = 0;
-			rect.y = 0;
-			rect.w = WINDOW_WIDTH;
-			rect.h = WINDOW_HEIGHT;
-			r->RenderCopyEx(bg, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+			r->render_texture(bg, WIDTH_UNITS / 2, HEIGHT_UNITS / 2, 0, 1);
 
 			currentState = inGame;
 			
@@ -690,7 +650,7 @@ int main(int, char**) {
 					ship->y_pos += ship->y_vel;
 
 					// handle death
-					if (ship->x_pos < STATUS_BAR_WIDTH * 10000 || ship->x_pos > WINDOW_WIDTH * 10000 || ship->y_pos < 0 || ship->y_pos > WINDOW_HEIGHT * 10000) {
+					if (ship->x_pos < STATUS_BAR_WIDTH || ship->x_pos > WIDTH_UNITS || ship->y_pos < 0 || ship->y_pos > HEIGHT_UNITS) {
 						
 						ship->lives--;
 						SDL_HapticRumblePlay(haptics[i], 1, 300);
@@ -713,9 +673,9 @@ int main(int, char**) {
 				}
 
 				// update projectiles
-				ship->update_projectiles_1(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, ships, haptics);
-				ship->update_projectiles_2(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, ships, haptics);
-				ship->update_projectiles_3(STATUS_BAR_WIDTH * 10000, WINDOW_WIDTH * 10000, 0, WINDOW_HEIGHT * 10000, ships, haptics);
+				ship->update_projectiles_1(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, haptics);
+				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, haptics);
+				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, haptics);
 
 				// Check to see if the game is over
 				int number_alive = 0;
@@ -737,12 +697,7 @@ int main(int, char**) {
 			{
 				// render background
 				if (!xp_mode) {
-					SDL_Rect rect;
-					rect.x = 0;
-					rect.y = 0;
-					rect.w = WINDOW_WIDTH;
-					rect.h = WINDOW_HEIGHT;
-					r->RenderCopyEx(bg, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+					r->render_texture(bg, WIDTH_UNITS / 2, HEIGHT_UNITS / 2, 0, 1);
 				}
 
 				// render all ship elements
@@ -767,13 +722,8 @@ int main(int, char**) {
 				// render UI elements
 				{
 					// render status bar background
-					SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-					SDL_Rect s;
-					s.x = 0;
-					s.y = 0;
-					s.w = STATUS_BAR_WIDTH;
-					s.h = WINDOW_HEIGHT;
-					SDL_RenderFillRect(renderer, &s);
+					r->SetRenderDrawColor(128, 128, 128, SDL_ALPHA_OPAQUE);
+					r->render_rect(0, 0, STATUS_BAR_WIDTH, HEIGHT_UNITS);
 
 					int textAdjustment = 50; // todo: rename this shit
 
@@ -788,35 +738,30 @@ int main(int, char**) {
 							// todo: match these to the real colors
 							// set stamina bar color
 							if (ship->id == 0) {
-								SDL_SetRenderDrawColor(renderer, 160, 0, 0, SDL_ALPHA_OPAQUE);
+								r->SetRenderDrawColor(160, 0, 0, SDL_ALPHA_OPAQUE);
 							} else if (ship->id == 1) {
-								SDL_SetRenderDrawColor(renderer, 0, 0, 160, SDL_ALPHA_OPAQUE);
+								r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
 							} else if (ship->id == 2) {
-								SDL_SetRenderDrawColor(renderer, 210, 210, 0, SDL_ALPHA_OPAQUE);
+								r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
 							} else {
-								SDL_SetRenderDrawColor(renderer, 0, 160, 0, SDL_ALPHA_OPAQUE);
+								r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
 							}
 
-							SDL_Rect r;
-							r.x = 0;
-							r.y = 120 + 100 * i + (textAdjustment * i);
-							r.w = 150 * ship->stamina / ship->stamina_max;
-							r.h = 30;
-							SDL_RenderFillRect(renderer, &r);
+							r->render_rect(0, 10000 * (120 + 150*i), STATUS_BAR_WIDTH * ship->stamina / ship->stamina_max, 10000 * 30);
 						}
 
 						// render percentages
 						{
 							char str[10];
 							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
-							r->render_text(0, (60 + 100 * i + 1) + textAdjustment * i, str);
+							r->render_text(0, 10000 * (61 + 150 * i), str);
 						}
 
 						// render stock counter
 						{
 							char playerLives[20];
 							sprintf_s(playerLives, "Lives: %d", ship->lives);
-							r->render_text(0, (10 + 150 * i), playerLives);
+							r->render_text(0, 10000 * (10 + 150 * i), playerLives);
 						}
 					}
 				}
@@ -839,6 +784,8 @@ int main(int, char**) {
 			}
 
 			// render pause background
+			// todo: fix this
+			/*
 			{
 				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
 				SDL_Rect s;
@@ -848,9 +795,10 @@ int main(int, char**) {
 				s.h = 50;
 				SDL_RenderFillRect(renderer, &s);
 			}
+			*/
 
 			// render word "paused"
-			r->render_text(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Paused");
+			r->render_text_centered((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, "Paused");
 
 			SDL_RenderPresent(renderer);
 
@@ -882,23 +830,15 @@ int main(int, char**) {
 			SDL_RenderClear(renderer);
 
 			// render basic black background
-			{
-				SDL_SetRenderDrawColor(renderer, 00, 00, 00, SDL_ALPHA_OPAQUE);
-				SDL_Rect s;
-				s.x = 0;
-				s.y = 0;
-				s.w = WINDOW_WIDTH;
-				s.h = WINDOW_HEIGHT;
-				SDL_RenderFillRect(renderer, &s);
-			}
+			r->render_solid_bg();
 
 			// render who won plus continue prompt
 			{
 				char winnerMessage[15];
 				sprintf_s(winnerMessage, "Player %d wins!", winner);
-				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2.5, winnerMessage);
+				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 2.5, winnerMessage);
 
-				r->render_text_centered(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "Press the A button to continue.");
+				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to continue.");
 			}
 			SDL_RenderPresent(renderer);
 		}
@@ -1009,32 +949,13 @@ bool read_global_input(SDL_Event* e) {
 	return event_eaten;
 }
 
-void render_character_selector(int x, int y, SDL_Texture* ship_tex,  ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow) {
-	r->render_texture(ship_tex, x+300, y+70, 0, 4);
-	r->render_texture(right_arrow, x+400, y+70,0, 1);
-	r->render_texture(left_arrow, x+200, y+70, 0, 1);
-	if (shipType == 0) {
-		r->render_text_centered(x + 300, y + 125, "BLACK");
-		r->render_text(x + 100, y + 170, "Weapon 1: Burst Shot");
-		r->render_text(x + 100, y + 200, "Weapon 2: Flamethrower");
-		r->render_text(x + 100, y + 230, "Weapon 3: Charge Shot");
-	}
-	else if (shipType == 1) {
-		r->render_text_centered(x + 300, y + 125, "GRIZZLY");
-		r->render_text(x + 100, y + 170, "Weapon 1: Normal Shot");
-		r->render_text(x + 100, y + 200, "Weapon 2: Normal Missles");
-		r->render_text(x + 100, y + 230, "Weapon 3: Mines");
-	}
-	else {
-		r->render_text_centered(x + 300, y + 125, "POLAR");
-		r->render_text(x + 100, y + 170, "Weapon 1: Spread Shot");
-		r->render_text(x + 100, y + 200, "Weapon 2: Gravity Missles");
-		r->render_text(x + 100, y + 230, "Weapon 3: Laser");
-	}
-}
+
 
 void render_plugin_to_join(int x, int y) {
-	//r->render_text_centered(x + WINDOW_WIDTH / 4 - BARSIZE / 2, y+WINDOW_HEIGHT/4, "Plug in controller to join");
+	int box_w = (WIDTH_UNITS - BARSIZE) / 2;
+	int box_h = (HEIGHT_UNITS - BARSIZE) / 2;
+
+	r->render_text_centered(x + box_w / 2, y + box_h / 3, "Plug in controller to join");
 }
 
 
@@ -1045,4 +966,38 @@ int lookup_controller(int instanceID) {
 		}
 	}
 	return -1;
+}
+
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow) {
+	int box_w = (WIDTH_UNITS - BARSIZE) / 2;
+	int box_h = (HEIGHT_UNITS - BARSIZE) / 2;
+
+	r->render_texture(ship_tex, x + box_w/2, y + box_h / 5, 0, 4);
+	r->render_texture(left_arrow, x + box_w / 4, y + box_h / 5, 0, 1);
+	r->render_texture(right_arrow, x + 3 * box_w / 4, y + box_h / 5, 0, 1);
+
+	std::string name;
+	std::string wep1;
+	std::string wep2;
+	std::string wep3;
+	if (shipType == 0) {
+		name = "BLACK";
+		wep1 = "Weapon 1: Burst Shot";
+		wep2 = "Weapon 2: Flamethrower";
+		wep3 = "Weapon 3: Charge Shot";
+	} else if (shipType == 1) {
+		name = "GRIZZLY";
+		wep1 = "Weapon 1: Bullets";
+		wep2 = "Weapon 2: Missiles";
+		wep3 = "Weapon 3: Mines";
+	} else {
+		name = "POLAR";
+		wep1 = "Weapon 1: Shotgun";
+		wep2 = "Weapon 2: Gravity Missiles";
+		wep3 = "Weapon 3: Laser";
+	}
+	r->render_text_centered(x + box_w / 2, y + 2 * box_h / 5, name);
+	r->render_text(x + box_w / 5, y + 6 * box_h / 10, wep1);
+	r->render_text(x + box_w / 5, y + 7 * box_h / 10, wep2);
+	r->render_text(x + box_w / 5, y + 8 * box_h / 10, wep3);
 }

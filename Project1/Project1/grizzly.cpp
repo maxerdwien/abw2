@@ -123,7 +123,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 void Grizzly::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
 		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		r->render_texture(bullet_tex, bullets[j]->x_pos / 10000, bullets[j]->y_pos / 10000, angle, 1);
+		r->render_texture(bullet_tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
 	}
 }
 
@@ -163,18 +163,20 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 					target_player = k;
 				}
 			}
+			
 
 			// accelerate towards target player
-			double delta_x = ships[target_player]->x_pos - missile->x_pos;
-			double delta_y = ships[target_player]->y_pos - missile->y_pos;
-			double delta_mag = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
+			if (target_player != -1) {
+				double delta_x = ships[target_player]->x_pos - missile->x_pos;
+				double delta_y = ships[target_player]->y_pos - missile->y_pos;
+				double delta_mag = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
 
-			missile->x_accel = MISSILE_ACCEL * delta_x / delta_mag;
-			missile->y_accel = MISSILE_ACCEL * delta_y / delta_mag;
+				missile->x_accel = MISSILE_ACCEL * delta_x / delta_mag;
+				missile->y_accel = MISSILE_ACCEL * delta_y / delta_mag;
 
-			missile->x_vel += missile->x_accel;
-			missile->y_vel += missile->y_accel;
-
+				missile->x_vel += missile->x_accel;
+				missile->y_vel += missile->y_accel;
+			}
 			missile->x_pos += missile->x_vel;
 			missile->y_pos += missile->y_vel;
 		}
@@ -228,16 +230,9 @@ void Grizzly::render_projectiles_2() {
 	for (int j = 0; j < num_missiles; j++) {
 		if (!missiles[j]->exploded) {
 			double angle = r->calculate_angle(missiles[j]->x_vel, missiles[j]->y_vel);
-			r->render_texture(missile_tex, missiles[j]->x_pos / 10000, missiles[j]->y_pos / 10000, angle, 1.8);
+			r->render_texture(missile_tex, missiles[j]->x_pos, missiles[j]->y_pos, angle, 1.8);
 		} else {
-			SDL_Rect rect;
-
-			rect.w = missiles[j]->radius/10000 * 2;
-			rect.h = missiles[j]->radius/10000 * 2;
-			rect.x = missiles[j]->x_pos / 10000 - rect.w / 2;
-			rect.y = missiles[j]->y_pos / 10000 - rect.h / 2;
-
-			r->RenderCopyEx(explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+			r->render_texture_abs_size(explosion_tex, missiles[j]->x_pos, missiles[j]->y_pos, 0, missiles[j]->radius);
 		}
 	}
 }
@@ -350,16 +345,9 @@ void Grizzly::render_projectiles_3() {
 	for (int j = 0; j < num_mines; j++) {
 		if (!mines[j]->exploded) {
 			double angle = r->calculate_angle(mines[j]->x_vel, mines[j]->y_vel);
-			r->render_texture(mine_tex, mines[j]->x_pos / 10000, mines[j]->y_pos / 10000, angle, 1.8);
+			r->render_texture(mine_tex, mines[j]->x_pos, mines[j]->y_pos, angle, 1.8);
 		} else {
-			SDL_Rect rect;
-
-			rect.w = mines[j]->radius/10000 * 2;
-			rect.h = mines[j]->radius/10000 * 2;
-			rect.x = mines[j]->x_pos / 10000 - rect.w / 2;
-			rect.y = mines[j]->y_pos / 10000 - rect.h / 2;
-
-			r->RenderCopyEx(explosion_tex, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+			r->render_texture_abs_size(explosion_tex, mines[j]->x_pos, mines[j]->y_pos, 0, mines[j]->radius);
 		}
 	}
 }
