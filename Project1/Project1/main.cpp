@@ -45,7 +45,7 @@ enum ship_type {
 
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow);
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready);
 
 int main(int, char**) {
 
@@ -119,7 +119,7 @@ int main(int, char**) {
 		WINDOW_HEIGHT = 720;
 	}
 
-	window = SDL_CreateWindow("hl2.exe", 675, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("Alaskan Cosmobear Spacefighting", 675, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
 		std::cout << "SDL_CreateWindow error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
@@ -178,6 +178,7 @@ int main(int, char**) {
 
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
+	bool ready[4] = { false, false, false, false };
 
 	SDL_Event e;
 	
@@ -256,15 +257,26 @@ int main(int, char**) {
 					controller_index = lookup_controller(e.cbutton.which);
 					
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						currentState = stageSelect;
+						//currentState = stageSelect;
+						ready[controller_index] = true;
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
-						currentState = stageSelect;
+						bool all_ready = true;
+						for (int i = 0; i < 4; i++) {
+							if (controllers[i] && !ready[i]) {
+								all_ready = false;
+							}
+						}
+						if (all_ready) {
+							currentState = stageSelect;
+						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
-						currentState = mainMenu;
+						//currentState = mainMenu;
+						ready[controller_index] = false;
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+						if (ready[controller_index]) break;
 						switch (selections[controller_index]) {
 						case black:
 							selections[controller_index] = grizzly;
@@ -278,6 +290,7 @@ int main(int, char**) {
 						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+						if (ready[controller_index]) break;
 						switch (selections[controller_index]) {
 						case black:
 							selections[controller_index] = polar;
@@ -299,6 +312,7 @@ int main(int, char**) {
 						int min_angle = 26000;
 
 						if (e.caxis.value > min_angle && !analog_stick_moved[controller_index]) {
+							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
 							switch (selections[controller_index]) {
 							case black:
@@ -312,6 +326,7 @@ int main(int, char**) {
 								break;
 							}
 						} else if (e.caxis.value < -min_angle && !analog_stick_moved[controller_index]) {
+							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
 							switch (selections[controller_index]) {
 							case black:
@@ -343,22 +358,22 @@ int main(int, char**) {
 			// render ships selections
 			{
 				if (controllers[0]) {
-					render_character_selector(0, 0, ship_textures[selections[0]][red], selections[0], right_arrow, left_arrow);
+					render_character_selector(0, 0, ship_textures[selections[0]][red], selections[0], right_arrow, left_arrow, ready[0]);
 				} else {
 					render_plugin_to_join(0, 0);
 				}
 				if (controllers[1]) {
-					render_character_selector(WIDTH_UNITS / 2 + BARSIZE/2, 0, ship_textures[selections[1]][blue], selections[1], right_arrow, left_arrow);
+					render_character_selector(WIDTH_UNITS / 2 + BARSIZE/2, 0, ship_textures[selections[1]][blue], selections[1], right_arrow, left_arrow, ready[1]);
 				} else {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, 0);
 				}
 				if (controllers[2]) {
-					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[2]][yellow], selections[2], right_arrow, left_arrow);
+					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[2]][yellow], selections[2], right_arrow, left_arrow, ready[2]);
 				} else {
 					render_plugin_to_join(0, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
 				if (controllers[3]) {
-					render_character_selector(WIDTH_UNITS / 2 + BARSIZE, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[3]][green], selections[3], right_arrow, left_arrow);
+					render_character_selector(WIDTH_UNITS / 2 + BARSIZE, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[3]][green], selections[3], right_arrow, left_arrow, ready[3]);
 				} else {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
@@ -968,13 +983,17 @@ int lookup_controller(int instanceID) {
 	return -1;
 }
 
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow) {
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready) {
 	int box_w = (WIDTH_UNITS - BARSIZE) / 2;
 	int box_h = (HEIGHT_UNITS - BARSIZE) / 2;
 
-	r->render_texture(ship_tex, x + box_w/2, y + box_h / 5, 0, 4);
-	r->render_texture(left_arrow, x + box_w / 4, y + box_h / 5, 0, 1);
-	r->render_texture(right_arrow, x + 3 * box_w / 4, y + box_h / 5, 0, 1);
+	if (!ready) {
+		r->render_texture(ship_tex, x + box_w / 2, y + box_h / 5, 0, 4);
+		r->render_texture(left_arrow, x + box_w / 4, y + box_h / 5, 0, 1);
+		r->render_texture(right_arrow, x + 3 * box_w / 4, y + box_h / 5, 0, 1);
+	} else {
+		r->render_texture(ship_tex, x + box_w / 2, y + box_h / 5, 0, 5.2);
+	}
 
 	std::string name;
 	std::string wep1;

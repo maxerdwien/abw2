@@ -60,16 +60,16 @@ void Polar::update() {
 	double angle = atan2(gun_dir_y, gun_dir_x);
 	double desired_angle = atan2(desired_gun_dir_y, desired_gun_dir_x);
 	double new_angle = angle;
-	
-	//double polar_gun_turn_speed = M_PI / 30;
 
 	double angle_diff = desired_angle - angle;
+	/*
 	if (abs(angle_diff) > abs(angle - desired_angle + M_PI)) {
 		angle_diff = angle - desired_angle + M_PI;
 	}
 	if (abs(angle_diff) > abs(angle - desired_angle - M_PI)) {
 		angle_diff = angle - desired_angle - M_PI;
 	}
+	*/
 	if (abs(angle_diff) > abs(desired_angle - angle - 2*M_PI)) {
 		angle_diff = desired_angle - angle - 2*M_PI;
 	}
@@ -290,7 +290,9 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 			double dist = get_dist(laser_start_x, laser_start_y, laser_end_x, laser_end_y, target_ship->x_pos, target_ship->y_pos);
 
 			if (dist < target_ship->radius) {
-				target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 10, 1, haptics[i]);
+				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
+				printf("%f\n", ship_dist);
+				target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/600000, 1, haptics[i]);
 				sparks[num_sparks] = new Spark(target_ship->x_pos, target_ship->y_pos);
 				num_sparks++;
 			}

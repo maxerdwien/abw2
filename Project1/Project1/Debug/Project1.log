@@ -1,9 +1,18 @@
-﻿  main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(237): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(241): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(605): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(618): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(642): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(644): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(839): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+﻿  polar.cpp
+c:\users\max_000\desktop\abw2\project1\project1\gravity-missile.h(5): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(27): warning C4305: '=': truncation from '__int64' to 'int'
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(27): warning C4309: '=': truncation of constant value
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(90): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(91): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(169): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(170): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(232): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(233): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(280): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(281): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(295): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(307): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(308): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(309): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\polar.cpp(310): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
   Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
