@@ -237,9 +237,10 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 			Ship* target_ship = ships[j];
 			double dist = sqrt(pow(hb_x - target_ship->x_pos, 2) + pow(hb_y - target_ship->y_pos, 2));
 			if (dist <= (target_ship->radius + flame_radii[i])) {
+				// direction is a combination of relation to hitbox and ship
 				int x_dir = (target_ship->x_pos - hb_x) + (target_ship->x_pos - x_pos);
 				int y_dir = (target_ship->y_pos - hb_y) + (target_ship->y_pos - y_pos);
-				target_ship->take_knockback(x_dir, y_dir, 0, 6, 1, haptics[j]);
+				target_ship->take_knockback(x_dir, y_dir, 0, 4, 1, haptics[j]);
 				damage_done += 1;
 				target_ship->last_hit = id;
 			}
