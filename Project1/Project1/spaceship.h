@@ -10,6 +10,7 @@ class Ship {
 		SDL_Texture* ship_tex;
 		SDL_Texture* ship_invincible_tex;
 		SDL_Texture* cannon_tex;
+		SDL_Texture* shield_tex;
 
 		const int GUN_LENGTH = 10000 * 12;
 
@@ -74,6 +75,9 @@ class Ship {
 
 		int radius;
 		int weight;
+
+		// todo: make this use the constant NUM_ITEMS
+		int item_times[3];
 
 		int last_hit = -1;
 

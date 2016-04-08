@@ -3,6 +3,7 @@
 
 #include "spaceship.h"
 #include "renderer.h"
+#include "item.h"
 
 void Ship::render() {
 	double angle = r->calculate_angle(face_dir_x, face_dir_y);
@@ -21,11 +22,29 @@ void Ship::render() {
 	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->calculate_angle(gun_dir_x, gun_dir_y), 1);
 
 	// render laser sight
-	//render_line(x_pos, y_pos, gun_dir_x, gun_dir_y);
+	if (item_times[laser_sights]) {
+		if (id == 0) {
+			r->SetRenderDrawColor(160, 0, 0, SDL_ALPHA_OPAQUE);
+		} else if (id == 1) {
+			r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+		} else if (id == 2) {
+			r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
+		} else {
+			r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
+		}
+
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		r->render_line(x_pos + GUN_LENGTH*cos(angle), y_pos + GUN_LENGTH*sin(angle), gun_dir_x, gun_dir_y);
+	}
+
+	if (item_times[shield] > 0) {
+		r->render_texture(shield_tex, x_pos, y_pos, angle, 4);
+	}
 }
 
 void Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockback_scaling, int damage, SDL_Haptic* haptic) {
 	if (invincibility_cooldown != 0) return;
+	if (item_times[shield] > 0) return;
 
 	// knockback
 	int total_knockback = (int)(100.0 * (base_knockback + (((double)percent) / 100.0)*knockback_scaling) / weight);

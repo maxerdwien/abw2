@@ -53,6 +53,8 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 	vortex_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\blackhole.png");
 	SDL_SetTextureAlphaMod(vortex_tex, 100);
 
+	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	SDL_SetTextureAlphaMod(shield_tex, 100);
 }
 
 Polar::~Polar() {
@@ -153,6 +155,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
 				damage_done += bullet->damage;
+				ships[k]->last_hit = id;
 
 				// delete bullet
 				num_bullets--;
@@ -236,6 +239,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				if (dist <= (ships[k]->radius + m->radius)) {
 					ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
 					damage_done += m->damage;
+					ships[k]->last_hit = id;
 				}
 
 				// do gravity effect
@@ -303,6 +307,7 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				
 				target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/600000, 1, haptics[i]);
 				damage_done += 1;
+				target_ship->last_hit = id;
 				sparks[num_sparks] = new Spark(target_ship->x_pos, target_ship->y_pos);
 				num_sparks++;
 			}

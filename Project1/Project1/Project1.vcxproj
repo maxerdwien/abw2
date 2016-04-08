@@ -75,6 +75,7 @@
     <ClCompile Include="black.cpp" />
     <ClCompile Include="gravity-missile.cpp" />
     <ClCompile Include="grizzly.cpp" />
+    <ClCompile Include="item.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="missile.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="bullet.h" />
     <ClInclude Include="gravity-missile.h" />
     <ClInclude Include="grizzly.h" />
+    <ClInclude Include="item.h" />
     <ClInclude Include="missile.h" />
     <ClInclude Include="polar.h" />
     <ClInclude Include="renderer.h" />

@@ -54,6 +54,8 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	
 	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
 	explosion_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
+	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	SDL_SetTextureAlphaMod(shield_tex, 100);
 }
 
 void Grizzly::update() {
@@ -109,6 +111,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 
 				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
 				damage_done += bullet->damage;
+				ships[k]->last_hit = id;
 
 				// delete bullet
 				num_bullets--;
@@ -222,6 +225,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 
 					ships[k]->take_knockback(ships[k]->x_pos - missile->x_pos, ships[k]->y_pos - missile->y_pos, missile->base_knockback, missile->knockback_scaling, missile->damage, haptics[k]);
 					damage_done += missile->damage;
+					ships[k]->last_hit = id;
 				}
 			}
 		}
@@ -337,6 +341,7 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 
 					ships[k]->take_knockback(ships[k]->x_pos - mine->x_pos, ships[k]->y_pos - mine->y_pos, mine->base_knockback, mine->knockback_scaling, mine->damage, haptics[k]);
 					damage_done += mine->damage;
+					ships[k]->last_hit = id;
 				}
 			}
 		}

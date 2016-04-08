@@ -11,6 +11,8 @@
 #include "black.h"
 #include "polar.h"
 
+#include "item.h"
+
 #include "renderer.h"
 
 SDL_Renderer* renderer;
@@ -183,7 +185,14 @@ int main(int, char**) {
 	
 	int winner;
 
-	Ship* ships[4];
+	Ship* ships[4] = { NULL, NULL, NULL, NULL };
+
+	Item* items[100];
+	int num_items = 3;
+
+	items[0] = new Item(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, laser_sights, r);
+	items[1] = new Item(WIDTH_UNITS / 2, HEIGHT_UNITS / 4, shield, r);
+	items[2] = new Item(WIDTH_UNITS / 2, 3*HEIGHT_UNITS / 4, speed_up, r);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -385,7 +394,6 @@ int main(int, char**) {
 		// start of stage select state
 		else if (currentState == stageSelect) {
 			currentState = initGame;
-			
 		}
 		else if (currentState == initGame) {
 			// init game objects
@@ -402,6 +410,14 @@ int main(int, char**) {
 				3 * HEIGHT_UNITS / 4
 			};
 			for (int i = 0; i < 4; i++) {
+				if (ships[i]) {
+					// todo: make this actually work
+					delete ships[i];
+					ships[i] = NULL;
+				}
+
+				if (!controllers[i]) continue;
+
 				switch (selections[i]) {
 				case black:
 					ships[i] = new Black(i, spawn_locations_x[i], spawn_locations_y[i], r);
@@ -412,9 +428,6 @@ int main(int, char**) {
 				case polar:
 					ships[i] = new Polar(i, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
-				}
-				if (!controllers[i]) {
-					ships[i] = NULL;
 				}
 			}
 
@@ -580,6 +593,13 @@ int main(int, char**) {
 				// update ship itself
 				{
 
+					// item timers
+					for (int j = 0; j < NUM_ITEM_TYPES; j++) {
+						if (ships[i]->item_times[j] > 0) {
+							ships[i]->item_times[j]--;
+						}
+					}
+
 					if (ship->speed_boost_cooldown > 0) {
 						ship->speed_boost_cooldown--;
 					}
@@ -656,6 +676,18 @@ int main(int, char**) {
 							ship->x_vel += x_force/ship->weight;
 							double y_force = (ship->y_pos - ships[j]->y_pos) * total_force / dist;
 							ship->y_vel += y_force/ship->weight;
+						}
+					}
+
+					// check for collisions with items
+					for (int j = 0; j < num_items; j++) {
+						Item* item = items[j];
+						double dist = sqrt(pow(ship->x_pos - item->x_pos, 2) + pow(ship->y_pos - item->y_pos, 2));
+						if (dist < (ship->radius + item->radius)) {
+							ship->item_times[item->type] += 600;
+							num_items--;
+							free(item);
+							items[j] = items[num_items];
 						}
 					}
 
@@ -737,6 +769,11 @@ int main(int, char**) {
 					ship->render_projectiles_1();
 					ship->render_projectiles_2();
 					ship->render_projectiles_3();
+				}
+
+				// render items
+				for (int i = 0; i < num_items; i++) {
+					items[i]->render();
 				}
 
 				// render UI elements

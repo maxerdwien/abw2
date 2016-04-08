@@ -50,6 +50,8 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 	flame_tex_2 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame2.png");
 
 	hitbox_tex = r->LoadTexture("..\\Project1\\assets\\sun.png");
+	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	SDL_SetTextureAlphaMod(shield_tex, 100);
 }
 
 void Black::update() {
@@ -124,6 +126,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
 				damage_done += bullet->damage;
+				ships[k]->last_hit = id;
 
 				// delete bullet
 				num_bullets--;
@@ -205,6 +208,7 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				int y_dir = (target_ship->y_pos - hb_y) + (target_ship->y_pos - y_pos);
 				target_ship->take_knockback(x_dir, y_dir, 0, 6, 1, haptics[j]);
 				damage_done += 1;
+				target_ship->last_hit = id;
 			}
 		}
 	}
