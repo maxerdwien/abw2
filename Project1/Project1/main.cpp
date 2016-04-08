@@ -165,6 +165,11 @@ int main(int, char**) {
 	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
+	Mix_AllocateChannels(32);
+	// the last 8 channels are reserved for continuous sfx
+
+	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+
 
 	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
 	// "Cyborg Ninja" Kevin MacLeod (incompetech.com)
@@ -173,8 +178,6 @@ int main(int, char**) {
 	if (!muted) {
 		Mix_PlayMusic(music, -1);
 	}
-	Mix_Chunk* m = Mix_LoadWAV("..\\Project1\\assets\\sounds\\wilhelm.wav");
-	//Mix_PlayChannel(-1, m, 0);
 
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
@@ -295,6 +298,7 @@ int main(int, char**) {
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 						if (ready[controller_index]) break;
+						Mix_PlayChannel(-1, beep, 0);
 						switch (selections[controller_index]) {
 						case black:
 							selections[controller_index] = grizzly;
@@ -309,6 +313,7 @@ int main(int, char**) {
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
 						if (ready[controller_index]) break;
+						Mix_PlayChannel(-1, beep, 0);
 						switch (selections[controller_index]) {
 						case black:
 							selections[controller_index] = polar;
@@ -332,6 +337,7 @@ int main(int, char**) {
 						if (e.caxis.value > min_angle && !analog_stick_moved[controller_index]) {
 							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
+							Mix_PlayChannel(-1, beep, 0);
 							switch (selections[controller_index]) {
 							case black:
 								selections[controller_index] = grizzly;
@@ -346,6 +352,7 @@ int main(int, char**) {
 						} else if (e.caxis.value < -min_angle && !analog_stick_moved[controller_index]) {
 							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
+							Mix_PlayChannel(-1, beep, 0);
 							switch (selections[controller_index]) {
 							case black:
 								selections[controller_index] = polar;

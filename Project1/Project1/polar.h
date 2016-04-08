@@ -10,6 +10,13 @@ private:
 	SDL_Texture* missile_tex;
 	SDL_Texture* vortex_tex;
 
+	Mix_Chunk* bullet_sfx;
+	Mix_Chunk* laser_sfx;
+	Mix_Chunk* missile_launch_sfx;
+	Mix_Chunk* blackhole_sfx;
+
+	int laser_channel;
+
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
 

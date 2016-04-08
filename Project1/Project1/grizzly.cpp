@@ -1,5 +1,7 @@
 #include <string>
 #include <SDL.h>
+#include <SDL_mixer.h>
+
 #include "spaceship.h"
 #include "grizzly.h"
 #include "renderer.h"
@@ -56,6 +58,12 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	explosion_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
+
+
+	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	explosion_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	mine_deploy_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
 }
 
 void Grizzly::update() {
@@ -78,6 +86,7 @@ void Grizzly::fire_1() {
 		free(new_bullets);
 		cannon_cooldown += cannon_delay;
 		stamina -= 100;
+		Mix_PlayChannel(-1, bullet_sfx, 0);
 	}
 }
 
@@ -158,6 +167,7 @@ void Grizzly::fire_2() {
 		free(new_missiles);
 		missile_cooldown += missile_delay;
 		stamina -= 400;
+		Mix_PlayChannel(-1, missile_launch_sfx, 0);
 	}
 }
 
@@ -241,6 +251,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 					missile->exploded = true;
 					missile->x_vel = 0;
 					missile->y_vel = 0;
+					Mix_PlayChannel(-1, explosion_sfx, 0);
 				}
 			} else {
 				if (dist <= (ships[k]->radius + missile->radius)) {
@@ -282,6 +293,7 @@ void Grizzly::fire_3() {
 		free(new_missiles);
 		mine_cooldown += mine_delay;
 		stamina -= 450;
+		Mix_PlayChannel(-1, mine_deploy_sfx, 0);
 	}
 }
 
@@ -357,6 +369,7 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 					mine->exploded = true;
 					mine->x_vel = 0;
 					mine->y_vel = 0;
+					Mix_PlayChannel(-1, explosion_sfx, 0);
 				}
 			} else {
 				if (dist <= (ships[k]->radius + mine->radius)) {

@@ -1,5 +1,7 @@
 #include <string>
 #include <SDL.h>
+#include <SDL_mixer.h>
+
 #include "spaceship.h"
 #include "black.h"
 #include "renderer.h"
@@ -29,6 +31,9 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 
 	r = rend;
 
+	charging_channel = 24 + 2*id;
+	flamethrower_channel = 25 + 2 * id;
+
 	if (id == 0) {
 		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
@@ -53,6 +58,11 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 	hitbox_tex = r->LoadTexture("..\\Project1\\assets\\sun.png");
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
+
+
+	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	flamethrower_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	charging_shot_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
 }
 
 void Black::update() {
@@ -79,6 +89,7 @@ void Black::fire_1() {
 		burst_cooldown_1 += burst_delay_1;
 		burst_shot_current++;
 		stamina -= 320;
+		Mix_PlayChannel(-1, bullet_sfx, 0);
 	}
 	if (burst_cooldown_2 <= 0) {
 		int MUZZLE_VEL = 90000;
@@ -91,6 +102,7 @@ void Black::fire_1() {
 		free(new_bullets);
 		burst_cooldown_2 += burst_delay_2;
 		burst_shot_current++;
+		Mix_PlayChannel(-1, bullet_sfx, 0);
 		if (burst_shot_current == burst_shot_number) {
 			burst_shot_current = 0;
 		}
@@ -169,6 +181,11 @@ void Black::fire_2() {
 			charge_shot_charge++;
 		}
 		stamina -= 10;
+		if (!Mix_Playing(charging_channel)) {
+			Mix_PlayChannel(charging_channel, charging_shot_sfx, 0);
+		}
+	} else {
+		Mix_HaltChannel(charging_channel);
 	}
 	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 10) {
 		int MUZZLE_VEL = 100000;
@@ -181,6 +198,7 @@ void Black::fire_2() {
 		}
 		free(new_bullets);
 		charge_shot_charge = 0;
+		Mix_PlayChannel(-1, bullet_sfx, 0);
 		if (stamina <= 0) {
 			do_fire_2 = false;
 		}
@@ -201,6 +219,7 @@ void Black::fire_3() {
 		stamina -= 10;
 	} else {
 		flame_active = false;
+		do_fire_3 = false;
 	}
 }
 
@@ -258,5 +277,11 @@ void Black::render_projectiles_3() {
 			// works since the textures are the same size
 			r->render_texture_edge_spin(flame_tex_2, x_pos + GUN_LENGTH*cos(angle), y_pos + GUN_LENGTH*sin(angle), angle * 180 / M_PI + 90, 4);
 		}
+
+		if (!Mix_Playing(flamethrower_channel)) {
+			Mix_PlayChannel(flamethrower_channel, flamethrower_sfx, 0);
+		}
+	} else {
+		Mix_HaltChannel(flamethrower_channel);
 	}
 }

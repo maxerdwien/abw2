@@ -7,6 +7,11 @@ private:
 	SDL_Texture* mine_tex;
 	SDL_Texture* explosion_tex;
 
+	Mix_Chunk* bullet_sfx;
+	Mix_Chunk* missile_launch_sfx;
+	Mix_Chunk* explosion_sfx;
+	Mix_Chunk* mine_deploy_sfx;
+
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
 

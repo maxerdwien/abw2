@@ -1,10 +1,20 @@
-﻿  main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(252): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(256): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(664): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(677): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(701): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(703): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(845): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(920): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+﻿  black.cpp
+c:\users\max_000\desktop\abw2\project1\project1\black.cpp(230): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\black.cpp(231): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\black.cpp(267): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\black.cpp(268): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\black.cpp(275): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\black.cpp(278): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Generating Code...
+  Compiling...
+  main.cpp
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(255): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(259): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(671): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(684): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(708): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(710): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(852): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(927): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Generating Code...
   Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe

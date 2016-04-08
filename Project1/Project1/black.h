@@ -11,6 +11,13 @@ private:
 	SDL_Texture* flame_tex_2;
 	SDL_Texture* hitbox_tex;
 
+	Mix_Chunk* bullet_sfx;
+	Mix_Chunk* flamethrower_sfx;
+	Mix_Chunk* charging_shot_sfx;
+
+	int charging_channel;
+	int flamethrower_channel;
+
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
 

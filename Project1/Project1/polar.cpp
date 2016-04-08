@@ -1,5 +1,7 @@
 #include <string>
 #include <SDL.h>
+#include <SDL_mixer.h>
+
 #include "spaceship.h"
 #include "spark.h"
 #include "gravity-missile.h"
@@ -30,6 +32,8 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 	normal_radius = radius;
 	weight = 130;
 
+	laser_channel = 24 + 2*id;
+
 	r = rend;
 
 	if (id == 0) {
@@ -56,6 +60,12 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
+
+
+	laser_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\laser-active-big.wav");
+	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	blackhole_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
 }
 
 Polar::~Polar() {
@@ -123,6 +133,8 @@ void Polar::fire_1() {
 		free(new_bullets);
 		spread_cooldown += spread_delay;
 		stamina -= 250;
+
+		Mix_PlayChannel(-1, bullet_sfx, 0);
 	}
 }
 
@@ -201,6 +213,7 @@ void Polar::fire_2() {
 		num_g_missiles++;
 		missile_cooldown += missile_delay;
 		stamina -= 500;
+		Mix_PlayChannel(-1, missile_launch_sfx, 0);
 	}
 }
 
@@ -260,6 +273,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 					m->exploded = true;
 					m->x_vel = 0;
 					m->y_vel = 0;
+					Mix_PlayChannel(-1, blackhole_sfx, 0);
 				}
 			} else {
 				if (dist <= (ships[k]->radius + m->radius)) {
@@ -301,6 +315,7 @@ void Polar::fire_3() {
 		stamina -= 10;
 	} else {
 		laser_active = false;
+		do_fire_3 = false;
 	}
 }
 
@@ -364,6 +379,12 @@ void Polar::render_projectiles_3() {
 	if (laser_active) {
 		r->SetRenderDrawColor(128, 0, 0, SDL_ALPHA_OPAQUE);
 		r->render_line_thick(laser_start_x, laser_start_y, gun_dir_x, gun_dir_y);
+
+		if (!Mix_Playing(laser_channel)) {
+			Mix_PlayChannel(laser_channel, laser_sfx, 0);
+		}
+	} else {
+		Mix_HaltChannel(laser_channel);
 	}
 
 	for (int i = 0; i < num_sparks; i++) {
