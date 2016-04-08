@@ -6,6 +6,8 @@
 #include "polar.h"
 #include "renderer.h"
 
+#include "item.h"
+
 #include "bullet.h"
 
 
@@ -22,12 +24,11 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 	stamina = stamina_max;
 	stamina_per_frame = 4;
 
-	max_accel = 7000;
-	friction_limiter = 1200000;
-	constant_friction = 12000000000;
+	max_accel = 5500;
 
 	radius = 40 * 10000;
-	weight = 60;
+	normal_radius = radius;
+	weight = 130;
 
 	r = rend;
 
@@ -137,11 +138,23 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 		// check for bullet going out of bounds
 		if (bullet->x_pos < min_x || bullet->x_pos > max_x || bullet->y_pos < min_y || bullet->y_pos > max_y) {
-			num_bullets--;
-			free(bullets[j]);
-			bullets[j] = bullets[num_bullets];
-			j--;
-			continue;
+			if (item_times[bullet_bounce] > 0) {
+				if (bullet->x_pos < min_x && bullet->x_vel < 0) {
+					bullet->x_vel *= -1;
+				} else if (bullet->x_pos > max_x && bullet->x_vel > 0) {
+					bullet->x_vel *= -1;
+				} else if (bullet->y_pos < min_y && bullet->y_vel < 0) {
+					bullet->y_vel *= -1;
+				} else if (bullet->y_pos > max_y && bullet->y_vel > 0) {
+					bullet->y_vel *= -1;
+				}
+			} else {
+				num_bullets--;
+				free(bullets[j]);
+				bullets[j] = bullets[num_bullets];
+				j--;
+				continue;
+			}
 		}
 
 		// check for collisions with enemies
@@ -216,11 +229,24 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 		// check for missile going out of bounds
 		if (m->x_pos < min_x || m->x_pos > max_x || m->y_pos < min_y || m->y_pos > max_y) {
-			num_g_missiles--;
-			free(g_missiles[i]);
-			g_missiles[i] = g_missiles[num_g_missiles];
-			i--;
-			continue;
+			if (item_times[bullet_bounce] > 0) {
+				if (m->x_pos < min_x && m->x_vel < 0) {
+					m->x_vel *= -1;
+				} else if (m->x_pos > max_x && m->x_vel > 0) {
+					m->x_vel *= -1;
+				} else if (m->y_pos < min_y && m->y_vel < 0) {
+					m->y_vel *= -1;
+				} else if (m->y_pos > max_y && m->y_vel > 0) {
+					m->y_vel *= -1;
+				}
+			} else {
+				num_g_missiles--;
+				free(g_missiles[i]);
+				g_missiles[i] = g_missiles[num_g_missiles];
+				i--;
+				continue;
+			}
+			
 		}
 
 		// check for collisions with enemies

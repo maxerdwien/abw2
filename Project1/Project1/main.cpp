@@ -188,11 +188,17 @@ int main(int, char**) {
 	Ship* ships[4] = { NULL, NULL, NULL, NULL };
 
 	Item* items[100];
-	int num_items = 3;
+	int num_items = 6;
 
 	items[0] = new Item(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, laser_sights, r);
 	items[1] = new Item(WIDTH_UNITS / 2, HEIGHT_UNITS / 4, shield, r);
-	items[2] = new Item(WIDTH_UNITS / 2, 3*HEIGHT_UNITS / 4, speed_up, r);
+	items[2] = new Item(WIDTH_UNITS / 2, 3 * HEIGHT_UNITS / 4, speed_up, r);
+	items[3] = new Item(WIDTH_UNITS / 4, HEIGHT_UNITS / 4, bounce, r);
+	items[4] = new Item(WIDTH_UNITS / 4, 3 * HEIGHT_UNITS / 4, small, r);
+	items[5] = new Item(3*WIDTH_UNITS / 4, 3*HEIGHT_UNITS / 4, bullet_bounce, r);
+
+	int item_spawn_cooldown = 60 * 30;
+	//int item_spawn_cooldown = 2;
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -565,6 +571,18 @@ int main(int, char**) {
 			}
 
 			// update
+			// spawn items
+			item_spawn_cooldown--;
+			if (item_spawn_cooldown == 0) {
+				item_spawn_cooldown = (20 * 60) + (rand() % (10 * 60));
+				int x_pos = 10000 * (rand() % ((WIDTH_UNITS - STATUS_BAR_WIDTH) / 10000)) + STATUS_BAR_WIDTH;
+				int y_pos = 10000 * (rand() % (HEIGHT_UNITS/10000));
+				int type = rand() % NUM_ITEM_TYPES;
+				items[num_items] = new Item(x_pos, y_pos, (item_type)type, r);
+				num_items++;
+			}
+
+			// update ships
 			for (int i = 0; i < 4; i++) {
 				if (!ships[i]) continue;
 				Ship* ship = ships[i];
@@ -600,6 +618,12 @@ int main(int, char**) {
 						}
 					}
 
+					if (ship->item_times[small] > 0) {
+						ship->radius = ship->normal_radius / 2;
+					} else {
+						ship->radius = ship->normal_radius;
+					}
+
 					if (ship->speed_boost_cooldown > 0) {
 						ship->speed_boost_cooldown--;
 					}
@@ -614,6 +638,9 @@ int main(int, char**) {
 						ship->speed_boost_cooldown += ship->speed_boost_delay;
 						ship->do_speed_boost = false;
 						ship->stamina -= 200;
+					}
+					if (ship->item_times[speed_up] > 0) {
+						accel_mag *= 2;
 					}
 
 					if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
@@ -631,10 +658,8 @@ int main(int, char**) {
 					int iterations_per_frame = 40;
 					for (int j = 0; j < iterations_per_frame; j++) {
 						double total_vel = sqrt(pow(ship->x_vel, 2) + pow(ship->y_vel, 2));
-						//double friction_accel = ((pow(total_vel, 2) + (double)ship->constant_friction) / (double)ship->friction_limiter) / iterations_per_frame;
-						// todo: make this use the constants instead of literals
 						// todo: scale linearly with velocity?
-						double friction_accel = ((pow(total_vel, 2) + 1500000000) / 2000000) / iterations_per_frame;
+						double friction_accel = ((pow(total_vel, 2) + ship->constant_friction) / ship->friction_limiter) / iterations_per_frame;
 
 						int friction_accel_x = ((double)friction_accel * ship->x_vel) / total_vel;
 						if (ship->x_vel > 0) {
@@ -697,29 +722,43 @@ int main(int, char**) {
 
 					// handle death
 					if (ship->x_pos < STATUS_BAR_WIDTH || ship->x_pos > WIDTH_UNITS || ship->y_pos < 0 || ship->y_pos > HEIGHT_UNITS) {
-						
-						ship->lives--;
+						if (ship->item_times[bounce] > 0) {
+							if (ship->x_pos < STATUS_BAR_WIDTH && ship->x_vel < 0) {
+								ship->x_vel *= -1;
+							} else if (ship->x_pos > WIDTH_UNITS && ship->x_vel > 0) {
+								ship->x_vel *= -1;
+							}
+							else if (ship->y_pos < 0 && ship->y_vel < 0) {
+								ship->y_vel *= -1;
+							} else if (ship->y_pos > HEIGHT_UNITS && ship->y_vel > 0) {
+								ship->y_vel *= -1;
+							}
 
-						int last_hit = ship->last_hit;
-						if (last_hit != -1) {
-							ships[last_hit]->kills[ships[last_hit]->num_kills] = i;
-							ships[last_hit]->num_kills++;
+						} else {
+
+							ship->lives--;
+
+							int last_hit = ship->last_hit;
+							if (last_hit != -1) {
+								ships[last_hit]->kills[ships[last_hit]->num_kills] = i;
+								ships[last_hit]->num_kills++;
+							}
+
+							SDL_HapticRumblePlay(haptics[i], 1, 300);
+
+							if (ship->lives <= 0) {
+								ship->lives = 0;
+							}
+
+							ship->invincibility_cooldown += ship->respawn_invincibility_delay;
+
+							ship->x_pos = ship->respawn_x;
+							ship->y_pos = ship->respawn_y;
+							ship->x_vel = 0;
+							ship->y_vel = 0;
+
+							ship->percent = 0;
 						}
-
-						SDL_HapticRumblePlay(haptics[i], 1, 300);
-
-						if (ship->lives <= 0) {
-							ship->lives = 0;
-						}
-
-						ship->invincibility_cooldown += ship->respawn_invincibility_delay;
-
-						ship->x_pos = ship->respawn_x;
-						ship->y_pos = ship->respawn_y;
-						ship->x_vel = 0;
-						ship->y_vel = 0;
-
-						ship->percent = 0;
 					}
 
 				}
@@ -964,7 +1003,7 @@ bool read_global_input(SDL_Event* e) {
 				}
 				SDL_HapticRumblePlay(haptics[i], 1.0f, 500);
 				if (!haptics[i]) {
-					printf(SDL_GetError());
+					std::cout << SDL_GetError() << std::endl;
 				}
 				std::cout << "connecting new controller " << instanceID << " in slot " << i << std::endl;
 				break;

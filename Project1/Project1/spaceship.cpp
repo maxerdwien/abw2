@@ -6,20 +6,24 @@
 #include "item.h"
 
 void Ship::render() {
+	double scale = 1;
+	if (item_times[small] > 0) {
+		scale = 0.5;
+	}
 	double angle = r->calculate_angle(face_dir_x, face_dir_y);
 
 	if (invincibility_cooldown > 0) {
 		if (invincibility_cooldown % invincibility_switch_rate < invincibility_switch_rate/3) {
-			r->render_texture(ship_invincible_tex, x_pos, y_pos, angle, 3);
+			r->render_texture(ship_invincible_tex, x_pos, y_pos, angle, 3*scale);
 		} else {
-			r->render_texture(ship_tex, x_pos, y_pos, angle, 3);
+			r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
 		}
 	} else {
-		r->render_texture(ship_tex, x_pos, y_pos, angle, 3);
+		r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
 	}
 
 	// render gun
-	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->calculate_angle(gun_dir_x, gun_dir_y), 1);
+	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->calculate_angle(gun_dir_x, gun_dir_y), 1 * scale);
 
 	// render laser sight
 	if (item_times[laser_sights]) {
@@ -34,11 +38,12 @@ void Ship::render() {
 		}
 
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		r->render_line(x_pos + GUN_LENGTH*cos(angle), y_pos + GUN_LENGTH*sin(angle), gun_dir_x, gun_dir_y);
+		double gun_len = GUN_LENGTH * scale;
+		r->render_line(x_pos + gun_len*cos(angle), y_pos + gun_len*sin(angle), gun_dir_x, gun_dir_y);
 	}
 
 	if (item_times[shield] > 0) {
-		r->render_texture(shield_tex, x_pos, y_pos, angle, 4);
+		r->render_texture(shield_tex, x_pos, y_pos, angle, 4 * scale);
 	}
 }
 

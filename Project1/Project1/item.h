@@ -4,6 +4,9 @@ enum item_type {
 	shield,
 	laser_sights,
 	speed_up,
+	bounce,
+	small,
+	bullet_bounce,
 
 	NUM_ITEM_TYPES
 };

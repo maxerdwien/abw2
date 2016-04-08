@@ -4,6 +4,8 @@
 #include "black.h"
 #include "renderer.h"
 
+#include "item.h"
+
 #include "bullet.h"
 
 Black::Black(int identifier, int x, int y, Renderer* rend) {
@@ -19,11 +21,10 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 	stamina = stamina_max;
 	stamina_per_frame = 8;
 
-	max_accel = 7000;
-	friction_limiter = 1200000;
-	constant_friction = 12000000000;
+	max_accel = 10000;
 
 	radius = 40 * 10000;
+	normal_radius = radius;
 	weight = 60;
 
 	r = rend;
@@ -108,11 +109,24 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 		// check for bullet going out of bounds
 		if (bullet->x_pos < min_x || bullet->x_pos > max_x || bullet->y_pos < min_y || bullet->y_pos > max_y) {
-			num_bullets--;
-			free(bullets[j]);
-			bullets[j] = bullets[num_bullets];
-			j--;
-			continue;
+			if (item_times[bullet_bounce] > 0) {
+				if (bullet->x_pos < min_x && bullet->x_vel < 0) {
+					bullet->x_vel *= -1;
+				} else if (bullet->x_pos > max_x && bullet->x_vel > 0) {
+					bullet->x_vel *= -1;
+				} else if (bullet->y_pos < min_y && bullet->y_vel < 0) {
+					bullet->y_vel *= -1;
+				} else if (bullet->y_pos > max_y && bullet->y_vel > 0) {
+					bullet->y_vel *= -1;
+				}
+			} else {
+				num_bullets--;
+				free(bullets[j]);
+				bullets[j] = bullets[num_bullets];
+				j--;
+				continue;
+			}
+			
 		}
 
 		// check for collisions with enemies
@@ -178,7 +192,7 @@ void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 }
 
 void Black::render_projectiles_2() {
-	
+	// same deal here
 }
 
 void Black::fire_3() {

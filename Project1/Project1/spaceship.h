@@ -25,11 +25,9 @@ class Ship {
 		int x_accel = 0;
 		int y_accel = 0;
 
-		int max_accel;
-		int friction_limiter;
-		int constant_friction;
-
-		const int MAX_FRICTION_ACCEL = 1000000;
+		long max_accel;
+		long friction_limiter = 2000000;
+		unsigned long constant_friction = 1500000000;
 
 		int move_dir_x = 0;
 		int move_dir_y = 0;
@@ -73,11 +71,12 @@ class Ship {
 		int stamina_max = 0;
 		int stamina_per_frame;
 
+		int normal_radius;
 		int radius;
 		int weight;
 
 		// todo: make this use the constant NUM_ITEMS
-		int item_times[3];
+		int item_times[6];
 
 		int last_hit = -1;
 

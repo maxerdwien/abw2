@@ -4,6 +4,7 @@
 #include "grizzly.h"
 #include "renderer.h"
 
+#include "item.h"
 
 #include "bullet.h"
 #include "missile.h"
@@ -22,10 +23,9 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	stamina_per_frame = 5;
 
 	max_accel = 7000;
-	friction_limiter = 9000000;
-	constant_friction = 25000000000;
 
 	radius = 40 * 10000;
+	normal_radius = radius;
 	weight = 100;
 
 	r = rend;
@@ -93,11 +93,23 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 
 		// check for bullet going out of bounds
 		if (bullet->x_pos < min_x || bullet->x_pos > max_x || bullet->y_pos < min_y || bullet->y_pos > max_y) {
-			num_bullets--;
-			free(bullets[j]);
-			bullets[j] = bullets[num_bullets];
-			j--;
-			continue;
+			if (item_times[bullet_bounce] > 0) {
+				if (bullet->x_pos < min_x && bullet->x_vel < 0) {
+					bullet->x_vel *= -1;
+				} else if (bullet->x_pos > max_x && bullet->x_vel > 0) {
+					bullet->x_vel *= -1;
+				} else if (bullet->y_pos < min_y && bullet->y_vel < 0) {
+					bullet->y_vel *= -1;
+				} else if (bullet->y_pos > max_y && bullet->y_vel > 0) {
+					bullet->y_vel *= -1;
+				}
+			} else {
+				num_bullets--;
+				free(bullets[j]);
+				bullets[j] = bullets[num_bullets];
+				j--;
+				continue;
+			}
 		}
 
 		// check for collisions with enemies
@@ -187,11 +199,23 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 
 		// check for missile going out of bounds
 		if (missile->x_pos < min_x || missile->x_pos > max_x || missile->y_pos < min_y || missile->y_pos > max_y) {
-			num_missiles--;
-			free(missiles[j]);
-			missiles[j] = missiles[num_missiles];
-			j--;
-			continue;
+			if (item_times[bullet_bounce] > 0) {
+				if (missile->x_pos < min_x && missile->x_vel < 0) {
+					missile->x_vel *= -1;
+				} else if (missile->x_pos > max_x && missile->x_vel > 0) {
+					missile->x_vel *= -1;
+				} else if (missile->y_pos < min_y && missile->y_vel < 0) {
+					missile->y_vel *= -1;
+				} else if (missile->y_pos > max_y && missile->y_vel > 0) {
+					missile->y_vel *= -1;
+				}
+			} else {
+				num_missiles--;
+				free(missiles[j]);
+				missiles[j] = missiles[num_missiles];
+				j--;
+				continue;
+			}
 		}
 
 		// expand missile radius
