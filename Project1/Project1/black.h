@@ -11,7 +11,6 @@ private:
 	SDL_Texture* flame_tex_2;
 	SDL_Texture* hitbox_tex;
 
-public:
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
 
@@ -32,6 +31,7 @@ public:
 	int flame_switch_cooldown = 0;
 	int current_flame = 0;
 
+public:
 	Black(int identifier, int x, int y, Renderer* rend);
 
 	void update();

@@ -75,6 +75,16 @@ class Ship {
 		int radius;
 		int weight;
 
+		int last_hit = -1;
+
+		int kills[100];
+		int num_kills = 0;
+
+		int damage_done = 0;
+		int damage_taken = 0;
+
+		int place = -1;
+
 		int id;
 
 		virtual void update() = 0;

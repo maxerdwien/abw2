@@ -92,9 +92,9 @@ void Renderer::render_text(int x, int y, const std::string& s) {
 	y *= ratio / 10000;
 
 	SDL_Color White = { 255, 255, 255 };
-	SDL_Surface* surface = TTF_RenderText_Blended(caladea, s.c_str(), White); //Create the sdl surface
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface); //Convert to texture
-	SDL_Rect rect; //create a rect
+	SDL_Surface* surface = TTF_RenderText_Blended(caladea, s.c_str(), White);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect;
 	rect.x = x;
 	rect.y = y;
 	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
@@ -108,13 +108,32 @@ void Renderer::render_text_centered(int x, int y, const std::string& s) {
 	y *= ratio / 10000;
 
 	SDL_Color White = { 255, 255, 255 };
-	SDL_Surface* surface = TTF_RenderText_Blended(caladea, s.c_str(), White); //Create the sdl surface
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface); //Convert to texture
-	SDL_Rect rect; //create a rect
+	SDL_Surface* surface = TTF_RenderText_Blended(caladea, s.c_str(), White);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect;
 	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
 	rect.x = x - rect.w/2;
 	rect.y = y;
 	
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
+}
+
+void Renderer::render_text_centered_highlighted(int x, int y, const std::string& s) {
+	x *= ratio / 10000;
+	y *= ratio / 10000;
+
+	SDL_Color White = { 255, 255, 255 };
+	SDL_Surface* surface = TTF_RenderText_Blended(caladea, s.c_str(), White);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect;
+	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+	rect.x = x - rect.w / 2;
+	rect.y = y;
+
+	SDL_RenderFillRect(renderer, &rect);
+
 	SDL_RenderCopy(renderer, texture, NULL, &rect);
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);
@@ -174,15 +193,6 @@ void Renderer::render_line_thick(int x_start, int y_start, int x_dir, int y_dir)
 	SDL_RenderDrawLine(renderer, x_start, y_start-1, x_end, y_end-1);
 }
 
-void Renderer::render_sparks(int x1, int y1, int x2, int y2) {
-	x1 *= ratio / 10000;
-	y1 *= ratio / 10000;
-	x2 *= ratio / 10000;
-	y2 *= ratio / 10000;
-
-	SDL_SetRenderDrawColor(renderer, 255, 255, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderDrawLine(renderer, x1, y1, x2 / 10000, y2 / 10000);
-}
 
 void Renderer::render_solid_bg() {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);

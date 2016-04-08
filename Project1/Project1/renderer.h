@@ -25,12 +25,11 @@ public:
 
 	void render_text(int x, int y, const std::string& s);
 	void render_text_centered(int x, int y, const std::string& s);
+	void Renderer::render_text_centered_highlighted(int x, int y, const std::string& s);
 
 	void render_line(int x_start, int y_start, int x_dir, int y_dir);
 	void render_line_w_end(int x_start, int y_start, int x_end, int y_end);
 	void render_line_thick(int x_start, int y_start, int x_dir, int y_dir);
-
-	void render_sparks(int x1, int y1, int x2, int y2);
 
 	void render_solid_bg();
 

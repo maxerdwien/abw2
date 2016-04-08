@@ -7,7 +7,6 @@ private:
 	SDL_Texture* mine_tex;
 	SDL_Texture* explosion_tex;
 
-public:
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
 
@@ -25,6 +24,9 @@ public:
 
 	const int mine_delay = 100;
 	int mine_cooldown = 0;
+
+public:
+	
 
 	Grizzly(int identifier, int x, int y, Renderer* rend);
 

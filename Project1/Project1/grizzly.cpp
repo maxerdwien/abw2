@@ -108,6 +108,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 			if (dist <= (ships[k]->radius + bullet->radius)) {
 
 				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
+				damage_done += bullet->damage;
 
 				// delete bullet
 				num_bullets--;
@@ -220,6 +221,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 					missile->players_hit[k] = true;
 
 					ships[k]->take_knockback(ships[k]->x_pos - missile->x_pos, ships[k]->y_pos - missile->y_pos, missile->base_knockback, missile->knockback_scaling, missile->damage, haptics[k]);
+					damage_done += missile->damage;
 				}
 			}
 		}
@@ -242,7 +244,6 @@ void Grizzly::fire_3() {
 		mine_cooldown--;
 	}
 	if (do_fire_3 && stamina > 0 && mine_cooldown <= 0) {
-		// todo: make this zero
 		int MUZZLE_VEL = 1000;
 		int spread = 1;
 		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 25, 200, 300);
@@ -335,6 +336,7 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 					mine->players_hit[k] = true;
 
 					ships[k]->take_knockback(ships[k]->x_pos - mine->x_pos, ships[k]->y_pos - mine->y_pos, mine->base_knockback, mine->knockback_scaling, mine->damage, haptics[k]);
+					damage_done += mine->damage;
 				}
 			}
 		}

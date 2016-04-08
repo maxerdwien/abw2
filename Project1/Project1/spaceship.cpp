@@ -33,16 +33,12 @@ void Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockbac
 	double normalized_dir_x = dir_x / sqrt(pow(dir_x, 2) + pow(dir_y, 2));
 	double normalized_dir_y = dir_y / sqrt(pow(dir_x, 2) + pow(dir_y, 2));
 
-	//std::cout << "total_knockback: " << total_knockback << "\tnorm_dir_x: " << normalized_dir_x << "\tnorm_dir_y: " << normalized_dir_y << std::endl;
-	//std::cout << "x_vel_before " << x_vel << "\ty_vel_before " << y_vel << std::endl;
-
 	x_vel += (int)(1000.0*total_knockback*normalized_dir_x);
 	y_vel += (int)(1000.0*total_knockback*normalized_dir_y);
 
-	//std::cout << "x_vel_after " << x_vel << "\ty_vel_after " << y_vel << std::endl;
-
 	// damage
 	percent += damage;
+	damage_taken += damage;
 	if (percent > SPACESHIP_MAX_PERCENT) {
 		percent = SPACESHIP_MAX_PERCENT;
 	}

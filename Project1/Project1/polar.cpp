@@ -50,10 +50,29 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 
 	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
-	//vortex_tex = r->LoadTexture("..\\Project1\\assets\\unused\\baddie.png");
-	vortex_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\blackholeGreen.png");
+	vortex_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\blackhole.png");
 	SDL_SetTextureAlphaMod(vortex_tex, 100);
 
+}
+
+Polar::~Polar() {
+	SDL_DestroyTexture(ship_tex);
+	SDL_DestroyTexture(bullet_tex);
+	SDL_DestroyTexture(ship_invincible_tex);
+	SDL_DestroyTexture(cannon_tex);
+	SDL_DestroyTexture(missile_tex);
+	SDL_DestroyTexture(vortex_tex);
+
+	for (int i = 0; i < num_bullets; i++) {
+		free(bullets[i]);
+	}
+	for (int i = 0; i < num_sparks; i++) {
+		free(sparks[i]);
+	}
+
+	for (int i = 0; i < num_g_missiles; i++) {
+		free(g_missiles[i]);
+	}
 }
 
 void Polar::update() {
@@ -62,14 +81,7 @@ void Polar::update() {
 	double new_angle = angle;
 
 	double angle_diff = desired_angle - angle;
-	/*
-	if (abs(angle_diff) > abs(angle - desired_angle + M_PI)) {
-		angle_diff = angle - desired_angle + M_PI;
-	}
-	if (abs(angle_diff) > abs(angle - desired_angle - M_PI)) {
-		angle_diff = angle - desired_angle - M_PI;
-	}
-	*/
+
 	if (abs(angle_diff) > abs(desired_angle - angle - 2*M_PI)) {
 		angle_diff = desired_angle - angle - 2*M_PI;
 	}
@@ -140,6 +152,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 			if (dist <= (ships[k]->radius + bullet->radius)) {
 
 				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
+				damage_done += bullet->damage;
 
 				// delete bullet
 				num_bullets--;
@@ -222,6 +235,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 			} else {
 				if (dist <= (ships[k]->radius + m->radius)) {
 					ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
+					damage_done += m->damage;
 				}
 
 				// do gravity effect
@@ -245,21 +259,8 @@ void Polar::render_projectiles_2() {
 		} else {
 			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle, g_missiles[j]->radius);
 			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle, g_missiles[j]->radius);
-			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle+180, g_missiles[j]->radius);
-			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle+180, g_missiles[j]->radius);
-			/*
-			SDL_Rect rect;
-
-			rect.w = g_missiles[j]->radius / 10000 * 2;
-			rect.h = g_missiles[j]->radius / 10000 * 2;
-			rect.x = g_missiles[j]->x_pos / 10000 - rect.w / 2;
-			rect.y = g_missiles[j]->y_pos / 10000 - rect.h / 2;
-
-			r->RenderCopyEx(vortex_tex, NULL, &rect, g_missiles[j]->vortex_angle, NULL, SDL_FLIP_NONE);
-			r->RenderCopyEx(vortex_tex, NULL, &rect, -g_missiles[j]->vortex_angle, NULL, SDL_FLIP_NONE);
-			r->RenderCopyEx(vortex_tex, NULL, &rect, g_missiles[j]->vortex_angle+180, NULL, SDL_FLIP_NONE);
-			r->RenderCopyEx(vortex_tex, NULL, &rect, -g_missiles[j]->vortex_angle+180, NULL, SDL_FLIP_NONE);
-			*/
+			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle+45, g_missiles[j]->radius);
+			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle+45, g_missiles[j]->radius);
 		}
 	}
 }
@@ -290,9 +291,18 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 			double dist = get_dist(laser_start_x, laser_start_y, laser_end_x, laser_end_y, target_ship->x_pos, target_ship->y_pos);
 
 			if (dist < target_ship->radius) {
+				if (abs(laser_end_x - laser_start_x) > abs(laser_end_y - laser_start_y)) {
+					bool x_mismatch = target_ship->x_pos - x_pos > 0 && laser_end_x - laser_start_x < 0 || target_ship->x_pos - x_pos < 0 && laser_end_x - laser_start_x > 0;
+					if (x_mismatch) continue;
+				} else {
+					bool y_mismatch = target_ship->y_pos - y_pos > 0 && laser_end_y - laser_start_y < 0 || target_ship->y_pos - y_pos < 0 && laser_end_y - laser_start_y > 0;
+					if (y_mismatch) continue;
+				}
+
 				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
-				printf("%f\n", ship_dist);
+				
 				target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/600000, 1, haptics[i]);
+				damage_done += 1;
 				sparks[num_sparks] = new Spark(target_ship->x_pos, target_ship->y_pos);
 				num_sparks++;
 			}

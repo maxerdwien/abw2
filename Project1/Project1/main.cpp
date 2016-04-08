@@ -141,8 +141,6 @@ int main(int, char**) {
 
 	r = new Renderer(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-
-
 	// load textures
 	SDL_Texture* bg = r->LoadTexture("..\\Project1\\assets\\background.png");
 
@@ -179,6 +177,7 @@ int main(int, char**) {
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
 	bool ready[4] = { false, false, false, false };
+	//bool ready[4] = { true, true, true, true };
 
 	SDL_Event e;
 	
@@ -272,8 +271,12 @@ int main(int, char**) {
 						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
-						//currentState = mainMenu;
-						ready[controller_index] = false;
+						if (ready[controller_index] == false) {
+							currentState = mainMenu;
+						} else {
+							ready[controller_index] = false;
+
+						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 						if (ready[controller_index]) break;
@@ -347,9 +350,6 @@ int main(int, char**) {
 				}
 			}
 
-			// todo: remove this?
-			SDL_RenderClear(renderer);
-
 			// render basic black background
 			r->render_solid_bg();
 
@@ -410,7 +410,6 @@ int main(int, char**) {
 					ships[i] = new Grizzly(i, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				case polar:
-					// todo: do the obvious thing
 					ships[i] = new Polar(i, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				}
@@ -668,11 +667,17 @@ int main(int, char**) {
 					if (ship->x_pos < STATUS_BAR_WIDTH || ship->x_pos > WIDTH_UNITS || ship->y_pos < 0 || ship->y_pos > HEIGHT_UNITS) {
 						
 						ship->lives--;
+
+						int last_hit = ship->last_hit;
+						if (last_hit != -1) {
+							ships[last_hit]->kills[ships[last_hit]->num_kills] = i;
+							ships[last_hit]->num_kills++;
+						}
+
 						SDL_HapticRumblePlay(haptics[i], 1, 300);
 
 						if (ship->lives <= 0) {
 							ship->lives = 0;
-							// todo: something
 						}
 
 						ship->invincibility_cooldown += ship->respawn_invincibility_delay;
@@ -740,7 +745,7 @@ int main(int, char**) {
 					r->SetRenderDrawColor(128, 128, 128, SDL_ALPHA_OPAQUE);
 					r->render_rect(0, 0, STATUS_BAR_WIDTH, HEIGHT_UNITS);
 
-					int textAdjustment = 50; // todo: rename this shit
+					int box_height = 150;
 
 					// render each ship's UI elements
 					for (int i = 0; i < 4; i++) {
@@ -750,7 +755,6 @@ int main(int, char**) {
 						
 						// render stamina bar
 						{
-							// todo: match these to the real colors
 							// set stamina bar color
 							if (ship->id == 0) {
 								r->SetRenderDrawColor(160, 0, 0, SDL_ALPHA_OPAQUE);
@@ -762,21 +766,21 @@ int main(int, char**) {
 								r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
 							}
 
-							r->render_rect(0, 10000 * (120 + 150*i), STATUS_BAR_WIDTH * ship->stamina / ship->stamina_max, 10000 * 30);
+							r->render_rect(0, 10000 * (120 + box_height*i), STATUS_BAR_WIDTH * ((double)ship->stamina / ship->stamina_max), 10000 * 30);
 						}
 
 						// render percentages
 						{
 							char str[10];
 							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
-							r->render_text(0, 10000 * (61 + 150 * i), str);
+							r->render_text(0, 10000 * (61 + box_height * i), str);
 						}
 
 						// render stock counter
 						{
 							char playerLives[20];
 							sprintf_s(playerLives, "Lives: %d", ship->lives);
-							r->render_text(0, 10000 * (10 + 150 * i), playerLives);
+							r->render_text(0, 10000 * (10 + box_height * i), playerLives);
 						}
 					}
 				}
@@ -798,22 +802,10 @@ int main(int, char**) {
 				}
 			}
 
-			// render pause background
-			// todo: fix this
-			/*
-			{
-				SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-				SDL_Rect s;
-				s.x = WINDOW_WIDTH / 2;
-				s.y = WINDOW_HEIGHT / 2;
-				s.w = 120;
-				s.h = 50;
-				SDL_RenderFillRect(renderer, &s);
-			}
-			*/
-
 			// render word "paused"
-			r->render_text_centered((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, "Paused");
+			SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
+			r->render_text_centered_highlighted((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, "Paused");
+
 
 			SDL_RenderPresent(renderer);
 
@@ -841,8 +833,6 @@ int main(int, char**) {
 					break;
 				}
 			}
-			// todo: remove?
-			SDL_RenderClear(renderer);
 
 			// render basic black background
 			r->render_solid_bg();

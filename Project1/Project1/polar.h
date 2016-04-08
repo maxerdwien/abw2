@@ -10,7 +10,6 @@ private:
 	SDL_Texture* missile_tex;
 	SDL_Texture* vortex_tex;
 
-public:
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
 
@@ -33,7 +32,11 @@ public:
 	class Spark* sparks[1000];
 	int num_sparks = 0;
 
+public:
+	
+
 	Polar(int identifier, int x, int y, Renderer* rend);
+	~Polar();
 
 	void update();
 

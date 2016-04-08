@@ -123,6 +123,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 			if (dist <= (ships[k]->radius + bullet->radius)) {
 
 				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
+				damage_done += bullet->damage;
 
 				// delete bullet
 				num_bullets--;
@@ -203,6 +204,7 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				int x_dir = (target_ship->x_pos - hb_x) + (target_ship->x_pos - x_pos);
 				int y_dir = (target_ship->y_pos - hb_y) + (target_ship->y_pos - y_pos);
 				target_ship->take_knockback(x_dir, y_dir, 0, 6, 1, haptics[j]);
+				damage_done += 1;
 			}
 		}
 	}
