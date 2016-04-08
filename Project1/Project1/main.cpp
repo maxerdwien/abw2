@@ -45,6 +45,12 @@ enum ship_type {
 	polar = 2
 };
 
+enum wrap_type {
+	none,
+	direct,
+	inverse
+};
+
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready);
@@ -165,10 +171,11 @@ int main(int, char**) {
 	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
-	Mix_AllocateChannels(32);
-	// the last 8 channels are reserved for continuous sfx
+	
 
 	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
 
 
 	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
@@ -177,7 +184,14 @@ int main(int, char**) {
 	// http ://creativecommons.org/licenses/by/3.0/
 	if (!muted) {
 		Mix_PlayMusic(music, -1);
+		Mix_AllocateChannels(32);
+	} else {
+		Mix_AllocateChannels(0);
 	}
+
+	// stage stuff
+	wrap_type horizontal_wrap = none;
+	wrap_type vertical_wrap = none;
 
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
@@ -276,6 +290,7 @@ int main(int, char**) {
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						//currentState = stageSelect;
 						ready[controller_index] = true;
+						Mix_PlayChannel(-1, selected_ship, 0);
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						bool all_ready = true;
@@ -293,7 +308,6 @@ int main(int, char**) {
 							currentState = mainMenu;
 						} else {
 							ready[controller_index] = false;
-
 						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
@@ -325,8 +339,6 @@ int main(int, char**) {
 							selections[controller_index] = grizzly;
 							break;
 						}
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
-						
 					}
 					break;
 				case SDL_CONTROLLERAXISMOTION:
@@ -720,6 +732,7 @@ int main(int, char**) {
 							num_items--;
 							free(item);
 							items[j] = items[num_items];
+							Mix_PlayChannel(-1, powerup_sfx, 0);
 						}
 					}
 
@@ -974,8 +987,11 @@ bool read_global_input(SDL_Event* e) {
 			muted = !muted;
 			if (muted) {
 				Mix_HaltMusic();
+				Mix_AllocateChannels(0);
 			} else {
 				Mix_PlayMusic(music, -1);
+				// the last 8 channels are reserved for continuous sfx
+				Mix_AllocateChannels(32);
 			}
 			
 			event_eaten = true;
