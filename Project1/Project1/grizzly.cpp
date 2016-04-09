@@ -59,13 +59,15 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
 	explosion_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
-	SDL_SetTextureAlphaMod(shield_tex, 100);
+	SDL_SetTextureAlphaMod(shield_tex, 100); 
+	bounce_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
 
 	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	explosion_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	mine_deploy_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\missile.wav");
+	explosion_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\explosion.wav");
+	mine_deploy_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\dispenser.wav");
 }
 
 void Grizzly::update() {
@@ -92,7 +94,7 @@ void Grizzly::fire_1() {
 	}
 }
 
-void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
+void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -115,6 +117,20 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 					bullet->y_vel *= -1;
 				}
 			} else {
+				num_bullets--;
+				free(bullets[j]);
+				bullets[j] = bullets[num_bullets];
+				j--;
+				continue;
+			}
+		}
+
+		// check for collisions with asteroids
+		for (int k = 0; k < num_asteroids; k++) {
+			Asteroid* a = asteroids[k];
+			double dist = sqrt(pow(a->x_pos - bullet->x_pos, 2) + pow(a->y_pos - bullet->y_pos, 2));
+			if (dist <= (bullet->radius + a->radius)) {
+				// todo: make bullets bounce if they have the powerup
 				num_bullets--;
 				free(bullets[j]);
 				bullets[j] = bullets[num_bullets];
@@ -173,7 +189,7 @@ void Grizzly::fire_2() {
 	}
 }
 
-void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
+void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_missiles; j++) {
 		struct missile* missile = missiles[j];
 
@@ -230,6 +246,8 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 			}
 		}
 
+		
+
 		// expand missile radius
 		if (missile->exploded) {
 			missile->radius += MISSILE_RADIUS_PER_FRAME;
@@ -239,6 +257,17 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 				missiles[j] = missiles[num_missiles];
 				j--;
 				continue;
+			}
+		} else {
+			// check for collisions with asteroids
+			for (int k = 0; k < num_asteroids; k++) {
+				Asteroid* a = asteroids[k];
+				double dist = sqrt(pow(a->x_pos - missile->x_pos, 2) + pow(a->y_pos - missile->y_pos, 2));
+				if (dist <= (missile->radius + a->radius)) {
+					// todo: make bullets bounce if they have the powerup
+					missile->exploded = true;
+					continue;
+				}
 			}
 		}
 
@@ -299,7 +328,7 @@ void Grizzly::fire_3() {
 	}
 }
 
-void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
+void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_mines; j++) {
 		struct missile* mine = mines[j];
 
@@ -357,8 +386,18 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 				j--;
 				continue;
 			}
+		} else {
+			// check for collisions with asteroids
+			for (int k = 0; k < num_asteroids; k++) {
+				Asteroid* a = asteroids[k];
+				double dist = sqrt(pow(a->x_pos - mine->x_pos, 2) + pow(a->y_pos - mine->y_pos, 2));
+				if (dist <= (mine->radius + a->radius)) {
+					// todo: make bullets bounce if they have the powerup
+					mine->exploded = true;
+					continue;
+				}
+			}
 		}
-
 		// check for collisions with enemies
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;

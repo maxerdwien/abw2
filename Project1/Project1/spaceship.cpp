@@ -47,6 +47,9 @@ void Ship::render() {
 	if (item_times[shield] > 0) {
 		r->render_texture(shield_tex, x_pos, y_pos, angle, 4 * scale);
 	}
+	if (item_times[bounce] > 0) {
+		r->render_texture(bounce_tex, x_pos, y_pos, angle, 4 * scale);
+	}
 }
 
 void Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockback_scaling, int damage, SDL_Haptic* haptic) {

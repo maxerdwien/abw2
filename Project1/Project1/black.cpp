@@ -60,11 +60,12 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 	hitbox_tex = r->LoadTexture("..\\Project1\\assets\\sun.png");
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
-
+	bounce_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
 	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	flamethrower_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	charging_shot_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	flamethrower_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\flamethrower.wav");
+	charging_shot_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\charging.wav");
 }
 
 void Black::update() {
@@ -111,7 +112,7 @@ void Black::fire_1() {
 	}
 }
 
-void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -141,6 +142,20 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 				continue;
 			}
 			
+		}
+
+		// check for collisions with asteroids
+		for (int k = 0; k < num_asteroids; k++) {
+			Asteroid* a = asteroids[k];
+			double dist = sqrt(pow(a->x_pos - bullet->x_pos, 2) + pow(a->y_pos - bullet->y_pos, 2));
+			if (dist <= (bullet->radius + a->radius)) {
+				// todo: make bullets bounce if they have the powerup
+				num_bullets--;
+				free(bullets[j]);
+				bullets[j] = bullets[num_bullets];
+				j--;
+				continue;
+			}
 		}
 
 		// check for collisions with enemies
@@ -207,7 +222,7 @@ void Black::fire_2() {
 	}
 }
 
-void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	// do nothing, because update_projectiles_1 does all the work
 }
 
@@ -225,7 +240,7 @@ void Black::fire_3() {
 	}
 }
 
-void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	if (!flame_active) return;
 	double angle = atan2(gun_dir_y, gun_dir_x);
 	for (int i = 0; i < num_flame_hitboxes; i++) {

@@ -175,9 +175,9 @@ int main(int, char**) {
 
 	
 
-	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\beep.wav");
+	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\confirm.wav");
+	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\item.wav");
 
 
 	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
@@ -221,9 +221,9 @@ int main(int, char**) {
 	int item_spawn_cooldown = 60 * 30;
 	
 	Asteroid* asteroids[100];
-	int num_asteroids = 1;
+	int num_asteroids = 0;
 
-	asteroids[0] = new Asteroid(WIDTH_UNITS/2, HEIGHT_UNITS/2, r);
+	//asteroids[0] = new Asteroid(WIDTH_UNITS/2, HEIGHT_UNITS/2, r);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -825,9 +825,9 @@ int main(int, char**) {
 				}
 
 				// update projectiles
-				ship->update_projectiles_1(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, haptics);
-				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, haptics);
-				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, haptics);
+				ship->update_projectiles_1(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
+				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
+				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 
 				// Check to see if the game is over
 				int number_alive = 0;
