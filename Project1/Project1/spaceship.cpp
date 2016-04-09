@@ -1,6 +1,8 @@
 #include <SDL.h>
 #include <iostream>
 
+#include "asteroid.h"
+
 #include "spaceship.h"
 #include "renderer.h"
 #include "item.h"
@@ -44,6 +46,9 @@ void Ship::render() {
 
 	if (item_times[shield] > 0) {
 		r->render_texture(shield_tex, x_pos, y_pos, angle, 4 * scale);
+	}
+	if (item_times[bounce] > 0) {
+		r->render_texture(bounce_tex, x_pos, y_pos, angle, 4 * scale);
 	}
 }
 

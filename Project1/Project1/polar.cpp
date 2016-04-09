@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include "asteroid.h"
 #include "spaceship.h"
 #include "spark.h"
 #include "gravity-missile.h"
@@ -60,12 +61,13 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
-
+	bounce_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
 	laser_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\laser-active-big.wav");
 	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	blackhole_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\missile.wav");
+	blackhole_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\blackhole.wav");
 }
 
 Polar::~Polar() {
@@ -138,7 +140,7 @@ void Polar::fire_1() {
 	}
 }
 
-void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -161,6 +163,20 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 					bullet->y_vel *= -1;
 				}
 			} else {
+				num_bullets--;
+				free(bullets[j]);
+				bullets[j] = bullets[num_bullets];
+				j--;
+				continue;
+			}
+		}
+
+		// check for collisions with asteroids
+		for (int k = 0; k < num_asteroids; k++) {
+			Asteroid* a = asteroids[k];
+			double dist = sqrt(pow(a->x_pos - bullet->x_pos, 2) + pow(a->y_pos - bullet->y_pos, 2));
+			if (dist <= (bullet->radius + a->radius)) {
+				// todo: make bullets bounce if they have the powerup
 				num_bullets--;
 				free(bullets[j]);
 				bullets[j] = bullets[num_bullets];
@@ -217,7 +233,7 @@ void Polar::fire_2() {
 	}
 }
 
-void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int i = 0; i < num_g_missiles; i++) {
 		Gravity_Missile* m = g_missiles[i];
 
@@ -235,7 +251,19 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				i--;
 				continue;
 			}
+		} else {
+			// check for collisions with asteroids
+			for (int k = 0; k < num_asteroids; k++) {
+				Asteroid* a = asteroids[k];
+				double dist = sqrt(pow(a->x_pos - m->x_pos, 2) + pow(a->y_pos - m->y_pos, 2));
+				if (dist <= (m->radius + a->radius)) {
+					// todo: make bullets bounce if they have the powerup
+					m->exploded = true;
+					continue;
+				}
+			}
 		}
+		
 
 		m->x_pos += m->x_vel;
 		m->y_pos += m->y_vel;
@@ -319,7 +347,7 @@ void Polar::fire_3() {
 	}
 }
 
-void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	if (laser_active) {
 		// update laser position
 		double angle = atan2(gun_dir_y, gun_dir_x);

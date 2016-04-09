@@ -72,6 +72,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="asteroid.cpp" />
     <ClCompile Include="black.cpp" />
     <ClCompile Include="gravity-missile.cpp" />
     <ClCompile Include="grizzly.cpp" />
@@ -85,6 +86,7 @@
     <ClCompile Include="spark.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="asteroid.h" />
     <ClInclude Include="black.h" />
     <ClInclude Include="bullet.h" />
     <ClInclude Include="gravity-missile.h" />

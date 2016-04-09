@@ -13,6 +13,8 @@
 
 #include "item.h"
 
+#include "asteroid.h"
+
 #include "renderer.h"
 
 SDL_Renderer* renderer;
@@ -108,7 +110,7 @@ int main(int, char**) {
 		_1440p,
 		_2160p // 4k
 	};
-	const Resolution res = _1080p;
+	const Resolution res = _720p;
 	switch (res) {
 	case _480p:
 		WINDOW_WIDTH = 640;
@@ -181,9 +183,9 @@ int main(int, char**) {
 
 	
 
-	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
+	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\beep.wav");
+	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\confirm.wav");
+	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\item.wav");
 
 
 	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
@@ -213,17 +215,23 @@ int main(int, char**) {
 	Ship* ships[4] = { NULL, NULL, NULL, NULL };
 
 	Item* items[100];
-	int num_items = 6;
+	int num_items = 0;
 
+	/*
 	items[0] = new Item(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, laser_sights, r);
 	items[1] = new Item(WIDTH_UNITS / 2, HEIGHT_UNITS / 4, shield, r);
 	items[2] = new Item(WIDTH_UNITS / 2, 3 * HEIGHT_UNITS / 4, speed_up, r);
 	items[3] = new Item(WIDTH_UNITS / 4, HEIGHT_UNITS / 4, bounce, r);
 	items[4] = new Item(WIDTH_UNITS / 4, 3 * HEIGHT_UNITS / 4, small, r);
 	items[5] = new Item(3*WIDTH_UNITS / 4, 3*HEIGHT_UNITS / 4, bullet_bounce, r);
+	*/
 
 	int item_spawn_cooldown = 60 * 30;
-	//int item_spawn_cooldown = 2;
+	
+	Asteroid* asteroids[100];
+	int num_asteroids = 0;
+
+	//asteroids[0] = new Asteroid(WIDTH_UNITS/2, HEIGHT_UNITS/2, r);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -296,7 +304,16 @@ int main(int, char**) {
 					controller_index = lookup_controller(e.cbutton.which);
 					
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						//currentState = stageSelect;
+						bool all_ready = true;
+						for (int i = 0; i < 4; i++) {
+							if (controllers[i] && !ready[i]) {
+								all_ready = false;
+							}
+						}
+						if (all_ready) {
+							currentState = stageSelect;
+						}
+
 						ready[controller_index] = true;
 						Mix_PlayChannel(-1, selected_ship, 0);
 					}
@@ -609,6 +626,12 @@ int main(int, char**) {
 				num_items++;
 			}
 
+			// update asteroids
+			for (int i = 0; i < num_asteroids; i++) {
+				Asteroid* a = asteroids[i];
+				a->update();
+			}
+
 			// update ships
 			for (int i = 0; i < 4; i++) {
 				if (!ships[i]) continue;
@@ -744,6 +767,24 @@ int main(int, char**) {
 						}
 					}
 
+					// check for collisions with asteroids
+					for (int j = 0; j < num_asteroids; j++) {
+						Asteroid* a = asteroids[j];
+						double dist = sqrt(pow(ship->x_pos - a->x_pos, 2) + pow(ship->y_pos - a->y_pos, 2));
+						if (dist < (ship->radius + a->radius)) {
+
+							double total_force = 40000000000000000000.0 / pow(dist, 2);
+							double x_force = (ship->x_pos - a->x_pos) * total_force / dist;
+							ship->x_vel += x_force / ship->weight;
+							double y_force = (ship->y_pos - a->y_pos) * total_force / dist;
+							ship->y_vel += y_force / ship->weight;
+
+							ship->percent += 28;
+
+							//Mix_PlayChannel(-1, powerup_sfx, 0);
+						}
+					}
+
 					// update position
 					ship->x_pos += ship->x_vel;
 					ship->y_pos += ship->y_vel;
@@ -792,9 +833,9 @@ int main(int, char**) {
 				}
 
 				// update projectiles
-				ship->update_projectiles_1(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, haptics);
-				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, haptics);
-				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, haptics);
+				ship->update_projectiles_1(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
+				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
+				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 
 				// Check to see if the game is over
 				int number_alive = 0;
@@ -841,6 +882,11 @@ int main(int, char**) {
 				// render items
 				for (int i = 0; i < num_items; i++) {
 					items[i]->render();
+				}
+
+				// render asteroids
+				for (int i = 0; i < num_asteroids; i++) {
+					asteroids[i]->render();
 				}
 
 				// render UI elements
