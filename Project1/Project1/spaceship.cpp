@@ -52,9 +52,9 @@ void Ship::render() {
 	}
 }
 
-void Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockback_scaling, int damage, SDL_Haptic* haptic) {
-	if (invincibility_cooldown != 0) return;
-	if (item_times[shield] > 0) return;
+bool Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockback_scaling, int damage, SDL_Haptic* haptic) {
+	if (invincibility_cooldown != 0) return false;
+	if (item_times[shield] > 0) return false;
 
 	// knockback
 	int total_knockback = (int)(100.0 * (base_knockback + (((double)percent) / 100.0)*knockback_scaling) / weight);
@@ -78,4 +78,6 @@ void Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockbac
 		haptic_amount = 1;
 	}
 	SDL_HapticRumblePlay(haptic, haptic_amount, 160);
+
+	return true;
 }

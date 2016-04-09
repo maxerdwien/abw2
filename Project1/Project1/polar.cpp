@@ -55,13 +55,16 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 
 	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 
+	bounce_missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileOrange.png");
+	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
+
 	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
 	vortex_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\blackhole.png");
 	SDL_SetTextureAlphaMod(vortex_tex, 100);
 
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
-	bounce_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
 	laser_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\laser-active-big.wav");
@@ -194,9 +197,11 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 			//std::cout << dist << std::endl;
 			if (dist <= (ships[k]->radius + bullet->radius)) {
 
-				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
-				damage_done += bullet->damage;
-				ships[k]->last_hit = id;
+				bool hit = ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
+				if (hit) {
+					damage_done += bullet->damage;
+					ships[k]->last_hit = id;
+				}
 
 				// delete bullet
 				num_bullets--;
@@ -212,7 +217,13 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 void Polar::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
 		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		r->render_texture(bullet_tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
+		SDL_Texture* tex;
+		if (item_times[bullet_bounce] > 0) {
+			tex = bounce_bullet_tex;
+		} else {
+			tex = bullet_tex;
+		}
+		r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
 	}
 }
 
@@ -259,6 +270,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				if (dist <= (m->radius + a->radius)) {
 					// todo: make bullets bounce if they have the powerup
 					m->exploded = true;
+					Mix_PlayChannel(-1, blackhole_sfx, 0);
 					continue;
 				}
 			}
@@ -305,9 +317,11 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				}
 			} else {
 				if (dist <= (ships[k]->radius + m->radius)) {
-					ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
-					damage_done += m->damage;
-					ships[k]->last_hit = id;
+					bool hit = ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
+					if (hit) {
+						damage_done += m->damage;
+						ships[k]->last_hit = id;
+					}
 				}
 
 				// do gravity effect
@@ -327,7 +341,13 @@ void Polar::render_projectiles_2() {
 	for (int j = 0; j < num_g_missiles; j++) {
 		if (!g_missiles[j]->exploded) {
 			double angle = r->calculate_angle(g_missiles[j]->x_vel, g_missiles[j]->y_vel);
-			r->render_texture(missile_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, angle, 3);
+			SDL_Texture* tex;
+			if (item_times[bullet_bounce] > 0) {
+				tex = bounce_missile_tex;
+			} else {
+				tex = missile_tex;
+			}
+			r->render_texture(tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, angle, 3);
 		} else {
 			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle, g_missiles[j]->radius);
 			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle, g_missiles[j]->radius);
@@ -374,11 +394,13 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
 				
-				target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/600000, 1, haptics[i]);
-				damage_done += 1;
-				target_ship->last_hit = id;
-				sparks[num_sparks] = new Spark(target_ship->x_pos, target_ship->y_pos);
-				num_sparks++;
+				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/600000, 1, haptics[i]);
+				if (hit) {
+					damage_done += 1;
+					target_ship->last_hit = id;
+					sparks[num_sparks] = new Spark(target_ship->x_pos, target_ship->y_pos);
+					num_sparks++;
+				}
 			}
 		}
 		

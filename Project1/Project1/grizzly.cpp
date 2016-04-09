@@ -55,12 +55,15 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-white.png");
 
 	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
+
+	bounce_missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileOrange.png");
+	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
 	
 	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
 	explosion_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100); 
-	bounce_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
 
@@ -148,9 +151,11 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 			//std::cout << dist << std::endl;
 			if (dist <= (ships[k]->radius + bullet->radius)) {
 
-				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
-				damage_done += bullet->damage;
-				ships[k]->last_hit = id;
+				bool hit = ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
+				if (hit) {
+					damage_done += bullet->damage;
+					ships[k]->last_hit = id;
+				}
 
 				// delete bullet
 				num_bullets--;
@@ -166,7 +171,13 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 void Grizzly::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
 		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		r->render_texture(bullet_tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
+		SDL_Texture* tex;
+		if (item_times[bullet_bounce] > 0) {
+			tex = bounce_bullet_tex;
+		} else {
+			tex = bullet_tex;
+		}
+		r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
 	}
 }
 
@@ -266,6 +277,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 				if (dist <= (missile->radius + a->radius)) {
 					// todo: make bullets bounce if they have the powerup
 					missile->exploded = true;
+					Mix_PlayChannel(-1, explosion_sfx, 0);
 					continue;
 				}
 			}
@@ -289,9 +301,11 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 					if (missile->players_hit[k]) continue;
 					missile->players_hit[k] = true;
 
-					ships[k]->take_knockback(ships[k]->x_pos - missile->x_pos, ships[k]->y_pos - missile->y_pos, missile->base_knockback, missile->knockback_scaling, missile->damage, haptics[k]);
-					damage_done += missile->damage;
-					ships[k]->last_hit = id;
+					bool hit = ships[k]->take_knockback(ships[k]->x_pos - missile->x_pos, ships[k]->y_pos - missile->y_pos, missile->base_knockback, missile->knockback_scaling, missile->damage, haptics[k]);
+					if (hit) {
+						damage_done += missile->damage;
+						ships[k]->last_hit = id;
+					}
 				}
 			}
 		}
@@ -302,7 +316,13 @@ void Grizzly::render_projectiles_2() {
 	for (int j = 0; j < num_missiles; j++) {
 		if (!missiles[j]->exploded) {
 			double angle = r->calculate_angle(missiles[j]->x_vel, missiles[j]->y_vel);
-			r->render_texture(missile_tex, missiles[j]->x_pos, missiles[j]->y_pos, angle, 1.8);
+			SDL_Texture* tex;
+			if (item_times[bullet_bounce] > 0) {
+				tex = bounce_missile_tex;
+			} else {
+				tex = missile_tex;
+			}
+			r->render_texture(tex, missiles[j]->x_pos, missiles[j]->y_pos, angle, 1.8);
 		} else {
 			r->render_texture_abs_size(explosion_tex, missiles[j]->x_pos, missiles[j]->y_pos, 0, missiles[j]->radius);
 		}
@@ -417,9 +437,11 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 					if (mine->players_hit[k]) continue;
 					mine->players_hit[k] = true;
 
-					ships[k]->take_knockback(ships[k]->x_pos - mine->x_pos, ships[k]->y_pos - mine->y_pos, mine->base_knockback, mine->knockback_scaling, mine->damage, haptics[k]);
-					damage_done += mine->damage;
-					ships[k]->last_hit = id;
+					bool hit = ships[k]->take_knockback(ships[k]->x_pos - mine->x_pos, ships[k]->y_pos - mine->y_pos, mine->base_knockback, mine->knockback_scaling, mine->damage, haptics[k]);
+					if (hit) {
+						damage_done += mine->damage;
+						ships[k]->last_hit = id;
+					}
 				}
 			}
 		}

@@ -54,13 +54,15 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 
 	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 
+	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
+
 	flame_tex_1 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame1.png");
 	flame_tex_2 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame2.png");
 
 	hitbox_tex = r->LoadTexture("..\\Project1\\assets\\sun.png");
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
-	bounce_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
 	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
@@ -167,9 +169,11 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 			//std::cout << dist << std::endl;
 			if (dist <= (ships[k]->radius + bullet->radius)) {
 
-				ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
-				damage_done += bullet->damage;
-				ships[k]->last_hit = id;
+				bool hit = ships[k]->take_knockback(bullet->x_vel, bullet->y_vel, bullet->base_knockback, bullet->knockback_scaling, bullet->damage, haptics[k]);
+				if (hit) {
+					damage_done += bullet->damage;
+					ships[k]->last_hit = id;
+				}
 
 				// delete bullet
 				num_bullets--;
@@ -185,7 +189,14 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 void Black::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
 		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
-		r->render_texture(bullet_tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, ((double)bullets[j]->radius/10000.0)/5);
+
+		SDL_Texture* tex;
+		if (item_times[bullet_bounce] > 0) {
+			tex = bounce_bullet_tex;
+		} else {
+			tex = bullet_tex;
+		}
+		r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, ((double)bullets[j]->radius/10000.0)/5);
 	}
 }
 
@@ -257,9 +268,11 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				// direction is a combination of relation to hitbox and ship
 				int x_dir = (target_ship->x_pos - hb_x) + (target_ship->x_pos - x_pos)/2;
 				int y_dir = (target_ship->y_pos - hb_y) + (target_ship->y_pos - y_pos)/2;
-				target_ship->take_knockback(x_dir, y_dir, 0, 4, 1, haptics[j]);
-				damage_done += 1;
-				target_ship->last_hit = id;
+				bool hit = target_ship->take_knockback(x_dir, y_dir, 0, 4, 1, haptics[j]);
+				if (hit) {
+					damage_done += 1;
+					target_ship->last_hit = id;
+				}
 			}
 		}
 	}

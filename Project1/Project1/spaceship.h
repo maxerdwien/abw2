@@ -94,7 +94,7 @@ class Ship {
 		virtual void update() = 0;
 		void render();
 
-		void take_knockback(int dir_x, int dir_y, int base_knockback, int knockback_scaling, int damage, SDL_Haptic* haptic);
+		bool take_knockback(int dir_x, int dir_y, int base_knockback, int knockback_scaling, int damage, SDL_Haptic* haptic);
 
 		virtual void fire_1() = 0;
 		virtual void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], class Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) = 0;

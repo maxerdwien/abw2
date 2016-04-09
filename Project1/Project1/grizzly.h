@@ -7,6 +7,9 @@ private:
 	SDL_Texture* mine_tex;
 	SDL_Texture* explosion_tex;
 
+	SDL_Texture* bounce_bullet_tex;
+	SDL_Texture* bounce_missile_tex;
+
 	Mix_Chunk* bullet_sfx;
 	Mix_Chunk* missile_launch_sfx;
 	Mix_Chunk* explosion_sfx;

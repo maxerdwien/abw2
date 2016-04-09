@@ -63,7 +63,7 @@ enum wrap_type {
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready);
-void render_results(double x, double y, SDL_Texture * ship_tex, Ship * ship);
+void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship);
 
 int main(int, char**) {
 
@@ -110,7 +110,7 @@ int main(int, char**) {
 		_1440p,
 		_2160p // 4k
 	};
-	const Resolution res = _720p;
+	const Resolution res = _1080p;
 	switch (res) {
 	case _480p:
 		WINDOW_WIDTH = 640;
@@ -198,6 +198,7 @@ int main(int, char**) {
 	} else {
 		Mix_AllocateChannels(0);
 	}
+	//Mix_AllocateChannels(32);
 
 	// stage stuff
 	wrap_type horizontal_wrap = none;
@@ -207,6 +208,8 @@ int main(int, char**) {
 	bool analog_stick_moved[4] = { false, false, false, false };
 	bool ready[4] = { false, false, false, false };
 	//bool ready[4] = { true, true, true, true };
+
+	bool do_items = true;
 
 	SDL_Event e;
 	
@@ -227,11 +230,12 @@ int main(int, char**) {
 	*/
 
 	int item_spawn_cooldown = 60 * 30;
+	item_spawn_cooldown = 2;
 	
 	Asteroid* asteroids[100];
-	int num_asteroids = 0;
+	int num_asteroids = 1;
 
-	//asteroids[0] = new Asteroid(WIDTH_UNITS/2, HEIGHT_UNITS/2, r);
+	asteroids[0] = new Asteroid((WIDTH_UNITS-STATUS_BAR_WIDTH)/2 + STATUS_BAR_WIDTH, HEIGHT_UNITS/2, r);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -282,11 +286,11 @@ int main(int, char**) {
 
 			// render title name and prompt to move forward
 			{
-				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 2.5, "Alaskan Cosmobear Spacefighting");
+				r->render_text_centered(WIDTH_UNITS / 2,  2 * HEIGHT_UNITS / 5, "Alaskan Cosmobear Spacefighting");
 
 				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to start.");
 
-				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 1.7, "Press the B button to quit.");
+				r->render_text_centered(WIDTH_UNITS / 2, 10 * HEIGHT_UNITS / 17, "Press the B button to quit.");
 			}
 
 			SDL_RenderPresent(renderer);
@@ -314,8 +318,10 @@ int main(int, char**) {
 							currentState = stageSelect;
 						}
 
+						if (!ready[controller_index]) {
+							Mix_PlayChannel(-1, selected_ship, 0);
+						}
 						ready[controller_index] = true;
-						Mix_PlayChannel(-1, selected_ship, 0);
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						bool all_ready = true;
@@ -334,6 +340,9 @@ int main(int, char**) {
 						} else {
 							ready[controller_index] = false;
 						}
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
+						do_items = !do_items;
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 						if (ready[controller_index]) break;
@@ -616,16 +625,17 @@ int main(int, char**) {
 
 			// update
 			// spawn items
-			item_spawn_cooldown--;
-			if (item_spawn_cooldown == 0) {
-				item_spawn_cooldown = (20 * 60) + (rand() % (10 * 60));
-				int x_pos = 10000 * (rand() % ((WIDTH_UNITS - STATUS_BAR_WIDTH) / 10000)) + STATUS_BAR_WIDTH;
-				int y_pos = 10000 * (rand() % (HEIGHT_UNITS/10000));
-				int type = rand() % NUM_ITEM_TYPES;
-				items[num_items] = new Item(x_pos, y_pos, (item_type)type, r);
-				num_items++;
+			if (do_items) {
+				item_spawn_cooldown--;
+				if (item_spawn_cooldown == 0) {
+					item_spawn_cooldown = (0 * 60) + (rand() % (10 * 60));
+					int x_pos = 10000 * (rand() % ((WIDTH_UNITS - STATUS_BAR_WIDTH) / 10000)) + STATUS_BAR_WIDTH;
+					int y_pos = 10000 * (rand() % (HEIGHT_UNITS / 10000));
+					int type = rand() % NUM_ITEM_TYPES;
+					items[num_items] = new Item(x_pos, y_pos, (item_type)type, r);
+					num_items++;
+				}
 			}
-
 			// update asteroids
 			for (int i = 0; i < num_asteroids; i++) {
 				Asteroid* a = asteroids[i];
@@ -711,7 +721,7 @@ int main(int, char**) {
 						// todo: scale linearly with velocity?
 						double friction_accel = ((pow(total_vel, 2) + ship->constant_friction) / ship->friction_limiter) / iterations_per_frame;
 
-						int friction_accel_x = ((double)friction_accel * ship->x_vel) / total_vel;
+						int friction_accel_x = (int)(((double)friction_accel * ship->x_vel) / total_vel);
 						if (ship->x_vel > 0) {
 							ship->x_vel -= friction_accel_x;
 							if (ship->x_vel < 0) {
@@ -724,7 +734,7 @@ int main(int, char**) {
 							}
 						}
 
-						int friction_accel_y = ((double)friction_accel * ship->y_vel) / total_vel;
+						int friction_accel_y = (int)(((double)friction_accel * ship->y_vel) / total_vel);
 						if (ship->y_vel > 0) {
 							ship->y_vel -= friction_accel_y;
 							if (ship->y_vel < 0) {
@@ -748,9 +758,9 @@ int main(int, char**) {
 						if (dist <= (ships[i]->radius + ships[j]->radius)) {
 							double total_force = 140000000000000000.0 / pow(dist, 2);
 							double x_force = (ship->x_pos - ships[j]->x_pos) * total_force / dist;
-							ship->x_vel += x_force/ship->weight;
+							ship->x_vel += (int)(x_force/ship->weight);
 							double y_force = (ship->y_pos - ships[j]->y_pos) * total_force / dist;
-							ship->y_vel += y_force/ship->weight;
+							ship->y_vel += (int)(y_force/ship->weight);
 						}
 					}
 
@@ -773,11 +783,11 @@ int main(int, char**) {
 						double dist = sqrt(pow(ship->x_pos - a->x_pos, 2) + pow(ship->y_pos - a->y_pos, 2));
 						if (dist < (ship->radius + a->radius)) {
 
-							double total_force = 40000000000000000000.0 / pow(dist, 2);
+							double total_force = 20000000000000000000.0 / pow(dist, 2);
 							double x_force = (ship->x_pos - a->x_pos) * total_force / dist;
-							ship->x_vel += x_force / ship->weight;
+							ship->x_vel += (int)(x_force / ship->weight);
 							double y_force = (ship->y_pos - a->y_pos) * total_force / dist;
-							ship->y_vel += y_force / ship->weight;
+							ship->y_vel += (int)(y_force / ship->weight);
 
 							ship->percent += 28;
 
@@ -827,6 +837,8 @@ int main(int, char**) {
 							ship->y_vel = 0;
 
 							ship->percent = 0;
+
+							ship->last_hit = -1;
 						}
 					}
 
@@ -916,7 +928,7 @@ int main(int, char**) {
 								r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
 							}
 
-							r->render_rect(0, 10000 * (120 + box_height*i), STATUS_BAR_WIDTH * ((double)ship->stamina / ship->stamina_max), 10000 * 30);
+							r->render_rect(0, 10000 * (120 + box_height*i), STATUS_BAR_WIDTH * ship->stamina / ship->stamina_max, 10000 * 30);
 						}
 
 						// render percentages
@@ -1030,19 +1042,20 @@ int main(int, char**) {
 					sprintf_s(winnerMessage, "Player %d wins!", winner);
 					r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage);
 				}
+				int start_height = HEIGHT_UNITS / 4;
 				if (ships[0] != NULL) {
-					render_results(8, 3.5, ship_textures[selections[0]][red], ships[0]);
+					render_results(WIDTH_UNITS / 8, start_height, ship_textures[selections[0]][red], ships[0]);
 				} 
 				if (ships[1] != NULL) {
-					render_results(8.0/3, 3.5, ship_textures[selections[1]][blue], ships[1]);
+					render_results(3 * WIDTH_UNITS / 8, start_height, ship_textures[selections[1]][blue], ships[1]);
 				}
 				if (ships[2] != NULL) {
-					render_results(8.0/5, 3.5, ship_textures[selections[2]][yellow], ships[2]);
+					render_results(5 * WIDTH_UNITS / 8, start_height, ship_textures[selections[2]][yellow], ships[2]);
 				}
 				if (ships[3] != NULL) {
-				render_results(8.0/7, 3.5, ship_textures[selections[3]][green], ships[3]);
+				render_results(7 * WIDTH_UNITS / 8, start_height, ship_textures[selections[3]][green], ships[3]);
 				}
-				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 1.25 , "Press the A button to continue.");
+				r->render_text_centered(WIDTH_UNITS / 2, 4 * HEIGHT_UNITS / 5, "Press the A button to continue.");
 			}
 			SDL_RenderPresent(renderer);
 		}
@@ -1213,7 +1226,7 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	r->render_text(x + box_w / 5, y + 8 * box_h / 10, wep3);
 }
 
-void render_results(double x, double y, SDL_Texture * ship_tex, Ship * ship) { 
+void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
 
 	char killResult[15];
 	char damageGiven[30];
@@ -1222,8 +1235,8 @@ void render_results(double x, double y, SDL_Texture * ship_tex, Ship * ship) {
 	sprintf_s(damageGiven, "Damage Given: %d%% ", ship->damage_done);
 	sprintf_s(damageTaken, "Damage Taken: %d%%", ship->damage_taken);
 
-	r->render_texture(ship_tex , WIDTH_UNITS / x, HEIGHT_UNITS / y, 1, 5);
-	r->render_text_centered_small(WIDTH_UNITS / x, HEIGHT_UNITS / (y - 1), killResult);
-	r->render_text_centered_small(WIDTH_UNITS / x, HEIGHT_UNITS / (y - 1.25), damageGiven);
-	r->render_text_centered_small(WIDTH_UNITS / x, HEIGHT_UNITS / (y - 1.5), damageTaken);
+	r->render_texture(ship_tex, x, y, 1, 5);
+	r->render_text_centered_small(x, y + 10000 * 100, killResult);
+	r->render_text_centered_small(x, y + 10000 * 130, damageGiven);
+	r->render_text_centered_small(x, y + 10000 * 160, damageTaken);
 }

@@ -10,6 +10,9 @@ private:
 	SDL_Texture* missile_tex;
 	SDL_Texture* vortex_tex;
 
+	SDL_Texture* bounce_bullet_tex;
+	SDL_Texture* bounce_missile_tex;
+
 	Mix_Chunk* bullet_sfx;
 	Mix_Chunk* laser_sfx;
 	Mix_Chunk* missile_launch_sfx;
