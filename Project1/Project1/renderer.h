@@ -9,6 +9,7 @@ private:
 	int WINDOW_HEIGHT;
 	double ratio;
 	TTF_Font* caladea;
+	TTF_Font* caladea_small;
 
 public:
 	Renderer(struct SDL_Renderer* r, int w, int h);
@@ -25,6 +26,7 @@ public:
 
 	void render_text(int x, int y, const std::string& s);
 	void render_text_centered(int x, int y, const std::string& s);
+	void render_text_centered_small(int x, int y, const std::string& s);
 	void Renderer::render_text_centered_highlighted(int x, int y, const std::string& s);
 
 	void render_line(int x_start, int y_start, int x_dir, int y_dir);
