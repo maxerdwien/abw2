@@ -1,6 +1,8 @@
 #include <SDL.h>
 #include <iostream>
 
+#include "asteroid.h"
+
 #include "spaceship.h"
 #include "renderer.h"
 #include "item.h"

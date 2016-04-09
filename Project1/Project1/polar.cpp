@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include "asteroid.h"
 #include "spaceship.h"
 #include "spark.h"
 #include "gravity-missile.h"
@@ -138,7 +139,7 @@ void Polar::fire_1() {
 	}
 }
 
-void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -217,7 +218,7 @@ void Polar::fire_2() {
 	}
 }
 
-void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	for (int i = 0; i < num_g_missiles; i++) {
 		Gravity_Missile* m = g_missiles[i];
 
@@ -319,7 +320,7 @@ void Polar::fire_3() {
 	}
 }
 
-void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	if (laser_active) {
 		// update laser position
 		double angle = atan2(gun_dir_y, gun_dir_x);

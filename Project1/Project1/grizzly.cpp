@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include "asteroid.h"
+
 #include "spaceship.h"
 #include "grizzly.h"
 #include "renderer.h"
@@ -90,7 +92,7 @@ void Grizzly::fire_1() {
 	}
 }
 
-void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -171,7 +173,7 @@ void Grizzly::fire_2() {
 	}
 }
 
-void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_missiles; j++) {
 		struct missile* missile = missiles[j];
 
@@ -297,7 +299,7 @@ void Grizzly::fire_3() {
 	}
 }
 
-void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_mines; j++) {
 		struct missile* mine = mines[j];
 

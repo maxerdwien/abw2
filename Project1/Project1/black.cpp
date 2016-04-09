@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include "asteroid.h"
+
 #include "spaceship.h"
 #include "black.h"
 #include "renderer.h"
@@ -109,7 +111,7 @@ void Black::fire_1() {
 	}
 }
 
-void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		struct bullet* bullet = bullets[j];
 
@@ -205,7 +207,7 @@ void Black::fire_2() {
 	}
 }
 
-void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	// do nothing, because update_projectiles_1 does all the work
 }
 
@@ -223,7 +225,7 @@ void Black::fire_3() {
 	}
 }
 
-void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], SDL_Haptic* haptics[]) {
+void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], SDL_Haptic* haptics[]) {
 	if (!flame_active) return;
 	double angle = atan2(gun_dir_y, gun_dir_x);
 	for (int i = 0; i < num_flame_hitboxes; i++) {
