@@ -19,6 +19,12 @@ SDL_Renderer* renderer;
 
 SDL_Window* window;
 
+struct lra {
+	bool l = false;
+	bool r = false;
+	bool a = false;
+};
+
 const int WIDTH_UNITS = 10000 * 1280;
 const int HEIGHT_UNITS = 10000 * 720;
 const int BARSIZE = 10000 * 26;
@@ -34,6 +40,7 @@ bool muted = true;
 int controller_mappings[4] = { -1, -1, -1, -1 };
 SDL_GameController* controllers[4] = { NULL, NULL, NULL, NULL };
 SDL_Haptic* haptics[4];
+lra LRA[4];
 
 Mix_Music* music;
 
@@ -887,13 +894,46 @@ int main(int, char**) {
 
 		// start pause state
 		else if (currentState == pause) {
-
 			while (SDL_PollEvent(&e)) {
+				int controller_index;
 				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
+					controller_index = lookup_controller(e.cbutton.which);
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
-						currentState = inGame;
+						if (LRA[controller_index].a == true && LRA[controller_index].l == true && LRA[controller_index].r == true) {
+							winner = -1;
+							currentState = results;
+						}	
+						else {
+							currentState = inGame;
+						}
+					}
+					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+						LRA[controller_index].a = true;
+					}
+					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+						LRA[controller_index].l = true;
+					}
+					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+						LRA[controller_index].r = true;
+					}
+					break;
+				case SDL_CONTROLLERAXISMOTION:
+					controller_index = lookup_controller(e.caxis.which);
+					if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+						int min_activation = 20000;
+						//std::cout << e.caxis.value << std::endl;
+						if (e.caxis.value >= min_activation) {
+							LRA[controller_index].r = true;
+						}
+					}
+					else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+						int min_activation = 20000;
+						//std::cout << e.caxis.value << std::endl;
+						if (e.caxis.value >= min_activation) {
+							LRA[controller_index].l = true;
+						}
 					}
 					break;
 				}
@@ -936,9 +976,14 @@ int main(int, char**) {
 
 			// render who won plus continue prompt
 			{
-				char winnerMessage[15];
-				sprintf_s(winnerMessage, "Player %d wins!", winner);
-				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage);
+				if (winner == -1) {
+					r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, "No Contest!");
+				}
+				else {
+					char winnerMessage[15];
+					sprintf_s(winnerMessage, "Player %d wins!", winner);
+					r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage);
+				}
 				if (ships[0] != NULL) {
 					render_results(8, 3.5, ship_textures[selections[0]][red], ships[0]);
 				} 
