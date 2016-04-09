@@ -17,6 +17,7 @@ Renderer::Renderer(SDL_Renderer* r, int w, int h) {
 	TTF_Init();
 
 	caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36 * ratio);
+	caladea_small = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 28 * ratio);
 }
 
 double Renderer::calculate_angle(int x_vel, int y_vel) {
@@ -115,6 +116,23 @@ void Renderer::render_text_centered(int x, int y, const std::string& s) {
 	rect.x = x - rect.w/2;
 	rect.y = y;
 	
+	SDL_RenderCopy(renderer, texture, NULL, &rect);
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
+}
+
+void Renderer::render_text_centered_small(int x, int y, const std::string& s) {
+	x *= ratio / 10000;
+	y *= ratio / 10000;
+
+	SDL_Color White = { 255, 255, 255 };
+	SDL_Surface* surface = TTF_RenderText_Blended(caladea_small, s.c_str(), White);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect;
+	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+	rect.x = x - rect.w / 2;
+	rect.y = y;
+
 	SDL_RenderCopy(renderer, texture, NULL, &rect);
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);

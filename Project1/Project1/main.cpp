@@ -56,6 +56,7 @@ enum wrap_type {
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready);
+void render_results(double x, double y, SDL_Texture * ship_tex, Ship * ship);
 
 int main(int, char**) {
 
@@ -983,9 +984,20 @@ int main(int, char**) {
 			{
 				char winnerMessage[15];
 				sprintf_s(winnerMessage, "Player %d wins!", winner);
-				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 2.5, winnerMessage);
-
-				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to continue.");
+				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage);
+				if (ships[0] != NULL) {
+					render_results(8, 3.5, ship_textures[selections[0]][red], ships[0]);
+				} 
+				if (ships[1] != NULL) {
+					render_results(8.0/3, 3.5, ship_textures[selections[1]][blue], ships[1]);
+				}
+				if (ships[2] != NULL) {
+					render_results(8.0/5, 3.5, ship_textures[selections[2]][yellow], ships[2]);
+				}
+				if (ships[3] != NULL) {
+				render_results(8.0/7, 3.5, ship_textures[selections[3]][green], ships[3]);
+				}
+				r->render_text_centered(WIDTH_UNITS / 2, HEIGHT_UNITS / 1.25 , "Press the A button to continue.");
 			}
 			SDL_RenderPresent(renderer);
 		}
@@ -1154,4 +1166,19 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	r->render_text(x + box_w / 5, y + 6 * box_h / 10, wep1);
 	r->render_text(x + box_w / 5, y + 7 * box_h / 10, wep2);
 	r->render_text(x + box_w / 5, y + 8 * box_h / 10, wep3);
+}
+
+void render_results(double x, double y, SDL_Texture * ship_tex, Ship * ship) { 
+
+	char killResult[15];
+	char damageGiven[30];
+	char damageTaken[30];
+	sprintf_s(killResult, "Kills: %d", ship->num_kills);
+	sprintf_s(damageGiven, "Damage Given: %d%% ", ship->damage_done);
+	sprintf_s(damageTaken, "Damage Taken: %d%%", ship->damage_taken);
+
+	r->render_texture(ship_tex , WIDTH_UNITS / x, HEIGHT_UNITS / y, 1, 5);
+	r->render_text_centered_small(WIDTH_UNITS / x, HEIGHT_UNITS / (y - 1), killResult);
+	r->render_text_centered_small(WIDTH_UNITS / x, HEIGHT_UNITS / (y - 1.25), damageGiven);
+	r->render_text_centered_small(WIDTH_UNITS / x, HEIGHT_UNITS / (y - 1.5), damageTaken);
 }
