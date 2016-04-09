@@ -1,10 +1,14 @@
-﻿  main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(258): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(262): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(674): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(687): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(711): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(713): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(855): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(930): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
+﻿  black.cpp
+c:\users\max\documents\github\abw2\project1\project1\black.cpp(230): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\black.cpp(231): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\black.cpp(267): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\black.cpp(268): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\black.cpp(275): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\black.cpp(278): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  spaceship.cpp
+  polar.cpp
+  main.cpp
+  grizzly.cpp
+  Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe

@@ -61,7 +61,7 @@ class Ship {
 
 		int percent = 0;
 
-		int lives = 3;
+		int lives = 5;
 
 		const int respawn_invincibility_delay = 120;
 		int invincibility_cooldown = 0;
