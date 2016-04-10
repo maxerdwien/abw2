@@ -198,6 +198,8 @@ int main(int, char**) {
 	} else {
 		Mix_AllocateChannels(0);
 	}
+
+	Mix_VolumeMusic(MIX_MAX_VOLUME / 8);
 	//Mix_AllocateChannels(32);
 
 	// stage stuff
@@ -230,12 +232,12 @@ int main(int, char**) {
 	*/
 
 	int item_spawn_cooldown = 60 * 30;
-	item_spawn_cooldown = 2;
+	//item_spawn_cooldown = 2;
 	
 	Asteroid* asteroids[100];
-	int num_asteroids = 1;
+	int num_asteroids = 0;
 
-	asteroids[0] = new Asteroid((WIDTH_UNITS-STATUS_BAR_WIDTH)/2 + STATUS_BAR_WIDTH, HEIGHT_UNITS/2, r);
+	//asteroids[0] = new Asteroid((WIDTH_UNITS-STATUS_BAR_WIDTH)/2 + STATUS_BAR_WIDTH, HEIGHT_UNITS/2, r);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -508,13 +510,7 @@ int main(int, char**) {
 					case SDL_CONTROLLERBUTTONDOWN:
 						controller_index = lookup_controller(e.cbutton.which);
 						ship = ships[controller_index];
-						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
-
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
-
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
 							ship->do_fire_1 = true;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 							ship->do_fire_3 = true;
@@ -628,7 +624,7 @@ int main(int, char**) {
 			if (do_items) {
 				item_spawn_cooldown--;
 				if (item_spawn_cooldown == 0) {
-					item_spawn_cooldown = (0 * 60) + (rand() % (10 * 60));
+					item_spawn_cooldown = (20 * 60) + (rand() % (10 * 60));
 					int x_pos = 10000 * (rand() % ((WIDTH_UNITS - STATUS_BAR_WIDTH) / 10000)) + STATUS_BAR_WIDTH;
 					int y_pos = 10000 * (rand() % (HEIGHT_UNITS / 10000));
 					int type = rand() % NUM_ITEM_TYPES;

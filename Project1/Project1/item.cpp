@@ -33,6 +33,5 @@ Item::Item(int x, int y, item_type t, Renderer* rend) {
 }
 
 void Item::render() {
-	//r->render_texture_abs_size(tex, x_pos, y_pos, 0, radius);
 	r->render_texture(tex, x_pos, y_pos, 0, 2);
 }
