@@ -73,6 +73,32 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	mine_deploy_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\dispenser.wav");
 }
 
+Grizzly::~Grizzly() {
+	SDL_DestroyTexture(ship_tex);
+	SDL_DestroyTexture(bullet_tex);
+	SDL_DestroyTexture(ship_invincible_tex);
+	SDL_DestroyTexture(cannon_tex);
+	SDL_DestroyTexture(missile_tex);
+	SDL_DestroyTexture(explosion_tex);
+	SDL_DestroyTexture(bounce_missile_tex);
+	SDL_DestroyTexture(bounce_bullet_tex);
+	SDL_DestroyTexture(shield_tex);
+	SDL_DestroyTexture(bounce_tex);
+
+	Mix_FreeChunk(explosion_sfx);
+	Mix_FreeChunk(bullet_sfx);
+	Mix_FreeChunk(missile_launch_sfx);
+	Mix_FreeChunk(mine_deploy_sfx);
+
+	for (int i = 0; i < num_bullets; i++) {
+		delete bullets[i];
+	}
+
+	for (int i = 0; i < num_missiles; i++) {
+		delete missiles[i];
+	}
+}
+
 void Grizzly::update() {
 	gun_dir_x = desired_gun_dir_x;
 	gun_dir_y = desired_gun_dir_y;
@@ -85,7 +111,8 @@ void Grizzly::fire_1() {
 	if (do_fire_1 && stamina > 0 && cannon_cooldown <= 0) {
 		int MUZZLE_VEL = 60000;
 		int spread = 1;
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 5, 10, 400);
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 5, 10, 400);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -121,7 +148,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 				}
 			} else {
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				continue;
@@ -135,7 +162,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 			if (dist <= (bullet->radius + a->radius)) {
 				// todo: make bullets bounce if they have the powerup
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				continue;
@@ -159,7 +186,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 
 				// delete bullet
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				break;
@@ -188,7 +215,8 @@ void Grizzly::fire_2() {
 	if (do_fire_2 && stamina > 0 && missile_cooldown <= 0) {
 		int MUZZLE_VEL = 70000;
 		int spread = 1;
-		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 25, 200, 300);
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), MUZZLE_VEL, spread, 25, 200, 300);
 		for (int i = 0; i < spread; i++) {
 			missiles[num_missiles] = new_missiles[i];
 			num_missiles++;
@@ -250,7 +278,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 				}
 			} else {
 				num_missiles--;
-				free(missiles[j]);
+				delete missiles[j];
 				missiles[j] = missiles[num_missiles];
 				j--;
 				continue;
@@ -264,7 +292,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 			missile->radius += MISSILE_RADIUS_PER_FRAME;
 			if (missile->radius > MISSILE_MAX_RADIUS) {
 				num_missiles--;
-				free(missiles[j]);
+				delete missiles[j];
 				missiles[j] = missiles[num_missiles];
 				j--;
 				continue;
@@ -336,7 +364,8 @@ void Grizzly::fire_3() {
 	if (do_fire_3 && stamina > 0 && mine_cooldown <= 0) {
 		int MUZZLE_VEL = 1000;
 		int spread = 1;
-		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 25, 200, 300);
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 25, 200, 300);
 		for (int i = 0; i < spread; i++) {
 			mines[num_mines] = new_missiles[i];
 			num_mines++;
@@ -390,7 +419,7 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 		// check for missile going out of bounds
 		if (mine->x_pos < min_x || mine->x_pos > max_x || mine->y_pos < min_y || mine->y_pos > max_y) {
 			num_mines--;
-			free(mines[j]);
+			delete mines[j];
 			mines[j] = mines[num_mines];
 			j--;
 			continue;
@@ -401,7 +430,7 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 			mine->radius += MISSILE_RADIUS_PER_FRAME;
 			if (mine->radius > MISSILE_MAX_RADIUS) {
 				num_mines--;
-				free(mines[j]);
+				delete mines[j];
 				mines[j] = mines[num_mines];
 				j--;
 				continue;

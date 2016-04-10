@@ -26,8 +26,11 @@ private:
 	const int spread_delay = 30;
 	int spread_cooldown = 0;
 
-	class Gravity_Missile* g_missiles[100];
+	class Gravity_Missile* g_missiles[10];
 	int num_g_missiles = 0;
+
+	const int detonation_delay = 30;
+	int detonation_cooldown = 0;
 
 	const int missile_delay = 100;
 	int missile_cooldown = 0;

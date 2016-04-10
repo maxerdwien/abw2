@@ -42,6 +42,7 @@ private:
 
 public:
 	Black(int identifier, int x, int y, Renderer* rend);
+	~Black();
 
 	void update();
 

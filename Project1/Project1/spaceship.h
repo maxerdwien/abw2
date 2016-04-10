@@ -13,7 +13,7 @@ class Ship {
 		SDL_Texture* shield_tex;
 		SDL_Texture* bounce_tex;
 
-		const int GUN_LENGTH = 10000 * 12;
+		
 
 	public:
 		// units of one ten thousandth of a pixel
@@ -62,7 +62,7 @@ class Ship {
 
 		int percent = 0;
 
-		int lives = 5;
+		int lives = 1;
 
 		const int respawn_invincibility_delay = 120;
 		int invincibility_cooldown = 0;
@@ -75,6 +75,9 @@ class Ship {
 		int normal_radius;
 		int radius;
 		int weight;
+
+		int normal_gun_length = 10000 * 12;
+		int gun_length = 10000 * 12;
 
 		// todo: make this use the constant NUM_ITEMS
 		int item_times[6];
@@ -90,6 +93,8 @@ class Ship {
 		int place = -1;
 
 		int id;
+
+		virtual ~Ship();
 
 		virtual void update() = 0;
 		void render();

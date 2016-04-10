@@ -7,6 +7,10 @@
 #include "renderer.h"
 #include "item.h"
 
+Ship::~Ship() {
+
+}
+
 void Ship::render() {
 	double scale = 1;
 	if (item_times[small] > 0) {
@@ -40,7 +44,7 @@ void Ship::render() {
 		}
 
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		double gun_len = GUN_LENGTH * scale;
+		double gun_len = gun_length * scale;
 		r->render_line(x_pos + gun_len*cos(angle), y_pos + gun_len*sin(angle), gun_dir_x, gun_dir_y);
 	}
 

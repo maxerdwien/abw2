@@ -3,6 +3,12 @@
 #include <SDL_ttf.h>
 #include <string>
 
+enum font_size {
+	small_f,
+	medium_f,
+	large_f
+};
+
 class Renderer {
 private:
 	SDL_Renderer* renderer;
@@ -11,6 +17,7 @@ private:
 	double ratio;
 	TTF_Font* caladea;
 	TTF_Font* caladea_small;
+	TTF_Font* caladea_large;
 
 public:
 	Renderer(struct SDL_Renderer* r, int w, int h);
@@ -25,10 +32,7 @@ public:
 
 	SDL_Texture* LoadTexture(const char* file);
 
-	void render_text(int x, int y, const std::string& s);
-	void render_text_centered(int x, int y, const std::string& s);
-	void render_text_centered_small(int x, int y, const std::string& s);
-	void Renderer::render_text_centered_highlighted(int x, int y, const std::string& s);
+	void render_text(int x, int y, const std::string& s, bool center_x, bool center_y, bool highlight, font_size font_size);
 
 	void render_line(int x_start, int y_start, int x_dir, int y_dir);
 	void render_line_w_end(int x_start, int y_start, int x_end, int y_end);

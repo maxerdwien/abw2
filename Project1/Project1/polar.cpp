@@ -80,16 +80,25 @@ Polar::~Polar() {
 	SDL_DestroyTexture(cannon_tex);
 	SDL_DestroyTexture(missile_tex);
 	SDL_DestroyTexture(vortex_tex);
+	SDL_DestroyTexture(bounce_missile_tex);
+	SDL_DestroyTexture(bounce_bullet_tex);
+	SDL_DestroyTexture(shield_tex);
+	SDL_DestroyTexture(bounce_tex);
+
+	Mix_FreeChunk(laser_sfx);
+	Mix_FreeChunk(bullet_sfx);
+	Mix_FreeChunk(missile_launch_sfx);
+	Mix_FreeChunk(blackhole_sfx);
 
 	for (int i = 0; i < num_bullets; i++) {
-		free(bullets[i]);
+		delete bullets[i];
 	}
 	for (int i = 0; i < num_sparks; i++) {
-		free(sparks[i]);
+		delete sparks[i];
 	}
 
 	for (int i = 0; i < num_g_missiles; i++) {
-		free(g_missiles[i]);
+		delete g_missiles[i];
 	}
 }
 
@@ -130,7 +139,8 @@ void Polar::fire_1() {
 
 		int MUZZLE_VEL = 40000;
 		int spread = 5;
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 5, 10, 100);
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), MUZZLE_VEL, spread, 5, 10, 100);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -167,7 +177,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 				}
 			} else {
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				continue;
@@ -181,7 +191,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 			if (dist <= (bullet->radius + a->radius)) {
 				// todo: make bullets bounce if they have the powerup
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				continue;
@@ -205,7 +215,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 				// delete bullet
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				break;
@@ -231,13 +241,29 @@ void Polar::fire_2() {
 	if (missile_cooldown > 0) {
 		missile_cooldown--;
 	}
+	if (detonation_cooldown > 0) {
+		detonation_cooldown--;
+	}
+	 
+	if (do_fire_2 && detonation_cooldown == 0) {
+		for (int i = 0; i < num_g_missiles; i++) {
+			if (!g_missiles[i]->exploded) {
+				g_missiles[i]->exploded = true;
+				g_missiles[i]->x_vel = 0;
+				g_missiles[i]->y_vel = 0;
+				Mix_PlayChannel(-1, blackhole_sfx, 0);
+				do_fire_2 = false;
+			}
+		}
+	}
 	if (do_fire_2 && stamina > 0 && missile_cooldown <= 0) {
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		int velocity = 100000;
 		int x_vel = cos(angle) * velocity;
 		int y_vel = sin(angle) * velocity;
-		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos, y_pos, x_vel, y_vel);
+		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos + gun_length*cos(angle), y_pos+gun_length*sin(angle), x_vel, y_vel);
 		num_g_missiles++;
+		detonation_cooldown += detonation_delay;
 		missile_cooldown += missile_delay;
 		stamina -= 500;
 		Mix_PlayChannel(-1, missile_launch_sfx, 0);
@@ -257,7 +283,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 			m->radius += G_MISSILE_RADIUS_PER_FRAME;
 			if (m->radius > G_MISSILE_MAX_RADIUS) {
 				num_g_missiles--;
-				free(g_missiles[i]);
+				delete g_missiles[i];
 				g_missiles[i] = g_missiles[num_g_missiles];
 				i--;
 				continue;
@@ -270,6 +296,8 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				if (dist <= (m->radius + a->radius)) {
 					// todo: make bullets bounce if they have the powerup
 					m->exploded = true;
+					m->x_vel = 0;
+					m->y_vel = 0;
 					Mix_PlayChannel(-1, blackhole_sfx, 0);
 					continue;
 				}
@@ -294,7 +322,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 				}
 			} else {
 				num_g_missiles--;
-				free(g_missiles[i]);
+				delete g_missiles[i];
 				g_missiles[i] = g_missiles[num_g_missiles];
 				i--;
 				continue;
@@ -307,15 +335,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 			if (!ships[k]) continue;
 			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(m->x_pos - ships[k]->x_pos, 2) + pow(m->y_pos - ships[k]->y_pos, 2));
-			if (!m->exploded) {
-				if (ships[k]->id == id) continue;
-				if (dist <= G_MISSILE_ACTIVATION_RADIUS) {
-					m->exploded = true;
-					m->x_vel = 0;
-					m->y_vel = 0;
-					Mix_PlayChannel(-1, blackhole_sfx, 0);
-				}
-			} else {
+			if (m->exploded) {
 				if (dist <= (ships[k]->radius + m->radius)) {
 					bool hit = ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
 					if (hit) {
@@ -326,7 +346,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 				// do gravity effect
 				if (ships[k]->invincibility_cooldown == 0) {
-					double force = 20000000000000000.0 / pow(dist, 2);
+					double force = 25000000000000000.0 / pow(dist, 2);
 					if (force > 70000) force = 70000;
 					double angle = r->calculate_angle(m->x_pos - ships[k]->x_pos, m->y_pos - ships[k]->y_pos);
 					ships[k]->x_vel += force * cos(angle);
@@ -371,8 +391,8 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 	if (laser_active) {
 		// update laser position
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		laser_start_x = x_pos + GUN_LENGTH * cos(angle);
-		laser_start_y = y_pos + GUN_LENGTH * sin(angle);
+		laser_start_x = x_pos + gun_length * cos(angle);
+		laser_start_y = y_pos + gun_length * sin(angle);
 		laser_end_x = laser_start_x + 10000*gun_dir_x;
 		laser_end_y = laser_start_y + 10000*gun_dir_y;
 
@@ -394,7 +414,7 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
 				
-				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/600000, 1, haptics[i]);
+				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/100000, 1, haptics[i]);
 				if (hit) {
 					damage_done += 1;
 					target_ship->last_hit = id;
@@ -417,7 +437,7 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 		s->remaining_life--;
 		if (s->remaining_life == 0) {
-			free(sparks[i]);
+			delete sparks[i];
 			sparks[i] = sparks[num_sparks-1];
 			num_sparks--;
 			i--;

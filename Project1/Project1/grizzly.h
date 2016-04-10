@@ -37,6 +37,7 @@ public:
 	
 
 	Grizzly(int identifier, int x, int y, Renderer* rend);
+	~Grizzly();
 
 	void update();
 	//void render();

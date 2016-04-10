@@ -33,7 +33,7 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 
 	r = rend;
 
-	charging_channel = 24 + 2*id;
+	charging_channel = 24 + 2 * id;
 	flamethrower_channel = 25 + 2 * id;
 
 	if (id == 0) {
@@ -70,6 +70,27 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 	charging_shot_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\charging.wav");
 }
 
+Black::~Black() {
+	SDL_DestroyTexture(ship_tex);
+	SDL_DestroyTexture(bullet_tex);
+	SDL_DestroyTexture(ship_invincible_tex);
+	SDL_DestroyTexture(cannon_tex);
+	SDL_DestroyTexture(flame_tex_1);
+	SDL_DestroyTexture(flame_tex_2);
+	SDL_DestroyTexture(hitbox_tex);
+	SDL_DestroyTexture(bounce_bullet_tex);
+	SDL_DestroyTexture(shield_tex);
+	SDL_DestroyTexture(bounce_tex);
+
+	Mix_FreeChunk(flamethrower_sfx);
+	Mix_FreeChunk(bullet_sfx);
+	Mix_FreeChunk(charging_shot_sfx);
+
+	for (int i = 0; i < num_bullets; i++) {
+		delete bullets[i];
+	}
+}
+
 void Black::update() {
 	gun_dir_x = desired_gun_dir_x;
 	gun_dir_y = desired_gun_dir_y;
@@ -85,7 +106,8 @@ void Black::fire_1() {
 	if (do_fire_1 && stamina > 0 && burst_cooldown_1 <= 0) {
 		int MUZZLE_VEL = 90000;
 		int spread = 1;
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 3, 150, 0);
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 3, 150, 30);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -99,7 +121,8 @@ void Black::fire_1() {
 	if (burst_cooldown_2 <= 0) {
 		int MUZZLE_VEL = 90000;
 		int spread = 1;
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, 3, 150, 0);
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 3, 150, 30);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -138,7 +161,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 				}
 			} else {
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				continue;
@@ -153,7 +176,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 			if (dist <= (bullet->radius + a->radius)) {
 				// todo: make bullets bounce if they have the powerup
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				continue;
@@ -177,7 +200,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 				// delete bullet
 				num_bullets--;
-				free(bullets[j]);
+				delete bullets[j];
 				bullets[j] = bullets[num_bullets];
 				j--;
 				break;
@@ -218,7 +241,8 @@ void Black::fire_2() {
 	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 10) {
 		int MUZZLE_VEL = 100000;
 		int spread = 1;
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos, y_pos, MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
 		for (int i = 0; i < spread; i++) {
 			new_bullets[i]->radius = 10000 * charge_shot_charge / 4;
 			bullets[num_bullets] = new_bullets[i];
@@ -302,10 +326,10 @@ void Black::render_projectiles_3() {
 
 
 		if (current_flame == 0) {
-			r->render_texture_edge_spin(flame_tex_1, x_pos + GUN_LENGTH*cos(angle), y_pos + GUN_LENGTH*sin(angle), angle * 180 / M_PI + 90, 4);
+			r->render_texture_edge_spin(flame_tex_1, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), angle * 180 / M_PI + 90, 4);
 		} else {
 			// works since the textures are the same size
-			r->render_texture_edge_spin(flame_tex_2, x_pos + GUN_LENGTH*cos(angle), y_pos + GUN_LENGTH*sin(angle), angle * 180 / M_PI + 90, 4);
+			r->render_texture_edge_spin(flame_tex_2, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), angle * 180 / M_PI + 90, 4);
 		}
 
 		if (!Mix_Playing(flamethrower_channel)) {
