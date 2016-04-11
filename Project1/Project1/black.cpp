@@ -225,8 +225,11 @@ void Black::render_projectiles_1() {
 
 void Black::fire_2() {
 	if (do_fire_2) {
-		// charge rate doubles after the first half second of charging
-		if (charge_shot_charge >= 30) {
+		// charge rate increases as it's held for longer
+		if (charge_shot_charge >= 90) {
+			charge_shot_charge += 3;
+		}
+		else if (charge_shot_charge >= 30) {
 			charge_shot_charge += 2;
 		} else {
 			charge_shot_charge++;
@@ -239,7 +242,8 @@ void Black::fire_2() {
 		Mix_HaltChannel(charging_channel);
 	}
 	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 10) {
-		int MUZZLE_VEL = 100000;
+		//int MUZZLE_VEL = 100000;
+		int MUZZLE_VEL = charge_shot_charge*500;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
@@ -268,7 +272,7 @@ void Black::render_projectiles_2() {
 void Black::fire_3() {
 	if (do_fire_3 && stamina > 0) {
 		flame_active = true;
-		stamina -= 10;
+		stamina -= 13;
 	} else {
 		flame_active = false;
 		do_fire_3 = false;
@@ -292,7 +296,7 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				// direction is a combination of relation to hitbox and ship
 				int x_dir = (target_ship->x_pos - hb_x) + (target_ship->x_pos - x_pos)/2;
 				int y_dir = (target_ship->y_pos - hb_y) + (target_ship->y_pos - y_pos)/2;
-				bool hit = target_ship->take_knockback(x_dir, y_dir, 0, 4, 1, haptics[j]);
+				bool hit = target_ship->take_knockback(x_dir, y_dir, 0, 3, 1, haptics[j]);
 				if (hit) {
 					damage_done += 1;
 					target_ship->last_hit = id;

@@ -26,10 +26,10 @@ private:
 	const int burst_delay_1 = 120;
 	int burst_cooldown_1 = 0;
 
-	const int burst_delay_2 = 5;
-	int burst_cooldown_2 = 5;
+	const int burst_delay_2 = 4;
+	int burst_cooldown_2 = 4;
 
-	const int burst_shot_number = 5;
+	const int burst_shot_number = 6;
 	int burst_shot_current = 0;
 
 	// in frames

@@ -30,7 +30,7 @@ private:
 	const int missile_delay = 50;
 	int missile_cooldown = 0;
 
-	const int mine_delay = 55;
+	const int mine_delay = 110;
 	int mine_cooldown = 0;
 
 public:

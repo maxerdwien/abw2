@@ -1,4 +1,1 @@
-﻿  main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(1129): warning C4474: 'sprintf_s' : too many arguments passed for format string
-  c:\users\max_000\desktop\abw2\project1\project1\main.cpp(1129): note: placeholders and their parameters expect 0 variadic arguments, but 1 were provided
-  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\Project1.exe
+﻿  Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe

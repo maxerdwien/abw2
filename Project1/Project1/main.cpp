@@ -35,9 +35,9 @@ const int STATUS_BAR_WIDTH = 10000 * 150;
 Renderer* r;
 
 bool quit = false;
-bool is_fullscreen = false;
+bool is_fullscreen = true;
 bool xp_mode = false;
-bool muted = true;
+bool muted = false;
 
 int controller_mappings[4] = { -1, -1, -1, -1 };
 SDL_GameController* controllers[4] = { NULL, NULL, NULL, NULL };
@@ -186,8 +186,8 @@ int main(int, char**) {
 
 	
 
-	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\beep.wav");
-	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\confirm.wav");
+	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\confirm.wav");
+	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\beep.wav");
 	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\item.wav");
 
 
@@ -214,7 +214,7 @@ int main(int, char**) {
 	bool ready[4] = { false, false, false, false };
 	//bool ready[4] = { true, true, true, true };
 
-	bool do_items = true;
+	bool do_items = false;
 
 	SDL_Event e;
 	
@@ -381,6 +381,12 @@ int main(int, char**) {
 							selections[controller_index] = grizzly;
 							break;
 						}
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP) {
+						if (ready[controller_index]) break;
+						Mix_PlayChannel(-1, beep, 0);
+						int random_selection = rand() % 3;
+						selections[controller_index] = (ship_type)random_selection;
 					}
 					break;
 				case SDL_CONTROLLERAXISMOTION:
@@ -549,7 +555,9 @@ int main(int, char**) {
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSTICK) {
 							ship->do_speed_boost = true;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
-							currentState = pause;
+							if (game_start_cooldown < 2 * 60) {
+								currentState = pause;
+							}
 						}
 						break;
 					case SDL_CONTROLLERBUTTONUP:
@@ -627,18 +635,18 @@ int main(int, char**) {
 
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
 							int min_activation = 20000;
-							//std::cout << e.caxis.value << std::endl;
-							if (e.caxis.value < min_activation) {
+							int min_deactivation = 18000;
+							if (e.caxis.value < min_deactivation) {
 								ship->do_fire_2 = false;
-							} else {
+							} else if (e.caxis.value > min_activation) {
 								ship->do_fire_2 = true;
 							}
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
 							int min_activation = 20000;
-							//std::cout << e.caxis.value << std::endl;
-							if (e.caxis.value < min_activation) {
+							int min_deactivation = 18000;
+							if (e.caxis.value < min_deactivation) {
 								ship->do_fire_2 = false;
-							} else {
+							} else if (e.caxis.value > min_activation) {
 								ship->do_fire_2 = true;
 							}
 						}
@@ -730,7 +738,7 @@ int main(int, char**) {
 						accel_mag = ship->max_accel * 40;
 						ship->speed_boost_cooldown += ship->speed_boost_delay;
 						ship->do_speed_boost = false;
-						ship->stamina -= 200;
+						//ship->stamina -= 200;
 					}
 					if (ship->item_times[speed_up] > 0) {
 						accel_mag *= 2;
@@ -915,7 +923,7 @@ int main(int, char**) {
 			{
 				// render background
 				if (!xp_mode) {
-					r->render_texture(bg, WIDTH_UNITS / 2, HEIGHT_UNITS / 2, 0, 1);
+					r->render_texture(bg, WIDTH_UNITS / 2, HEIGHT_UNITS / 2, 0, 1.02);
 				}
 
 				// render game start countdown
@@ -1207,10 +1215,11 @@ bool read_global_input(SDL_Event* e) {
 	}
 	case SDL_CONTROLLERBUTTONDOWN:
 		if (e->cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
-			quit = true;
-			event_eaten = true;
+			//quit = true;
+			//event_eaten = true;
 		} else if (e->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
-			xp_mode = !xp_mode;
+			//xp_mode = !xp_mode;
+			//event_eaten = true;
 		}
 		break;
 	case SDL_CONTROLLERDEVICEADDED:
@@ -1297,24 +1306,24 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	std::string wep3;
 	if (shipType == 0) {
 		name = "BLACK";
-		wep1 = "Weapon 1: Burst Shot";
-		wep2 = "Weapon 2: Flamethrower";
-		wep3 = "Weapon 3: Charge Shot";
+		wep1 = "RB: Burst Shot";
+		wep2 = "RT: Flamethrower";
+		wep3 = "LB: Charge Shot";
 	} else if (shipType == 1) {
 		name = "GRIZZLY";
-		wep1 = "Weapon 1: Bullets";
-		wep2 = "Weapon 2: Missiles";
-		wep3 = "Weapon 3: Mines";
+		wep1 = "RB: Bullets";
+		wep2 = "RT: Missiles";
+		wep3 = "LB: Mines";
 	} else {
 		name = "POLAR";
-		wep1 = "Weapon 1: Shotgun";
-		wep2 = "Weapon 2: Gravity Missiles";
-		wep3 = "Weapon 3: Laser";
+		wep1 = "RB: Shotgun";
+		wep2 = "RT: Gravity Missiles";
+		wep3 = "LB: Laser";
 	}
 	r->render_text(x + box_w / 2, y + 2 * box_h / 5, name, true, false, false, medium_f);
-	r->render_text(x + box_w / 5, y + 6 * box_h / 10, wep1, false, false, false, medium_f);
-	r->render_text(x + box_w / 5, y + 7 * box_h / 10, wep2, false, false, false, medium_f);
-	r->render_text(x + box_w / 5, y + 8 * box_h / 10, wep3, false, false, false, medium_f);
+	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f);
+	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep2, false, false, false, medium_f);
+	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep3, false, false, false, medium_f);
 }
 
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {

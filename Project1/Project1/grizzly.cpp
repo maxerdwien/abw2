@@ -119,7 +119,7 @@ void Grizzly::fire_1() {
 		}
 		free(new_bullets);
 		cannon_cooldown += cannon_delay;
-		stamina -= 100;
+		stamina -= 80;
 		Mix_PlayChannel(-1, bullet_sfx, 0);
 	}
 }
@@ -365,14 +365,14 @@ void Grizzly::fire_3() {
 		int MUZZLE_VEL = 1000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 25, 200, 300);
+		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 35, 200, 300);
 		for (int i = 0; i < spread; i++) {
 			mines[num_mines] = new_missiles[i];
 			num_mines++;
 		}
 		free(new_missiles);
 		mine_cooldown += mine_delay;
-		stamina -= 450;
+		stamina -= 550;
 		Mix_PlayChannel(-1, mine_deploy_sfx, 0);
 	}
 }

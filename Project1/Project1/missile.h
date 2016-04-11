@@ -23,7 +23,7 @@ const int MISSILE_ACTIVATION_RADIUS = 100 * 10000;
 const int MISSILE_MAX_RADIUS = 120 * 10000;
 const int MISSILE_RADIUS_PER_FRAME = 5 * 10000;
 
-const int MISSILE_ACCEL = 1500;
+const int MISSILE_ACCEL = 1800;
 
 struct missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling);
 

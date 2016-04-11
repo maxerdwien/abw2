@@ -29,10 +29,9 @@ private:
 	class Gravity_Missile* g_missiles[10];
 	int num_g_missiles = 0;
 
-	const int detonation_delay = 30;
-	int detonation_cooldown = 0;
+	bool missile_click_used = false;
 
-	const int missile_delay = 100;
+	const int missile_delay = 130;
 	int missile_cooldown = 0;
 
 	bool laser_active = false;

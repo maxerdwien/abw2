@@ -241,32 +241,33 @@ void Polar::fire_2() {
 	if (missile_cooldown > 0) {
 		missile_cooldown--;
 	}
-	if (detonation_cooldown > 0) {
-		detonation_cooldown--;
-	}
-	 
-	if (do_fire_2 && detonation_cooldown == 0) {
+
+	//if (!do_fire_2) {
+	//	missile_click_used = false;
+	//}
+
+	if (!do_fire_2 && missile_click_used) {
 		for (int i = 0; i < num_g_missiles; i++) {
 			if (!g_missiles[i]->exploded) {
 				g_missiles[i]->exploded = true;
 				g_missiles[i]->x_vel = 0;
 				g_missiles[i]->y_vel = 0;
 				Mix_PlayChannel(-1, blackhole_sfx, 0);
-				do_fire_2 = false;
+				missile_click_used = false;
 			}
 		}
 	}
-	if (do_fire_2 && stamina > 0 && missile_cooldown <= 0) {
+	if (do_fire_2 && !missile_click_used && stamina > 0 && missile_cooldown <= 0) {
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		int velocity = 100000;
 		int x_vel = cos(angle) * velocity;
 		int y_vel = sin(angle) * velocity;
 		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos + gun_length*cos(angle), y_pos+gun_length*sin(angle), x_vel, y_vel);
 		num_g_missiles++;
-		detonation_cooldown += detonation_delay;
 		missile_cooldown += missile_delay;
 		stamina -= 500;
 		Mix_PlayChannel(-1, missile_launch_sfx, 0);
+		missile_click_used = true;
 	}
 }
 
@@ -346,7 +347,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 				// do gravity effect
 				if (ships[k]->invincibility_cooldown == 0) {
-					double force = 25000000000000000.0 / pow(dist, 2);
+					double force = 50000000000000000.0 / pow(dist, 2);
 					if (force > 70000) force = 70000;
 					double angle = r->calculate_angle(m->x_pos - ships[k]->x_pos, m->y_pos - ships[k]->y_pos);
 					ships[k]->x_vel += force * cos(angle);
@@ -414,7 +415,7 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
 				
-				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/100000, 1, haptics[i]);
+				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/200000, 1, haptics[i]);
 				if (hit) {
 					damage_done += 1;
 					target_ship->last_hit = id;
