@@ -13,8 +13,6 @@ class Ship {
 		SDL_Texture* shield_tex;
 		SDL_Texture* bounce_tex;
 
-		
-
 	public:
 		// units of one ten thousandth of a pixel
 		int x_pos = 0;
@@ -86,6 +84,7 @@ class Ship {
 
 		int kills[100];
 		int num_kills = 0;
+		int num_suicides = 0;
 
 		int damage_done = 0;
 		int damage_taken = 0;

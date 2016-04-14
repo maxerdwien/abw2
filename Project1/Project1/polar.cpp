@@ -226,7 +226,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 void Polar::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
-		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
+		double angle = r->atan2_degrees(bullets[j]->x_vel, bullets[j]->y_vel);
 		SDL_Texture* tex;
 		if (item_times[bullet_bounce] > 0) {
 			tex = bounce_bullet_tex;
@@ -241,10 +241,6 @@ void Polar::fire_2() {
 	if (missile_cooldown > 0) {
 		missile_cooldown--;
 	}
-
-	//if (!do_fire_2) {
-	//	missile_click_used = false;
-	//}
 
 	if (!do_fire_2 && missile_click_used) {
 		for (int i = 0; i < num_g_missiles; i++) {
@@ -347,9 +343,9 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 				// do gravity effect
 				if (ships[k]->invincibility_cooldown == 0) {
-					double force = 50000000000000000.0 / pow(dist, 2);
+					double force = 20000000000000000.0 / pow(dist, 2);
 					if (force > 70000) force = 70000;
-					double angle = r->calculate_angle(m->x_pos - ships[k]->x_pos, m->y_pos - ships[k]->y_pos);
+					double angle = atan2(m->y_pos - ships[k]->y_pos, m->x_pos - ships[k]->x_pos);
 					ships[k]->x_vel += force * cos(angle);
 					ships[k]->y_vel += force * sin(angle);
 				}
@@ -361,7 +357,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 void Polar::render_projectiles_2() {
 	for (int j = 0; j < num_g_missiles; j++) {
 		if (!g_missiles[j]->exploded) {
-			double angle = r->calculate_angle(g_missiles[j]->x_vel, g_missiles[j]->y_vel);
+			double angle = r->atan2_degrees(g_missiles[j]->x_vel, g_missiles[j]->y_vel);
 			SDL_Texture* tex;
 			if (item_times[bullet_bounce] > 0) {
 				tex = bounce_missile_tex;

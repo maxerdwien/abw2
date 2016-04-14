@@ -211,7 +211,7 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 
 void Black::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
-		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
+		double angle = r->atan2_degrees(bullets[j]->x_vel, bullets[j]->y_vel);
 
 		SDL_Texture* tex;
 		if (item_times[bullet_bounce] > 0) {

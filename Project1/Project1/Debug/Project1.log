@@ -1,1 +1,18 @@
-﻿  Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe
+﻿  polar.cpp
+c:\users\max\documents\github\abw2\project1\project1\gravity-missile.h(5): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(129): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(130): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(143): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(259): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(260): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(261): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(350): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(351): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(392): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(393): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(415): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(431): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(432): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(433): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\polar.cpp(434): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
+  Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\Project1.exe

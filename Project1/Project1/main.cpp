@@ -860,6 +860,12 @@ int main(int, char**) {
 							if (last_hit != -1) {
 								ships[last_hit]->kills[ships[last_hit]->num_kills] = i;
 								ships[last_hit]->num_kills++;
+								if (ship->id == last_hit) {
+									ship->num_suicides++;
+								}
+							} else {
+								// todo: fix this
+								//ship->num_suicides++;
 							}
 
 							SDL_HapticRumblePlay(haptics[i], 1, 300);
@@ -1210,6 +1216,10 @@ bool read_global_input(SDL_Event* e) {
 			}
 			
 			event_eaten = true;
+		} else if (k == SDLK_q) {
+			quit = true;
+
+			event_eaten = true;
 		}
 		break;
 	}
@@ -1329,14 +1339,17 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
 
 	char killResult[15];
+	char suicideResult[15];
 	char damageGiven[30];
 	char damageTaken[30];
-	sprintf_s(killResult, "Kills: %d", ship->num_kills);
+	sprintf_s(killResult, "Kills: %d", ship->num_kills - ship->num_suicides);
+	sprintf_s(suicideResult, "Self-Kills: %d", ship->num_suicides);
 	sprintf_s(damageGiven, "Damage Given: %d%% ", ship->damage_done);
 	sprintf_s(damageTaken, "Damage Taken: %d%%", ship->damage_taken);
 
 	r->render_texture(ship_tex, x, y, 1, 5);
 	r->render_text(x, y + 10000 * 100, killResult, true, false, false, small_f);
-	r->render_text(x, y + 10000 * 130, damageGiven, true, false, false, small_f);
-	r->render_text(x, y + 10000 * 160, damageTaken, true, false, false, small_f);
+	r->render_text(x, y + 10000 * 130, suicideResult, true, false, false, small_f);
+	r->render_text(x, y + 10000 * 160, damageGiven, true, false, false, small_f);
+	r->render_text(x, y + 10000 * 190, damageTaken, true, false, false, small_f);
 }

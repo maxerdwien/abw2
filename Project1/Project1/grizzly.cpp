@@ -197,7 +197,7 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 
 void Grizzly::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
-		double angle = r->calculate_angle(bullets[j]->x_vel, bullets[j]->y_vel);
+		double angle = r->atan2_degrees(bullets[j]->x_vel, bullets[j]->y_vel);
 		SDL_Texture* tex;
 		if (item_times[bullet_bounce] > 0) {
 			tex = bounce_bullet_tex;
@@ -343,7 +343,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 void Grizzly::render_projectiles_2() {
 	for (int j = 0; j < num_missiles; j++) {
 		if (!missiles[j]->exploded) {
-			double angle = r->calculate_angle(missiles[j]->x_vel, missiles[j]->y_vel);
+			double angle = r->atan2_degrees(missiles[j]->x_vel, missiles[j]->y_vel);
 			SDL_Texture* tex;
 			if (item_times[bullet_bounce] > 0) {
 				tex = bounce_missile_tex;
@@ -480,7 +480,7 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 void Grizzly::render_projectiles_3() {
 	for (int j = 0; j < num_mines; j++) {
 		if (!mines[j]->exploded) {
-			double angle = r->calculate_angle(mines[j]->x_vel, mines[j]->y_vel);
+			double angle = r->atan2_degrees(mines[j]->x_vel, mines[j]->y_vel);
 			r->render_texture(mine_tex, mines[j]->x_pos, mines[j]->y_pos, angle, 1.8);
 		} else {
 			r->render_texture_abs_size(explosion_tex, mines[j]->x_pos, mines[j]->y_pos, 0, mines[j]->radius);

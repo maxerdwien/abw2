@@ -21,7 +21,7 @@ Renderer::Renderer(SDL_Renderer* r, int w, int h) {
 	caladea_large = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 44 * ratio);
 }
 
-double Renderer::calculate_angle(int x_vel, int y_vel) {
+double Renderer::atan2_degrees(int x_vel, int y_vel) {
 	double angle;
 	double conversion = 180 / M_PI;
 	angle = atan2(y_vel, x_vel) * conversion + 90;
@@ -167,9 +167,6 @@ void Renderer::render_line_thick(int x_start, int y_start, int x_dir, int y_dir)
 	x_start *= ratio / 10000;
 	y_start *= ratio / 10000;
 
-	// set color to red, cause lasers are red
-	//SDL_SetRenderDrawColor(renderer, 128, 0, 0, SDL_ALPHA_OPAQUE);
-
 	int x_end = x_start + x_dir * 100000;
 	int y_end = y_start + y_dir * 100000;
 	/*
@@ -183,10 +180,21 @@ void Renderer::render_line_thick(int x_start, int y_start, int x_dir, int y_dir)
 	}
 	*/
 	SDL_RenderDrawLine(renderer, x_start, y_start, x_end, y_end);
+
 	SDL_RenderDrawLine(renderer, x_start+1, y_start, x_end+1, y_end);
 	SDL_RenderDrawLine(renderer, x_start-1, y_start, x_end-1, y_end);
 	SDL_RenderDrawLine(renderer, x_start, y_start+1, x_end, y_end+1);
 	SDL_RenderDrawLine(renderer, x_start, y_start-1, x_end, y_end-1);
+
+	SDL_RenderDrawLine(renderer, x_start + 1, y_start + 1, x_end + 1, y_end + 1);
+	SDL_RenderDrawLine(renderer, x_start + 1, y_start - 1, x_end + 1, y_end - 1);
+	SDL_RenderDrawLine(renderer, x_start - 1, y_start + 1, x_end - 1, y_end + 1);
+	SDL_RenderDrawLine(renderer, x_start - 1, y_start - 1, x_end - 1, y_end - 1);
+
+	SDL_RenderDrawLine(renderer, x_start + 2, y_start, x_end + 2, y_end);
+	SDL_RenderDrawLine(renderer, x_start - 2, y_start, x_end - 2, y_end);
+	SDL_RenderDrawLine(renderer, x_start, y_start + 2, x_end, y_end + 2);
+	SDL_RenderDrawLine(renderer, x_start, y_start - 2, x_end, y_end - 2);
 }
 
 

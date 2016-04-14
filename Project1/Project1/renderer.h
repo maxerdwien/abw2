@@ -26,7 +26,7 @@ public:
 	void render_texture_abs_size(SDL_Texture* texture, int x, int y, double angle, int radius);
 	void render_texture_edge_spin(SDL_Texture* texture, int x, int y, double angle, double scaling);
 
-	double calculate_angle(int x_vel, int y_vel);
+	double atan2_degrees(int x_vel, int y_vel);
 	int RenderCopyEx(SDL_Texture* texture, const SDL_Rect* srcrect, const SDL_Rect* dstrect, const double angle, const SDL_Point* center, const SDL_RendererFlip flip);
 	int SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
