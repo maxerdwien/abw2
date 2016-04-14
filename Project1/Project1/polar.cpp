@@ -343,7 +343,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 				// do gravity effect
 				if (ships[k]->invincibility_cooldown == 0) {
-					double force = 20000000000000000.0 / pow(dist, 2);
+					double force = 15000000000000000.0 / pow(dist, 2);
 					if (force > 70000) force = 70000;
 					double angle = atan2(m->y_pos - ships[k]->y_pos, m->x_pos - ships[k]->x_pos);
 					ships[k]->x_vel += force * cos(angle);

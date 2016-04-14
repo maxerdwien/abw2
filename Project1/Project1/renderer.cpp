@@ -89,7 +89,7 @@ SDL_Texture* Renderer::LoadTexture(const char* file) {
 	return tex;
 }
 
-void Renderer::render_text(int x, int y, const std::string& s, bool center_x, bool center_y, bool highlight, font_size size) {
+void Renderer::render_text(int x, int y, const std::string& s, bool center_x, bool center_y, bool highlight, font_size size, int alpha) {
 	x *= ratio / 10000;
 	y *= ratio / 10000;
 
@@ -130,6 +130,7 @@ void Renderer::render_text(int x, int y, const std::string& s, bool center_x, bo
 
 		SDL_RenderFillRect(renderer, &rect);
 	}
+	SDL_SetTextureAlphaMod(texture, alpha);
 	SDL_RenderCopy(renderer, texture, NULL, &rect);
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);

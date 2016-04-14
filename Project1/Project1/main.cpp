@@ -290,11 +290,11 @@ int main(int, char**) {
 
 			// render title name and prompt to move forward
 			{
-				r->render_text(WIDTH_UNITS / 2,  2 * HEIGHT_UNITS / 5, "Alaskan Cosmobear Spacefighting", true, false, false, large_f);
+				r->render_text(WIDTH_UNITS / 2,  2 * HEIGHT_UNITS / 5, "Alaskan Cosmobear Spacefighting", true, false, false, large_f, 255);
 
-				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to start.", true, false, false, medium_f);
+				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to start.", true, false, false, medium_f, 255);
 
-				r->render_text(WIDTH_UNITS / 2, 10 * HEIGHT_UNITS / 17, "Press the B button to quit.", true, false, false, medium_f);
+				r->render_text(WIDTH_UNITS / 2, 10 * HEIGHT_UNITS / 17, "Press the B button to quit.", true, false, false, medium_f, 255);
 			}
 
 			SDL_RenderPresent(renderer);
@@ -437,9 +437,9 @@ int main(int, char**) {
 
 			// render item toggle
 			if (do_items) {
-				r->render_text(0, 0, " Items are ON ", false, false, true, medium_f);
+				r->render_text(0, 0, " Items are ON ", false, false, true, medium_f, 255);
 			} else {
-				r->render_text(0, 0, " Items are OFF ", false, false, true, medium_f);
+				r->render_text(0, 0, " Items are OFF ", false, false, true, medium_f, 255);
 			}
 
 			r->render_cross_bars(BARSIZE);
@@ -476,7 +476,7 @@ int main(int, char**) {
 				}
 			}
 			if (all_ready) {
-				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, " Press Start to begin! ", true, true, true, large_f);
+				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, " Press Start to begin! ", true, true, true, large_f, 255);
 			}
 
 			SDL_RenderPresent(renderer);
@@ -808,13 +808,23 @@ int main(int, char**) {
 					// check for collisions with items
 					for (int j = 0; j < num_items; j++) {
 						Item* item = items[j];
-						double dist = sqrt(pow(ship->x_pos - item->x_pos, 2) + pow(ship->y_pos - item->y_pos, 2));
-						if (dist < (ship->radius + item->radius)) {
-							ship->item_times[item->type] += 600;
-							num_items--;
-							delete item;
-							items[j] = items[num_items];
-							Mix_PlayChannel(-1, powerup_sfx, 0);
+
+						if (item->picked_up) {
+							item->y_pos -= 6000;
+							item->alpha -= 2;
+
+							if (item->alpha <= 0) {
+								num_items--;
+								delete item;
+								items[j] = items[num_items];
+							}
+						} else {
+							double dist = sqrt(pow(ship->x_pos - item->x_pos, 2) + pow(ship->y_pos - item->y_pos, 2));
+							if (dist < (ship->radius + item->radius)) {
+								ship->item_times[item->type] += 600;
+								item->picked_up = true;
+								Mix_PlayChannel(-1, powerup_sfx, 0);
+							}
 						}
 					}
 
@@ -945,7 +955,7 @@ int main(int, char**) {
 					} else {
 						s = " GO! ";
 					}
-					r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f);
+					r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f, 255);
 
 				}
 
@@ -1012,14 +1022,14 @@ int main(int, char**) {
 						{
 							char str[10];
 							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
-							r->render_text(0, 10000 * (61 + box_height * i), str, false, false, false, medium_f);
+							r->render_text(0, 10000 * (61 + box_height * i), str, false, false, false, medium_f, 255);
 						}
 
 						// render stock counter
 						{
 							char playerLives[20];
 							sprintf_s(playerLives, "Lives: %d", ship->lives);
-							r->render_text(0, 10000 * (10 + box_height * i), playerLives, false, false, false, medium_f);
+							r->render_text(0, 10000 * (10 + box_height * i), playerLives, false, false, false, medium_f, 255);
 						}
 					}
 				}
@@ -1102,7 +1112,7 @@ int main(int, char**) {
 
 			// render word "paused"
 			SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-			r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, " Paused ", true, true, true, medium_f);
+			r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, " Paused ", true, true, true, medium_f, 255);
 
 
 			SDL_RenderPresent(renderer);
@@ -1145,7 +1155,7 @@ int main(int, char**) {
 				else {
 					sprintf_s(winnerMessage, "Player %d wins!", winner);
 				}
-				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage, true, false, false, medium_f);
+				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage, true, false, false, medium_f, 255);
 
 				int start_height = HEIGHT_UNITS / 4;
 				if (ships[0] != NULL) {
@@ -1160,7 +1170,7 @@ int main(int, char**) {
 				if (ships[3] != NULL) {
 				render_results(7 * WIDTH_UNITS / 8, start_height, ship_textures[selections[3]][green], ships[3]);
 				}
-				r->render_text(WIDTH_UNITS / 2, 4 * HEIGHT_UNITS / 5, "Press the A button to continue.", true, false, false, medium_f);
+				r->render_text(WIDTH_UNITS / 2, 4 * HEIGHT_UNITS / 5, "Press the A button to continue.", true, false, false, medium_f, 255);
 			}
 			SDL_RenderPresent(renderer);
 		}
@@ -1285,7 +1295,7 @@ void render_plugin_to_join(int x, int y) {
 	int box_w = (WIDTH_UNITS - BARSIZE) / 2;
 	int box_h = (HEIGHT_UNITS - BARSIZE) / 2;
 
-	r->render_text(x + box_w / 2, y + box_h / 3, "Plug in controller to join", true, false, false, medium_f);
+	r->render_text(x + box_w / 2, y + box_h / 3, "Plug in controller to join", true, false, false, medium_f, 255);
 }
 
 
@@ -1330,10 +1340,10 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 		wep2 = "RT: Gravity Missiles";
 		wep3 = "LB: Laser";
 	}
-	r->render_text(x + box_w / 2, y + 2 * box_h / 5, name, true, false, false, medium_f);
-	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f);
-	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep2, false, false, false, medium_f);
-	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep3, false, false, false, medium_f);
+	r->render_text(x + box_w / 2, y + 2 * box_h / 5, name, true, false, false, medium_f, 255);
+	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f, 255);
+	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep2, false, false, false, medium_f, 255);
+	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep3, false, false, false, medium_f, 255);
 }
 
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
@@ -1348,8 +1358,8 @@ void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
 	sprintf_s(damageTaken, "Damage Taken: %d%%", ship->damage_taken);
 
 	r->render_texture(ship_tex, x, y, 1, 5);
-	r->render_text(x, y + 10000 * 100, killResult, true, false, false, small_f);
-	r->render_text(x, y + 10000 * 130, suicideResult, true, false, false, small_f);
-	r->render_text(x, y + 10000 * 160, damageGiven, true, false, false, small_f);
-	r->render_text(x, y + 10000 * 190, damageTaken, true, false, false, small_f);
+	r->render_text(x, y + 10000 * 100, killResult, true, false, false, small_f, 255);
+	r->render_text(x, y + 10000 * 130, suicideResult, true, false, false, small_f, 255);
+	r->render_text(x, y + 10000 * 160, damageGiven, true, false, false, small_f, 255);
+	r->render_text(x, y + 10000 * 190, damageTaken, true, false, false, small_f, 255);
 }
