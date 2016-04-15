@@ -459,12 +459,12 @@ int main(int, char**) {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, 0);
 				}
 				if (controllers[2]) {
-					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[2]][yellow], selections[2], right_arrow, left_arrow, ready[2]);
+					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE/2, ship_textures[selections[2]][yellow], selections[2], right_arrow, left_arrow, ready[2]);
 				} else {
 					render_plugin_to_join(0, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
 				if (controllers[3]) {
-					render_character_selector(WIDTH_UNITS / 2 + BARSIZE, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[3]][green], selections[3], right_arrow, left_arrow, ready[3]);
+					render_character_selector(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2, ship_textures[selections[3]][green], selections[3], right_arrow, left_arrow, ready[3]);
 				} else {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
@@ -851,7 +851,8 @@ int main(int, char**) {
 					ship->y_pos += ship->y_vel;
 
 					// handle death
-					if (ship->x_pos < STATUS_BAR_WIDTH || ship->x_pos > WIDTH_UNITS || ship->y_pos < 0 || ship->y_pos > HEIGHT_UNITS) {
+					if (ship->x_pos < (STATUS_BAR_WIDTH - ship->radius) || ship->x_pos > (WIDTH_UNITS + ship->radius) 
+							|| ship->y_pos < (0 - ship->radius) || ship->y_pos > (HEIGHT_UNITS + ship->radius)) {
 						if (ship->item_times[bounce] > 0 || ship->invincibility_cooldown > 0) {
 							if (ship->x_pos < STATUS_BAR_WIDTH && ship->x_vel < 0) {
 								ship->x_vel *= -1;
@@ -1322,7 +1323,7 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 		r->render_texture(left_arrow, x + box_w / 4, y + box_h / 5, 0, 1);
 		r->render_texture(right_arrow, x + 3 * box_w / 4, y + box_h / 5, 0, 1);
 	} else {
-		r->render_texture(ship_tex, x + box_w / 2, y + box_h / 5, 0, 5.2);
+		r->render_texture(ship_tex, x + box_w / 2, y + box_h / 5, 0, 4.9);
 	}
 
 	std::string name;
@@ -1332,17 +1333,17 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	if (shipType == 0) {
 		name = "BLACK";
 		wep1 = "RB: Burst Shot";
-		wep2 = "RT: Charge Shot";
+		wep2 = "RT, LT: Charge Shot";
 		wep3 = "LB: Flamethrower";
 	} else if (shipType == 1) {
 		name = "GRIZZLY";
 		wep1 = "RB: Bullets";
-		wep2 = "RT: Missiles";
+		wep2 = "RT, LT: Missiles";
 		wep3 = "LB: Mines";
 	} else {
 		name = "POLAR";
 		wep1 = "RB: Shotgun";
-		wep2 = "RT: Gravity Missiles";
+		wep2 = "RT, LT: Gravity Missiles";
 		wep3 = "LB: Laser";
 	}
 	r->render_text(x + box_w / 2, y + 2 * box_h / 5, name, true, false, false, medium_f, 255);

@@ -296,7 +296,7 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				// direction is a combination of relation to hitbox and ship
 				int x_dir = (target_ship->x_pos - hb_x) + (target_ship->x_pos - x_pos)/2;
 				int y_dir = (target_ship->y_pos - hb_y) + (target_ship->y_pos - y_pos)/2;
-				bool hit = target_ship->take_knockback(x_dir, y_dir, 0, 3, 1, haptics[j]);
+				bool hit = target_ship->take_knockback(x_dir, y_dir, 1, 3, 1, haptics[j]);
 				if (hit) {
 					damage_done += 1;
 					target_ship->last_hit = id;

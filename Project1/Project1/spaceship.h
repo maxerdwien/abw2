@@ -60,10 +60,10 @@ class Ship {
 
 		int percent = 0;
 
-		int lives = 3;
+		int lives = 5;
 
 		const int respawn_invincibility_delay = 180;
-		int invincibility_cooldown = 0;
+		int invincibility_cooldown = 120;
 		const int invincibility_switch_rate = 20;
 
 		int stamina = 0;
@@ -74,8 +74,8 @@ class Ship {
 		int radius;
 		int weight;
 
-		int normal_gun_length = 10000 * 12;
-		int gun_length = 10000 * 12;
+		int normal_gun_length = 10000 * 18;
+		int gun_length = 10000 * 18;
 
 		// todo: make this use the constant NUM_ITEMS
 		int item_times[6];

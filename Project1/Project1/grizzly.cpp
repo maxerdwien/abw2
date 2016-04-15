@@ -38,18 +38,22 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
 		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineRed.png");
+		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileRed.png");
 	} else if (id == 1) {
 		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
 		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
+		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
 	} else if (id == 2) {
 		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
 		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineYellow.png");
+		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileYellow.png");
 	} else {
 		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
 		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineGreen.png");
+		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileGreen.png");
 	}
 
 	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-white.png");
@@ -59,7 +63,6 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	bounce_missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileOrange.png");
 	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
 	
-	missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missile.png");
 	explosion_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100); 
