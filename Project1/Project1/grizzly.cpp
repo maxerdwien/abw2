@@ -30,7 +30,7 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 
 	radius = 40 * 10000;
 	normal_radius = radius;
-	weight = 100;
+	weight = 110;
 
 	r = rend;
 
@@ -109,7 +109,7 @@ void Grizzly::fire_1() {
 		cannon_cooldown--;
 	}
 	if (do_fire_1 && stamina > 0 && cannon_cooldown <= 0) {
-		int MUZZLE_VEL = 60000;
+		int MUZZLE_VEL = 100000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 5, 10, 400);

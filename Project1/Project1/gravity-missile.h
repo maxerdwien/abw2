@@ -27,5 +27,7 @@ public:
 
 	double vortex_angle = 0;
 
+	int damage_counter = 0;
+
 	Gravity_Missile(int x, int y, int x_v, int y_v);
 };

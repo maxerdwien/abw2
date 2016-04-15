@@ -31,7 +31,7 @@ private:
 
 	bool missile_click_used = false;
 
-	const int missile_delay = 130;
+	const int missile_delay = 160;
 	int missile_cooldown = 0;
 
 	bool laser_active = false;

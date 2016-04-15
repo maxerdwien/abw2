@@ -261,7 +261,7 @@ void Polar::fire_2() {
 		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos + gun_length*cos(angle), y_pos+gun_length*sin(angle), x_vel, y_vel);
 		num_g_missiles++;
 		missile_cooldown += missile_delay;
-		stamina -= 500;
+		stamina -= 600;
 		Mix_PlayChannel(-1, missile_launch_sfx, 0);
 		missile_click_used = true;
 	}
@@ -318,6 +318,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 					m->y_vel *= -1;
 				}
 			} else {
+				missile_click_used = false;
 				num_g_missiles--;
 				delete g_missiles[i];
 				g_missiles[i] = g_missiles[num_g_missiles];
@@ -327,6 +328,9 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 			
 		}
 
+		// increment damage counter
+		m->damage_counter = (m->damage_counter + 1) % 3;
+
 		// check for collisions with enemies
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;
@@ -334,16 +338,18 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 			double dist = sqrt(pow(m->x_pos - ships[k]->x_pos, 2) + pow(m->y_pos - ships[k]->y_pos, 2));
 			if (m->exploded) {
 				if (dist <= (ships[k]->radius + m->radius)) {
-					bool hit = ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
-					if (hit) {
-						damage_done += m->damage;
-						ships[k]->last_hit = id;
+					if (m->damage_counter % 3 == 0) {
+						bool hit = ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
+						if (hit) {
+							damage_done += m->damage;
+							ships[k]->last_hit = id;
+						}
 					}
 				}
 
 				// do gravity effect
 				if (ships[k]->invincibility_cooldown == 0) {
-					double force = 15000000000000000.0 / pow(dist, 2);
+					double force = 10000000000000000.0 / pow(dist, 2);
 					if (force > 70000) force = 70000;
 					double angle = atan2(m->y_pos - ships[k]->y_pos, m->x_pos - ships[k]->x_pos);
 					ships[k]->x_vel += force * cos(angle);
@@ -411,7 +417,7 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
 				
-				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, ship_dist/200000, 1, haptics[i]);
+				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 50+ship_dist/300000, 1, haptics[i]);
 				if (hit) {
 					damage_done += 1;
 					target_ship->last_hit = id;

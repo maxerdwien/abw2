@@ -189,6 +189,7 @@ int main(int, char**) {
 	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\confirm.wav");
 	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\beep.wav");
 	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\item.wav");
+	Mix_Chunk* death_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\death.wav");
 
 
 	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
@@ -350,7 +351,8 @@ int main(int, char**) {
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
 						do_items = !do_items;
-						
+						Mix_PlayChannel(-1, beep, 0);
+
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 						if (ready[controller_index]) break;
@@ -896,6 +898,9 @@ int main(int, char**) {
 							ship->stamina = ship->stamina_max;
 
 							ship->last_hit = -1;
+
+							Mix_PlayChannel(-1, death_sfx, 0);
+
 						}
 					}
 
@@ -1327,8 +1332,8 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	if (shipType == 0) {
 		name = "BLACK";
 		wep1 = "RB: Burst Shot";
-		wep2 = "RT: Flamethrower";
-		wep3 = "LB: Charge Shot";
+		wep2 = "RT: Charge Shot";
+		wep3 = "LB: Flamethrower";
 	} else if (shipType == 1) {
 		name = "GRIZZLY";
 		wep1 = "RB: Bullets";

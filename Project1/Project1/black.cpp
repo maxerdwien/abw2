@@ -29,7 +29,7 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 
 	radius = 40 * 10000;
 	normal_radius = radius;
-	weight = 60;
+	weight = 70;
 
 	r = rend;
 
@@ -242,8 +242,8 @@ void Black::fire_2() {
 		Mix_HaltChannel(charging_channel);
 	}
 	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 10) {
-		//int MUZZLE_VEL = 100000;
 		int MUZZLE_VEL = charge_shot_charge*500;
+		if (MUZZLE_VEL > 200000) MUZZLE_VEL = 200000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
