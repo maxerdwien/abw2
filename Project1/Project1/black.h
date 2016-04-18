@@ -23,7 +23,7 @@ private:
 	struct bullet* bullets[1000];
 	int num_bullets = 0;
 
-	const int burst_delay_1 = 120;
+	const int burst_delay_1 = 60;
 	int burst_cooldown_1 = 0;
 
 	const int burst_delay_2 = 4;
@@ -45,6 +45,7 @@ public:
 	~Black();
 
 	void update();
+	void die();
 
 	void fire_1();
 	void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]);

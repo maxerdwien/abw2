@@ -133,6 +133,10 @@ void Polar::update() {
 	gun_dir_y = 10000 * sin(new_angle);
 }
 
+void Polar::die() {
+	Mix_HaltChannel(laser_channel);
+}
+
 void Polar::fire_1() {
 	// handle spread fire spawns
 	if (spread_cooldown > 0) {
@@ -141,7 +145,7 @@ void Polar::fire_1() {
 	if (do_fire_1 && stamina > 0 && spread_cooldown <= 0) {
 
 		int MUZZLE_VEL = 40000;
-		int spread = 5;
+		int spread = 7;
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), MUZZLE_VEL, spread, 5, 10, 100);
 		for (int i = 0; i < spread; i++) {
@@ -406,7 +410,7 @@ void Polar::render_projectiles_2() {
 void Polar::fire_3() {
 	if (do_fire_3 && stamina > 0) {
 		laser_active = true;
-		stamina -= 14;
+		stamina -= 17;
 	} else {
 		laser_active = false;
 		do_fire_3 = false;

@@ -107,6 +107,10 @@ void Grizzly::update() {
 	gun_dir_y = desired_gun_dir_y;
 }
 
+void Grizzly::die() {
+
+}
+
 void Grizzly::fire_1() {
 	if (cannon_cooldown > 0) {
 		cannon_cooldown--;

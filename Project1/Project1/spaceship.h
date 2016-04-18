@@ -63,7 +63,7 @@ class Ship {
 		int lives = 5;
 
 		const int respawn_invincibility_delay = 180;
-		int invincibility_cooldown = 120;
+		int invincibility_cooldown = 90;
 		const int invincibility_switch_rate = 20;
 
 		int stamina = 0;
@@ -74,8 +74,8 @@ class Ship {
 		int radius;
 		int weight;
 
-		int normal_gun_length = 10000 * 18;
-		int gun_length = 10000 * 18;
+		int normal_gun_length = 10000 * 21;
+		int gun_length = 10000 * 21;
 
 		// todo: make this use the constant NUM_ITEMS
 		int item_times[6];
@@ -96,6 +96,7 @@ class Ship {
 		virtual ~Ship();
 
 		virtual void update() = 0;
+		virtual void die() = 0;
 		void render();
 
 		bool take_knockback(int dir_x, int dir_y, int base_knockback, int knockback_scaling, int damage, SDL_Haptic* haptic);

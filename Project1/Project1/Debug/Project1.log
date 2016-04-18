@@ -1,28 +1,5 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  polar.cpp
-c:\users\max\documents\github\abw2\project1\project1\gravity-missile.h(5): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(132): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(133): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(146): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(265): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(266): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(267): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(378): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(379): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(420): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(421): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(443): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(459): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(460): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(461): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\polar.cpp(462): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
-  grizzly.cpp
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(118): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(222): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(260): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(261): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(371): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(408): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max\documents\github\abw2\project1\project1\grizzly.cpp(409): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-  Generating Code...
+  main.cpp
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(1180): warning C4474: 'sprintf_s' : too many arguments passed for format string
+  c:\users\max\documents\github\abw2\project1\project1\main.cpp(1180): note: placeholders and their parameters expect 0 variadic arguments, but 1 were provided
   Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\acsf.exe

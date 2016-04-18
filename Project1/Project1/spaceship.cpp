@@ -29,7 +29,7 @@ void Ship::render() {
 	}
 
 	// render gun
-	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->atan2_degrees(gun_dir_x, gun_dir_y), 1.5 * scale);
+	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->atan2_degrees(gun_dir_x, gun_dir_y), 1.75 * scale);
 
 	// render laser sight
 	if (item_times[laser_sights]) {
