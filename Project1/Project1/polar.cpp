@@ -126,8 +126,8 @@ void Polar::update() {
 		new_angle -= polar_gun_turn_speed;
 	}
 
-	gun_dir_x = 10000 * cos(new_angle);
-	gun_dir_y = 10000 * sin(new_angle);
+	gun_dir_x = (int)(10000 * cos(new_angle));
+	gun_dir_y = (int)(10000 * sin(new_angle));
 }
 
 void Polar::fire_1() {
@@ -140,7 +140,7 @@ void Polar::fire_1() {
 		int MUZZLE_VEL = 40000;
 		int spread = 5;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), MUZZLE_VEL, spread, 5, 10, 100);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, (int)(x_pos + gun_length*cos(angle)), (int)(y_pos + gun_length*sin(angle)), MUZZLE_VEL, spread, 5, 10, 100);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -256,9 +256,9 @@ void Polar::fire_2() {
 	if (do_fire_2 && !missile_click_used && stamina > 0 && missile_cooldown <= 0) {
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		int velocity = 100000;
-		int x_vel = cos(angle) * velocity;
-		int y_vel = sin(angle) * velocity;
-		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos + gun_length*cos(angle), y_pos+gun_length*sin(angle), x_vel, y_vel);
+		int x_vel = (int)(cos(angle) * velocity);
+		int y_vel = (int)(sin(angle) * velocity);
+		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos + (int)(gun_length*cos(angle)), (int)(y_pos+gun_length*sin(angle)), x_vel, y_vel);
 		num_g_missiles++;
 		missile_cooldown += missile_delay;
 		stamina -= 600;
@@ -352,8 +352,8 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 					double force = 10000000000000000.0 / pow(dist, 2);
 					if (force > 70000) force = 70000;
 					double angle = atan2(m->y_pos - ships[k]->y_pos, m->x_pos - ships[k]->x_pos);
-					ships[k]->x_vel += force * cos(angle);
-					ships[k]->y_vel += force * sin(angle);
+					ships[k]->x_vel += (int)(force * cos(angle));
+					ships[k]->y_vel += (int)(force * sin(angle));
 				}
 			}
 		}
@@ -394,8 +394,8 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 	if (laser_active) {
 		// update laser position
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		laser_start_x = x_pos + gun_length * cos(angle);
-		laser_start_y = y_pos + gun_length * sin(angle);
+		laser_start_x = (int)(x_pos + gun_length * cos(angle));
+		laser_start_y = (int)(y_pos + gun_length * sin(angle));
 		laser_end_x = laser_start_x + 10000*gun_dir_x;
 		laser_end_y = laser_start_y + 10000*gun_dir_y;
 
@@ -417,7 +417,7 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
 				
-				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 50+ship_dist/300000, 1, haptics[i]);
+				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 20+(int)(ship_dist/300000), 1, haptics[i]);
 				if (hit) {
 					damage_done += 1;
 					target_ship->last_hit = id;
@@ -433,10 +433,10 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 	for (int i = 0; i < num_sparks; i++) {
 		Spark* s = sparks[i];
 		double angle = atan2(s->y_2 - s->y_1, s->x_2 - s->x_1);
-		s->x_1 += cos(angle) * s->vel;
-		s->y_1 += sin(angle) * s->vel;
-		s->x_2 += cos(angle) * s->vel;
-		s->y_2 += sin(angle) * s->vel;
+		s->x_1 += (int)(cos(angle) * s->vel);
+		s->y_1 += (int)(sin(angle) * s->vel);
+		s->x_2 += (int)(cos(angle) * s->vel);
+		s->y_2 += (int)(sin(angle) * s->vel);
 
 		s->remaining_life--;
 		if (s->remaining_life == 0) {

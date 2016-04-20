@@ -112,7 +112,7 @@ void Grizzly::fire_1() {
 		int MUZZLE_VEL = 100000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 5, 10, 400);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, (int)(x_pos+gun_length*cos(angle)), (int)(y_pos+gun_length*sin(angle)), MUZZLE_VEL, spread, 5, 10, 400);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -216,7 +216,7 @@ void Grizzly::fire_2() {
 		int MUZZLE_VEL = 70000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), MUZZLE_VEL, spread, 25, 200, 300);
+		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 25, 200, 300);
 		for (int i = 0; i < spread; i++) {
 			missiles[num_missiles] = new_missiles[i];
 			num_missiles++;
@@ -254,8 +254,8 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 				double delta_y = ships[target_player]->y_pos - missile->y_pos;
 				double delta_mag = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
 
-				missile->x_accel = MISSILE_ACCEL * delta_x / delta_mag;
-				missile->y_accel = MISSILE_ACCEL * delta_y / delta_mag;
+				missile->x_accel = (int)(MISSILE_ACCEL * delta_x / delta_mag);
+				missile->y_accel = (int)(MISSILE_ACCEL * delta_y / delta_mag);
 
 				missile->x_vel += missile->x_accel;
 				missile->y_vel += missile->y_accel;
@@ -365,7 +365,7 @@ void Grizzly::fire_3() {
 		int MUZZLE_VEL = 1000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 35, 200, 300);
+		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 35, 200, 300);
 		for (int i = 0; i < spread; i++) {
 			mines[num_mines] = new_missiles[i];
 			num_mines++;
@@ -402,8 +402,8 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 				double delta_y = ships[target_player]->y_pos - mine->y_pos;
 				double delta_mag = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
 
-				mine->x_accel = MISSILE_ACCEL * delta_x / delta_mag;
-				mine->y_accel = MISSILE_ACCEL * delta_y / delta_mag;
+				mine->x_accel = (int)(MISSILE_ACCEL * delta_x / delta_mag);
+				mine->y_accel = (int)(MISSILE_ACCEL * delta_y / delta_mag);
 			} else {
 				mine->x_accel = 0;
 				mine->y_accel = 0;

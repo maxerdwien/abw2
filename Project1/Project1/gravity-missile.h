@@ -2,7 +2,7 @@
 
 const int G_MISSILE_ACTIVATION_RADIUS = 200 * 10000;
 const int G_MISSILE_MAX_RADIUS = 140 * 10000;
-const int G_MISSILE_RADIUS_PER_FRAME = 1.2 * 10000;
+const int G_MISSILE_RADIUS_PER_FRAME = (int)(1.2 * 10000);
 // in degrees per frame
 const int vortex_turn_rate = 10;
 

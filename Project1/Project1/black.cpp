@@ -107,7 +107,7 @@ void Black::fire_1() {
 		int MUZZLE_VEL = 90000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 3, 150, 30);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -122,7 +122,7 @@ void Black::fire_1() {
 		int MUZZLE_VEL = 90000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 3, 150, 30);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -246,7 +246,7 @@ void Black::fire_2() {
 		if (MUZZLE_VEL > 200000) MUZZLE_VEL = 200000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
 		for (int i = 0; i < spread; i++) {
 			new_bullets[i]->radius = 10000 * charge_shot_charge / 4;
 			bullets[num_bullets] = new_bullets[i];
@@ -283,8 +283,8 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 	if (!flame_active) return;
 	double angle = atan2(gun_dir_y, gun_dir_x);
 	for (int i = 0; i < num_flame_hitboxes; i++) {
-		int hb_x = x_pos + flame_dists[i] * cos(angle);
-		int hb_y = y_pos + flame_dists[i] * sin(angle);
+		int hb_x = x_pos + (int)(flame_dists[i] * cos(angle));
+		int hb_y = y_pos + (int)(flame_dists[i] * sin(angle));
 
 		for (int j = 0; j < 4; j++) {
 			if (!ships[j]) continue;
@@ -322,18 +322,18 @@ void Black::render_projectiles_3() {
 		bool render_hitboxes = false;
 		if (render_hitboxes) {
 			for (int i = 0; i < num_flame_hitboxes; i++) {
-				int hb_x = x_pos + flame_dists[i] * cos(angle);
-				int hb_y = y_pos + flame_dists[i] * sin(angle);
+				int hb_x = x_pos + (int)(flame_dists[i] * cos(angle));
+				int hb_y = y_pos + (int)(flame_dists[i] * sin(angle));
 				r->render_texture_abs_size(hitbox_tex, hb_x, hb_y, 0, flame_radii[i]);
 			}
 		}
 
 
 		if (current_flame == 0) {
-			r->render_texture_edge_spin(flame_tex_1, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), angle * 180 / M_PI + 90, 4);
+			r->render_texture_edge_spin(flame_tex_1, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), angle * 180 / M_PI + 90, 4);
 		} else {
 			// works since the textures are the same size
-			r->render_texture_edge_spin(flame_tex_2, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), angle * 180 / M_PI + 90, 4);
+			r->render_texture_edge_spin(flame_tex_2, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), angle * 180 / M_PI + 90, 4);
 		}
 
 		if (!Mix_Playing(flamethrower_channel)) {

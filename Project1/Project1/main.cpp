@@ -1155,7 +1155,7 @@ int main(int, char**) {
 				char winnerMessage[15];
 
 				if (winner == -1) {
-					sprintf_s(winnerMessage, "No Contest!", winner);
+					sprintf_s(winnerMessage, "No Contest!");
 				}
 				else {
 					sprintf_s(winnerMessage, "Player %d wins!", winner);
