@@ -40,7 +40,7 @@ Item::Item(int x, int y, item_type t, Renderer* rend) {
 
 void Item::render() {
 	if (picked_up) {
-		r->render_text(x_pos, y_pos, text, true, true, false, small_f, alpha);
+		r->render_text(x_pos, y_pos, text, true, true, false, small_f, 255, alpha);
 	} else {
 		r->render_texture(tex, x_pos, y_pos, 0, 2);
 	}

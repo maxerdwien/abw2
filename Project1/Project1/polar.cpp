@@ -249,7 +249,6 @@ void Polar::fire_2() {
 		missile_cooldown--;
 	}
 
-	/*
 	if (!do_fire_2 && missile_click_used) {
 		for (int i = 0; i < num_g_missiles; i++) {
 			if (!g_missiles[i]->exploded) {
@@ -261,7 +260,6 @@ void Polar::fire_2() {
 			}
 		}
 	}
-	*/
 
 	if (do_fire_2 && !missile_click_used && stamina > 0 && missile_cooldown <= 0) {
 		double angle = atan2(gun_dir_y, gun_dir_x);
@@ -314,23 +312,6 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 		m->x_pos += m->x_vel;
 		m->y_pos += m->y_vel;
-
-		// check for collisions with enemies
-		for (int k = 0; k < 4; k++) {
-			if (!ships[k]) continue;
-			if (ships[k]->lives == 0) continue;
-			double dist = sqrt(pow(m->x_pos - ships[k]->x_pos, 2) + pow(m->y_pos - ships[k]->y_pos, 2));
-			if (!m->exploded) {
-				if (ships[k]->id == id) continue;
-				if (dist <= G_MISSILE_ACTIVATION_RADIUS) {
-					m->exploded = true;
-					m->x_vel = 0;
-					m->y_vel = 0;
-					Mix_PlayChannel(-1, blackhole_sfx, 0);
-					missile_click_used = false;
-				}
-			}
-		}
 
 		// check for missile going out of bounds
 		if (m->x_pos < min_x || m->x_pos > max_x || m->y_pos < min_y || m->y_pos > max_y) {

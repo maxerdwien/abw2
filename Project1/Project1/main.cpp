@@ -5,6 +5,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
+#include <time.h>
 
 #include "spaceship.h"
 #include "grizzly.h"
@@ -37,7 +38,7 @@ bool dpad_down[4] = { false, false, false, false };
 Renderer* r;
 
 bool quit = false;
-bool is_fullscreen = true;
+bool is_fullscreen = false;
 bool xp_mode = false;
 bool muted = true;
 
@@ -64,11 +65,11 @@ enum wrap_type {
 
 enum stage {
 	anchorage, // normal
-	fairbanks, // random asteroids
-	juneau,
+	fairbanks, // asteroid in middle
+	juneau, // random asteroids
 };
 
-stage selected_stage = fairbanks;
+stage selected_stage = juneau;
 
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
@@ -107,6 +108,9 @@ int main(int, char**) {
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
 		printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
 	}
+
+	// init random numbers
+	srand(time(NULL));
 	
 
 	int WINDOW_WIDTH;
@@ -202,7 +206,7 @@ int main(int, char**) {
 	Mix_Chunk* death_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\death.wav");
 
 
-	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
+	//music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
 	// "Cyborg Ninja" Kevin MacLeod (incompetech.com)
 	// Licensed under Creative Commons : By Attribution 3.0 License
 	// http ://creativecommons.org/licenses/by/3.0/
@@ -216,8 +220,7 @@ int main(int, char**) {
 	Mix_VolumeMusic(MIX_MAX_VOLUME / 8);
 
 	// stage stuff
-	wrap_type horizontal_wrap = none;
-	wrap_type vertical_wrap = none;
+	int asteroid_spawn_cooldown = 1;
 
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
@@ -241,7 +244,6 @@ int main(int, char**) {
 	Asteroid* asteroids[100];
 	int num_asteroids = 0;
 
-	//asteroids[0] = new Asteroid((WIDTH_UNITS-STATUS_BAR_WIDTH)/2 + STATUS_BAR_WIDTH, HEIGHT_UNITS/2, r);
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -292,11 +294,11 @@ int main(int, char**) {
 
 			// render title name and prompt to move forward
 			{
-				r->render_text(WIDTH_UNITS / 2,  2 * HEIGHT_UNITS / 5, "Alaskan Cosmobear Spacefighting", true, false, false, large_f, 255);
+				r->render_text(WIDTH_UNITS / 2,  2 * HEIGHT_UNITS / 5, "Alaskan Cosmobear Spacefighting", true, false, false, large_f, 255, 255);
 
-				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to start.", true, false, false, medium_f, 255);
+				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to start.", true, false, false, medium_f, 255, 255);
 
-				r->render_text(WIDTH_UNITS / 2, 10 * HEIGHT_UNITS / 17, "Press the B button to quit.", true, false, false, medium_f, 255);
+				r->render_text(WIDTH_UNITS / 2, 10 * HEIGHT_UNITS / 17, "Press the B button to quit.", true, false, false, medium_f, 255, 255);
 			}
 
 			SDL_RenderPresent(renderer);
@@ -439,9 +441,9 @@ int main(int, char**) {
 
 			// render item toggle
 			if (do_items) {
-				r->render_text(0, 0, " Items are ON ", false, false, true, medium_f, 255);
+				r->render_text(0, 0, " Items are ON ", false, false, true, medium_f, 255, 255);
 			} else {
-				r->render_text(0, 0, " Items are OFF ", false, false, true, medium_f, 255);
+				r->render_text(0, 0, " Items are OFF ", false, false, true, medium_f, 255, 255);
 			}
 
 			r->render_cross_bars(BARSIZE);
@@ -478,7 +480,7 @@ int main(int, char**) {
 				}
 			}
 			if (all_ready) {
-				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, " Press Start to begin! ", true, true, true, large_f, 255);
+				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, " Press Start to begin! ", true, true, true, large_f, 255, 255);
 			}
 
 			SDL_RenderPresent(renderer);
@@ -498,6 +500,13 @@ int main(int, char**) {
 			}
 
 			// init game objects
+			// init asteroids
+			if (selected_stage == fairbanks) {
+				asteroids[num_asteroids] = new Asteroid((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, 0, 0, r);
+				num_asteroids = 1;
+			}
+
+			// init ships
 			const int spawn_locations_x[4] = {
 				(WIDTH_UNITS - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH ,
 				3 * (WIDTH_UNITS - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH,
@@ -676,6 +685,17 @@ int main(int, char**) {
 			}
 
 			// update
+			// spawn asteroids
+			if (selected_stage == juneau) {
+				asteroid_spawn_cooldown--;
+				if (asteroid_spawn_cooldown == 0) {
+					asteroid_spawn_cooldown = 20 * 60;
+
+					asteroids[num_asteroids] = new Asteroid(WIDTH_UNITS / 2, 0, 0, 40000, r);
+					num_asteroids++;
+				}
+			}
+
 			// spawn items
 			if (do_items) {
 				item_spawn_cooldown--;
@@ -853,6 +873,7 @@ int main(int, char**) {
 						double dist = sqrt(pow(ship->x_pos - a->x_pos, 2) + pow(ship->y_pos - a->y_pos, 2));
 						if (dist < (ship->radius + a->radius)) {
 
+							/*
 							double total_force = 20000000000000000000.0 / pow(dist, 2);
 							double x_force = (ship->x_pos - a->x_pos) * total_force / dist;
 							ship->x_vel += (int)(x_force / ship->weight);
@@ -860,8 +881,9 @@ int main(int, char**) {
 							ship->y_vel += (int)(y_force / ship->weight);
 
 							ship->percent += 28;
+							*/
 
-							//ship->take_knockback(x_force, y_force, )
+							ship->take_knockback(ship->x_pos - a->x_pos, ship->y_pos - a->y_pos, 100, 20, 28, haptics[j]);
 						}
 					}
 
@@ -982,7 +1004,7 @@ int main(int, char**) {
 					} else {
 						s = " GO! ";
 					}
-					r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f, 255);
+					r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f, 255, 255);
 
 				}
 
@@ -992,8 +1014,8 @@ int main(int, char**) {
 					Ship* ship = ships[i];
 					if (ship->lives == 0) continue;
 					ship->render();
-
 				}
+
 				for (int i = 0; i < 4; i++) {
 					if (!ships[i]) continue;
 					Ship* ship = ships[i];
@@ -1049,14 +1071,20 @@ int main(int, char**) {
 						{
 							char str[10];
 							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
-							r->render_text(0, 10000 * (61 + box_height * i), str, false, false, false, medium_f, 255);
+							int blue_and_green = 255 - (int)(255 * ship->percent / 300);
+							int alpha = 255;
+							if (blue_and_green < 0) {
+								blue_and_green = 0;
+								alpha = 255 - (int)(255 * (ship->percent - 300) / 2000);
+							}
+							r->render_text(0, 10000 * (61 + box_height * i), str, false, false, false, medium_f, blue_and_green, alpha);
 						}
 
 						// render stock counter
 						{
 							char playerLives[20];
 							sprintf_s(playerLives, "Lives: %d", ship->lives);
-							r->render_text(0, 10000 * (10 + box_height * i), playerLives, false, false, false, medium_f, 255);
+							r->render_text(0, 10000 * (10 + box_height * i), playerLives, false, false, false, medium_f, 255, 255);
 						}
 					}
 				}
@@ -1139,7 +1167,7 @@ int main(int, char**) {
 
 			// render word "paused"
 			SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
-			r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, " Paused ", true, true, true, medium_f, 255);
+			r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, " Paused ", true, true, true, medium_f, 255, 255);
 
 
 			SDL_RenderPresent(renderer);
@@ -1182,7 +1210,7 @@ int main(int, char**) {
 				else {
 					sprintf_s(winnerMessage, "Player %d wins!", winner);
 				}
-				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage, true, false, false, medium_f, 255);
+				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage, true, false, false, medium_f, 255, 255);
 
 				int start_height = HEIGHT_UNITS / 4;
 				if (ships[0] != NULL) {
@@ -1197,7 +1225,7 @@ int main(int, char**) {
 				if (ships[3] != NULL) {
 				render_results(7 * WIDTH_UNITS / 8, start_height, ship_textures[selections[3]][green], ships[3]);
 				}
-				r->render_text(WIDTH_UNITS / 2, 4 * HEIGHT_UNITS / 5, "Press the A button to continue.", true, false, false, medium_f, 255);
+				r->render_text(WIDTH_UNITS / 2, 4 * HEIGHT_UNITS / 5, "Press the A button to continue.", true, false, false, medium_f, 255, 255);
 			}
 			SDL_RenderPresent(renderer);
 		}
@@ -1323,7 +1351,7 @@ void render_plugin_to_join(int x, int y) {
 	int box_w = (WIDTH_UNITS - BARSIZE) / 2;
 	int box_h = (HEIGHT_UNITS - BARSIZE) / 2;
 
-	r->render_text(x + box_w / 2, y + box_h / 3, "Plug in controller to join", true, false, false, medium_f, 255);
+	r->render_text(x + box_w / 2, y + box_h / 3, "Plug in controller to join", true, false, false, medium_f, 255, 255);
 }
 
 
@@ -1368,10 +1396,10 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 		wep2 = "RT, LT: Gravity Missiles";
 		wep3 = "LB: Laser";
 	}
-	r->render_text(x + box_w / 2, y + 2 * box_h / 5, name, true, false, false, medium_f, 255);
-	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f, 255);
-	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep2, false, false, false, medium_f, 255);
-	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep3, false, false, false, medium_f, 255);
+	r->render_text(x + box_w / 2, y + 2 * box_h / 5, name, true, false, false, medium_f, 255, 255);
+	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f, 255, 255);
+	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep2, false, false, false, medium_f, 255, 255);
+	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep3, false, false, false, medium_f, 255, 255);
 }
 
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
@@ -1386,8 +1414,8 @@ void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
 	sprintf_s(damageTaken, "Damage Taken: %d%%", ship->damage_taken);
 
 	r->render_texture(ship_tex, x, y, 1, 5);
-	r->render_text(x, y + 10000 * 100, killResult, true, false, false, small_f, 255);
-	r->render_text(x, y + 10000 * 130, suicideResult, true, false, false, small_f, 255);
-	r->render_text(x, y + 10000 * 160, damageGiven, true, false, false, small_f, 255);
-	r->render_text(x, y + 10000 * 190, damageTaken, true, false, false, small_f, 255);
+	r->render_text(x, y + 10000 * 100, killResult, true, false, false, small_f, 255, 255);
+	r->render_text(x, y + 10000 * 130, suicideResult, true, false, false, small_f, 255, 255);
+	r->render_text(x, y + 10000 * 160, damageGiven, true, false, false, small_f, 255, 255);
+	r->render_text(x, y + 10000 * 190, damageTaken, true, false, false, small_f, 255, 255);
 }
