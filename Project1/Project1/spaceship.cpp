@@ -19,17 +19,17 @@ void Ship::render() {
 	double angle = r->atan2_degrees(face_dir_x, face_dir_y);
 
 	if (invincibility_cooldown > 0) {
-		if (invincibility_cooldown % invincibility_switch_rate < invincibility_switch_rate/3) {
-			r->render_texture(ship_invincible_tex, x_pos, y_pos, angle, 3*scale);
-		} else {
+		if (invincibility_cooldown % invincibility_switch_rate < (2 *invincibility_switch_rate/3)) {
 			r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
+		} else {
+			r->render_texture(ship_invincible_tex, x_pos, y_pos, angle, 3 * scale);
 		}
 	} else {
 		r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
 	}
 
 	// render gun
-	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->atan2_degrees(gun_dir_x, gun_dir_y), 1 * scale);
+	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->atan2_degrees(gun_dir_x, gun_dir_y), 1.75 * scale);
 
 	// render laser sight
 	if (item_times[laser_sights]) {

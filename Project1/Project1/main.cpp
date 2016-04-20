@@ -32,12 +32,14 @@ const int HEIGHT_UNITS = 10000 * 720;
 const int BARSIZE = 10000 * 26;
 const int STATUS_BAR_WIDTH = 10000 * 150;
 
+bool dpad_down[4] = { false, false, false, false };
+
 Renderer* r;
 
 bool quit = false;
 bool is_fullscreen = true;
 bool xp_mode = false;
-bool muted = false;
+bool muted = true;
 
 int controller_mappings[4] = { -1, -1, -1, -1 };
 SDL_GameController* controllers[4] = { NULL, NULL, NULL, NULL };
@@ -51,14 +53,22 @@ bool read_global_input(SDL_Event* e);
 enum ship_type {
 	black = 0,
 	grizzly = 1,
-	polar = 2
+	polar = 2,
 };
 
 enum wrap_type {
 	none,
 	direct,
-	inverse
+	inverse,
 };
+
+enum stage {
+	anchorage, // normal
+	fairbanks, // random asteroids
+	juneau,
+};
+
+stage selected_stage = fairbanks;
 
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
@@ -75,14 +85,14 @@ int main(int, char**) {
 		initGame,
 		inGame,
 		results,
-		pause
+		pause,
 	};
 
 	enum color {
 		red = 0,
 		blue = 1,
 		yellow = 2,
-		green = 3
+		green = 3,
 	};
 
 	gameState currentState = mainMenu;
@@ -204,7 +214,6 @@ int main(int, char**) {
 	}
 
 	Mix_VolumeMusic(MIX_MAX_VOLUME / 8);
-	//Mix_AllocateChannels(32);
 
 	// stage stuff
 	wrap_type horizontal_wrap = none;
@@ -214,6 +223,7 @@ int main(int, char**) {
 	bool analog_stick_moved[4] = { false, false, false, false };
 	bool ready[4] = { false, false, false, false };
 	//bool ready[4] = { true, true, true, true };
+
 
 	bool do_items = false;
 
@@ -225,15 +235,6 @@ int main(int, char**) {
 
 	Item* items[100];
 	int num_items = 0;
-
-	/*
-	items[0] = new Item(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, laser_sights, r);
-	items[1] = new Item(WIDTH_UNITS / 2, HEIGHT_UNITS / 4, shield, r);
-	items[2] = new Item(WIDTH_UNITS / 2, 3 * HEIGHT_UNITS / 4, speed_up, r);
-	items[3] = new Item(WIDTH_UNITS / 4, HEIGHT_UNITS / 4, bounce, r);
-	items[4] = new Item(WIDTH_UNITS / 4, 3 * HEIGHT_UNITS / 4, small, r);
-	items[5] = new Item(3*WIDTH_UNITS / 4, 3*HEIGHT_UNITS / 4, bullet_bounce, r);
-	*/
 
 	int item_spawn_cooldown = 60 * 30;
 	
@@ -338,7 +339,6 @@ int main(int, char**) {
 							}
 						}
 						if (all_ready) {
-							
 							currentState = stageSelect;
 						}
 					}
@@ -459,12 +459,12 @@ int main(int, char**) {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, 0);
 				}
 				if (controllers[2]) {
-					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[2]][yellow], selections[2], right_arrow, left_arrow, ready[2]);
+					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE/2, ship_textures[selections[2]][yellow], selections[2], right_arrow, left_arrow, ready[2]);
 				} else {
 					render_plugin_to_join(0, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
 				if (controllers[3]) {
-					render_character_selector(WIDTH_UNITS / 2 + BARSIZE, HEIGHT_UNITS / 2 + BARSIZE, ship_textures[selections[3]][green], selections[3], right_arrow, left_arrow, ready[3]);
+					render_character_selector(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2, ship_textures[selections[3]][green], selections[3], right_arrow, left_arrow, ready[3]);
 				} else {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
@@ -510,14 +510,17 @@ int main(int, char**) {
 				HEIGHT_UNITS / 4,
 				3 * HEIGHT_UNITS / 4
 			};
+			// todo: remove this
+			int num_ships = 0;
 			for (int i = 0; i < 4; i++) {
 				if (ships[i]) {
-					// todo: make this actually work
 					delete ships[i];
 					ships[i] = NULL;
 				}
 
 				if (!controllers[i]) continue;
+
+				num_ships++;
 
 				switch (selections[i]) {
 				case black:
@@ -530,6 +533,17 @@ int main(int, char**) {
 					ships[i] = new Polar(i, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				}
+			}
+
+			int num_lives = 0;
+			if (num_ships == 2) num_lives = 4;
+			if (num_ships == 3) num_lives = 5;
+			if (num_ships == 4)  num_lives = 5;
+
+			for (int i = 0; i < 4; i++) {
+				if (!controllers[i]) continue;
+
+				ships[i]->lives = num_lives;
 			}
 
 			// render background once; this is needed for xp mode
@@ -674,6 +688,7 @@ int main(int, char**) {
 					num_items++;
 				}
 			}
+
 			// update asteroids
 			for (int i = 0; i < num_asteroids; i++) {
 				Asteroid* a = asteroids[i];
@@ -690,16 +705,16 @@ int main(int, char**) {
 				ship->update();
 				if (game_start_cooldown > 1 * 60) continue;
 
+				// reduce invincibility time
+				if (ship->invincibility_cooldown > 0) {
+					ship->invincibility_cooldown--;
+				}
+
 
 				// regen stamina
 				ship->stamina += ship->stamina_per_frame;
 				if (ship->stamina > ship->stamina_max) {
 					ship->stamina = ship->stamina_max;
-				}
-
-				// reduce invincibility time
-				if (ship->invincibility_cooldown > 0) {
-					ship->invincibility_cooldown--;
 				}
 
 				// handle projectile spawns
@@ -731,79 +746,81 @@ int main(int, char**) {
 						ship->speed_boost_cooldown--;
 					}
 
-					// update acceleration
-					double accel_mag = sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
-					if (accel_mag > ship->max_accel) {
-						accel_mag = ship->max_accel;
-					}
-					if (ship->do_speed_boost && ship->speed_boost_cooldown == 0) {
-						accel_mag = ship->max_accel * 40;
-						ship->speed_boost_cooldown += ship->speed_boost_delay;
-						ship->do_speed_boost = false;
-						//ship->stamina -= 200;
-					}
-					if (ship->item_times[speed_up] > 0) {
-						accel_mag *= 2;
-					}
+					if (ship->invincibility_cooldown < 2 * 60) {
 
-					if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
-						ship->x_accel = (int)(accel_mag*ship->move_dir_x / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)));
-						ship->y_accel = (int)(accel_mag*ship->move_dir_y / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)));
-					} else {
-						ship->x_accel = 0;
-						ship->y_accel = 0;
-					}
+						// update acceleration
+						double accel_mag = sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2));
+						if (accel_mag > ship->max_accel) {
+							accel_mag = ship->max_accel;
+						}
+						if (ship->do_speed_boost && ship->speed_boost_cooldown == 0) {
+							accel_mag = ship->max_accel * 40;
+							ship->speed_boost_cooldown += ship->speed_boost_delay;
+							ship->do_speed_boost = false;
+						}
+						if (ship->item_times[speed_up] > 0) {
+							accel_mag *= 2;
+						}
 
-					ship->x_vel += ship->x_accel;
-					ship->y_vel += ship->y_accel;
+						if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
+							ship->x_accel = (int)(accel_mag*ship->move_dir_x / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)));
+							ship->y_accel = (int)(accel_mag*ship->move_dir_y / sqrt(pow(ship->move_dir_x, 2) + pow(ship->move_dir_y, 2)));
+						} else {
+							ship->x_accel = 0;
+							ship->y_accel = 0;
+						}
 
-					// friction
-					int iterations_per_frame = 40;
-					for (int j = 0; j < iterations_per_frame; j++) {
-						double total_vel = sqrt(pow(ship->x_vel, 2) + pow(ship->y_vel, 2));
-						// todo: scale linearly with velocity?
-						double friction_accel = ((pow(total_vel, 2) + ship->constant_friction) / ship->friction_limiter) / iterations_per_frame;
+						ship->x_vel += ship->x_accel;
+						ship->y_vel += ship->y_accel;
 
-						int friction_accel_x = (int)(((double)friction_accel * ship->x_vel) / total_vel);
-						if (ship->x_vel > 0) {
-							ship->x_vel -= friction_accel_x;
-							if (ship->x_vel < 0) {
-								ship->x_vel = 0;
-							}
-						} else if (ship->x_vel < 0) {
-							ship->x_vel -= friction_accel_x;
+						// friction
+						int iterations_per_frame = 40;
+						for (int j = 0; j < iterations_per_frame; j++) {
+							double total_vel = sqrt(pow(ship->x_vel, 2) + pow(ship->y_vel, 2));
+							// todo: scale linearly with velocity?
+							double friction_accel = ((pow(total_vel, 2) + ship->constant_friction) / ship->friction_limiter) / iterations_per_frame;
+
+							int friction_accel_x = (int)(((double)friction_accel * ship->x_vel) / total_vel);
 							if (ship->x_vel > 0) {
-								ship->x_vel = 0;
+								ship->x_vel -= friction_accel_x;
+								if (ship->x_vel < 0) {
+									ship->x_vel = 0;
+								}
+							} else if (ship->x_vel < 0) {
+								ship->x_vel -= friction_accel_x;
+								if (ship->x_vel > 0) {
+									ship->x_vel = 0;
+								}
 							}
-						}
 
-						int friction_accel_y = (int)(((double)friction_accel * ship->y_vel) / total_vel);
-						if (ship->y_vel > 0) {
-							ship->y_vel -= friction_accel_y;
-							if (ship->y_vel < 0) {
-								ship->y_vel = 0;
-							}
-						} else if (ship->y_vel < 0) {
-							ship->y_vel -= friction_accel_y;
+							int friction_accel_y = (int)(((double)friction_accel * ship->y_vel) / total_vel);
 							if (ship->y_vel > 0) {
-								ship->y_vel = 0;
+								ship->y_vel -= friction_accel_y;
+								if (ship->y_vel < 0) {
+									ship->y_vel = 0;
+								}
+							} else if (ship->y_vel < 0) {
+								ship->y_vel -= friction_accel_y;
+								if (ship->y_vel > 0) {
+									ship->y_vel = 0;
+								}
 							}
 						}
-					}
 
-					// handle collisions between ships
-					for (int j = 0; j < 4; j++) {
-						if (!ships[j]) continue;
-						if (i == j) continue;
-						if (ships[j]->lives == 0) continue;
-						double dist = sqrt(pow(ship->x_pos - ships[j]->x_pos, 2) + pow(ship->y_pos - ships[j]->y_pos, 2));
-						if (dist == 0) dist = 1;
-						if (dist <= (ships[i]->radius + ships[j]->radius)) {
-							double total_force = 140000000000000000.0 / pow(dist, 2);
-							double x_force = (ship->x_pos - ships[j]->x_pos) * total_force / dist;
-							ship->x_vel += (int)(x_force/ship->weight);
-							double y_force = (ship->y_pos - ships[j]->y_pos) * total_force / dist;
-							ship->y_vel += (int)(y_force/ship->weight);
+						// handle collisions between ships
+						for (int j = 0; j < 4; j++) {
+							if (!ships[j]) continue;
+							if (i == j) continue;
+							if (ships[j]->lives == 0) continue;
+							double dist = sqrt(pow(ship->x_pos - ships[j]->x_pos, 2) + pow(ship->y_pos - ships[j]->y_pos, 2));
+							if (dist == 0) dist = 1;
+							if (dist <= (ships[i]->radius + ships[j]->radius)) {
+								double total_force = 140000000000000000.0 / pow(dist, 2);
+								double x_force = (ship->x_pos - ships[j]->x_pos) * total_force / dist;
+								ship->x_vel += (int)(x_force / ship->weight);
+								double y_force = (ship->y_pos - ships[j]->y_pos) * total_force / dist;
+								ship->y_vel += (int)(y_force / ship->weight);
+							}
 						}
 					}
 
@@ -843,6 +860,8 @@ int main(int, char**) {
 							ship->y_vel += (int)(y_force / ship->weight);
 
 							ship->percent += 28;
+
+							//ship->take_knockback(x_force, y_force, )
 						}
 					}
 
@@ -851,7 +870,8 @@ int main(int, char**) {
 					ship->y_pos += ship->y_vel;
 
 					// handle death
-					if (ship->x_pos < STATUS_BAR_WIDTH || ship->x_pos > WIDTH_UNITS || ship->y_pos < 0 || ship->y_pos > HEIGHT_UNITS) {
+					if (ship->x_pos < (STATUS_BAR_WIDTH - ship->radius) || ship->x_pos > (WIDTH_UNITS + ship->radius) 
+							|| ship->y_pos < (0 - ship->radius) || ship->y_pos > (HEIGHT_UNITS + ship->radius)) {
 						if (ship->item_times[bounce] > 0 || ship->invincibility_cooldown > 0) {
 							if (ship->x_pos < STATUS_BAR_WIDTH && ship->x_vel < 0) {
 								ship->x_vel *= -1;
@@ -880,9 +900,11 @@ int main(int, char**) {
 								//ship->num_suicides++;
 							}
 
+
 							SDL_HapticRumblePlay(haptics[i], 1, 300);
 
 							if (ship->lives <= 0) {
+								ship->die();
 								ship->lives = 0;
 							}
 
@@ -1240,9 +1262,10 @@ bool read_global_input(SDL_Event* e) {
 	}
 	case SDL_CONTROLLERBUTTONDOWN:
 		if (e->cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
-			//quit = true;
-			//event_eaten = true;
+			quit = true;
+			event_eaten = true;
 		} else if (e->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+			//dpad_down[]
 			//xp_mode = !xp_mode;
 			//event_eaten = true;
 		}
@@ -1322,7 +1345,7 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 		r->render_texture(left_arrow, x + box_w / 4, y + box_h / 5, 0, 1);
 		r->render_texture(right_arrow, x + 3 * box_w / 4, y + box_h / 5, 0, 1);
 	} else {
-		r->render_texture(ship_tex, x + box_w / 2, y + box_h / 5, 0, 5.2);
+		r->render_texture(ship_tex, x + box_w / 2, y + box_h / 5, 0, 4.9);
 	}
 
 	std::string name;
@@ -1332,17 +1355,17 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	if (shipType == 0) {
 		name = "BLACK";
 		wep1 = "RB: Burst Shot";
-		wep2 = "RT: Charge Shot";
+		wep2 = "RT, LT: Charge Shot";
 		wep3 = "LB: Flamethrower";
 	} else if (shipType == 1) {
 		name = "GRIZZLY";
 		wep1 = "RB: Bullets";
-		wep2 = "RT: Missiles";
+		wep2 = "RT, LT: Missiles";
 		wep3 = "LB: Mines";
 	} else {
 		name = "POLAR";
 		wep1 = "RB: Shotgun";
-		wep2 = "RT: Gravity Missiles";
+		wep2 = "RT, LT: Gravity Missiles";
 		wep3 = "LB: Laser";
 	}
 	r->render_text(x + box_w / 2, y + 2 * box_h / 5, name, true, false, false, medium_f, 255);

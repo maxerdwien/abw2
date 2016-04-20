@@ -51,6 +51,7 @@ public:
 	~Polar();
 
 	void update();
+	void die();
 
 	void fire_1();
 	void update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]);

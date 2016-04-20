@@ -96,6 +96,11 @@ void Black::update() {
 	gun_dir_y = desired_gun_dir_y;
 }
 
+void Black::die() {
+	Mix_HaltChannel(charging_channel);
+	Mix_HaltChannel(flamethrower_channel);
+}
+
 void Black::fire_1() {
 	if (burst_cooldown_1 > 0) {
 		burst_cooldown_1--;
@@ -226,12 +231,16 @@ void Black::render_projectiles_1() {
 void Black::fire_2() {
 	if (do_fire_2) {
 		// charge rate increases as it's held for longer
-		if (charge_shot_charge >= 90) {
+		if (charge_shot_charge >= (3*2*60) + 90) {
+			charge_shot_charge += 1;
+		}
+		else if (charge_shot_charge >= (2*60) + 30) {
 			charge_shot_charge += 3;
 		}
 		else if (charge_shot_charge >= 30) {
 			charge_shot_charge += 2;
-		} else {
+		}
+		else {
 			charge_shot_charge++;
 		}
 		stamina -= 10;
@@ -243,12 +252,13 @@ void Black::fire_2() {
 	}
 	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 10) {
 		int MUZZLE_VEL = charge_shot_charge*500;
-		if (MUZZLE_VEL > 200000) MUZZLE_VEL = 200000;
+		if (MUZZLE_VEL > 150000) MUZZLE_VEL = 150000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
 		for (int i = 0; i < spread; i++) {
 			new_bullets[i]->radius = 10000 * charge_shot_charge / 4;
+			if (new_bullets[i]->radius > 10000 * 100) new_bullets[i]->radius = 10000 * 100;
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
 		}
@@ -296,7 +306,7 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				// direction is a combination of relation to hitbox and ship
 				int x_dir = (target_ship->x_pos - hb_x) + (target_ship->x_pos - x_pos)/2;
 				int y_dir = (target_ship->y_pos - hb_y) + (target_ship->y_pos - y_pos)/2;
-				bool hit = target_ship->take_knockback(x_dir, y_dir, 0, 3, 1, haptics[j]);
+				bool hit = target_ship->take_knockback(x_dir, y_dir, 1, 4, 1, haptics[j]);
 				if (hit) {
 					damage_done += 1;
 					target_ship->last_hit = id;
