@@ -30,6 +30,7 @@ struct lra {
 
 const int WIDTH_UNITS = 10000 * 1280;
 const int HEIGHT_UNITS = 10000 * 720;
+const int ASTEROID_SPAWN_DIST = 10000 * 100;
 const int BARSIZE = 10000 * 26;
 const int STATUS_BAR_WIDTH = 10000 * 150;
 
@@ -69,7 +70,14 @@ enum stage {
 	juneau, // random asteroids
 };
 
-stage selected_stage = juneau;
+enum team_mode {
+	free_for_all,
+	two_vs_two,
+};
+
+team_mode selected_team_mode = free_for_all;
+
+stage selected_stage = anchorage;
 
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
@@ -122,7 +130,7 @@ int main(int, char**) {
 		_720p,
 		_1080p,
 		_1440p,
-		_2160p // 4k
+		_2160p, // 4k
 	};
 	const Resolution res = _1080p;
 	switch (res) {
@@ -168,6 +176,9 @@ int main(int, char**) {
 
 	const int game_start_delay = 4 * 60;
 	int game_start_cooldown;
+
+	const int game_end_delay = 2 * 60;
+	int game_end_cooldown;
 
 	const double CONTROLLER_MAX_ANGLE = M_PI / 6;
 	const int DEAD_ZONE = 5000;
@@ -244,6 +255,7 @@ int main(int, char**) {
 	Asteroid* asteroids[100];
 	int num_asteroids = 0;
 
+	int stock_count = 4;
 
 	Uint32 last_frame_start_time = SDL_GetTicks();
 	Uint32 frame_start_time = SDL_GetTicks();
@@ -322,8 +334,9 @@ int main(int, char**) {
 								all_ready = false;
 							}
 						}
+						// todo: remove this
+						all_ready = true;
 						if (all_ready) {
-							
 							currentState = stageSelect;
 						} else {
 
@@ -354,7 +367,20 @@ int main(int, char**) {
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
 						do_items = !do_items;
 						Mix_PlayChannel(-1, beep, 0);
-
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
+						switch (selected_stage) {
+						case anchorage:
+							selected_stage = fairbanks;
+							break;
+						case fairbanks:
+							selected_stage = juneau;
+							break;
+						case juneau:
+							selected_stage = anchorage;
+							break;
+						}
+						Mix_PlayChannel(-1, beep, 0);
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 						if (ready[controller_index]) break;
@@ -386,11 +412,27 @@ int main(int, char**) {
 							break;
 						}
 					}
-					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP) {
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 						if (ready[controller_index]) break;
 						Mix_PlayChannel(-1, beep, 0);
 						int random_selection = rand() % 3;
 						selections[controller_index] = (ship_type)random_selection;
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+						if (selected_team_mode == free_for_all) {
+							selected_team_mode = two_vs_two;
+						} else if (selected_team_mode == two_vs_two) {
+							selected_team_mode = free_for_all;
+						}
+						Mix_PlayChannel(-1, beep, 0);
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP) {
+						stock_count++;
+						if (stock_count > 99) stock_count -= 99;
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+						stock_count--;
+						if (stock_count < 1) stock_count += 99;
 					}
 					break;
 				case SDL_CONTROLLERAXISMOTION:
@@ -441,10 +483,33 @@ int main(int, char**) {
 
 			// render item toggle
 			if (do_items) {
-				r->render_text(0, 0, " Items are ON ", false, false, true, medium_f, 255, 255);
+				r->render_text(0, 0, " Items: ON (Y) ", false, false, true, small_f, 255, 255);
 			} else {
-				r->render_text(0, 0, " Items are OFF ", false, false, true, medium_f, 255, 255);
+				r->render_text(0, 0, " Items: OFF (Y) ", false, false, true, small_f, 255, 255);
 			}
+
+			// render stage select
+			if (selected_stage == anchorage) {
+				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Anchorage (X) ", false, false, true, small_f, 255, 255);
+			}
+			else  if (selected_stage == fairbanks) {
+				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Fairbanks (X) ", false, false, true, small_f, 255, 255);
+			}
+			else if (selected_stage == juneau) {
+				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Juneau (X) ", false, false, true, small_f, 255, 255);
+			}
+
+			// render team mode
+			if (selected_team_mode == free_for_all) {
+				r->render_text(0, (HEIGHT_UNITS + BARSIZE) / 2, " Mode: Free for All (RB) ", false, false, true, small_f, 255, 255);
+			} else  if (selected_team_mode == two_vs_two) {
+				r->render_text(0, (HEIGHT_UNITS + BARSIZE) / 2, " Mode: Two vs Two (RB) ", false, false, true, small_f, 255, 255);
+			}
+
+			// render number of stocks
+			char stocks[20];
+			snprintf(stocks, 20, " Stocks: %d (DPAD)", stock_count);
+			r->render_text((WIDTH_UNITS + BARSIZE) / 2, (HEIGHT_UNITS + BARSIZE) / 2, stocks, false, false, true, small_f, 255, 255);
 
 			r->render_cross_bars(BARSIZE);
 			
@@ -493,6 +558,7 @@ int main(int, char**) {
 		else if (currentState == initGame) {
 			// begin start game timer
 			game_start_cooldown = game_start_delay;
+			game_end_cooldown = game_end_delay;
 
 			// reset 'ready' status of all players
 			for (int i = 0; i < 4; i++) {
@@ -519,8 +585,7 @@ int main(int, char**) {
 				HEIGHT_UNITS / 4,
 				3 * HEIGHT_UNITS / 4
 			};
-			// todo: remove this
-			int num_ships = 0;
+
 			for (int i = 0; i < 4; i++) {
 				if (ships[i]) {
 					delete ships[i];
@@ -529,30 +594,40 @@ int main(int, char**) {
 
 				if (!controllers[i]) continue;
 
-				num_ships++;
+				int ally1 = -1;
+				int ally2 = -1;
+				if (selected_team_mode == two_vs_two) {
+					if (i == 0) {
+						ally1 = 1;
+					}
+					else if (i == 1) {
+						ally1 = 0;
+					}
+					else if (i == 2) {
+						ally1 = 3;
+					}
+					else if (i == 3) {
+						ally1 = 2;
+					}
+				}
 
 				switch (selections[i]) {
 				case black:
-					ships[i] = new Black(i, spawn_locations_x[i], spawn_locations_y[i], r);
+					ships[i] = new Black(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				case grizzly:
-					ships[i] = new Grizzly(i, spawn_locations_x[i], spawn_locations_y[i], r);
+					ships[i] = new Grizzly(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				case polar:
-					ships[i] = new Polar(i, spawn_locations_x[i], spawn_locations_y[i], r);
+					ships[i] = new Polar(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
 				}
 			}
 
-			int num_lives = 0;
-			if (num_ships == 2) num_lives = 4;
-			if (num_ships == 3) num_lives = 5;
-			if (num_ships == 4)  num_lives = 5;
-
 			for (int i = 0; i < 4; i++) {
-				if (!controllers[i]) continue;
+				if (!ships[i]) continue;
 
-				ships[i]->lives = num_lives;
+				ships[i]->lives = stock_count;
 			}
 
 			// render background once; this is needed for xp mode
@@ -688,11 +763,40 @@ int main(int, char**) {
 			// spawn asteroids
 			if (selected_stage == juneau) {
 				asteroid_spawn_cooldown--;
-				if (asteroid_spawn_cooldown == 0) {
-					asteroid_spawn_cooldown = 20 * 60;
+				if (asteroid_spawn_cooldown <= 0) {
+					asteroid_spawn_cooldown = 10 * 60;
 
-					asteroids[num_asteroids] = new Asteroid(WIDTH_UNITS / 2, 0, 0, 40000, r);
+					int x;
+					int y;
+					{
+						long perimeter = 2 * (WIDTH_UNITS-STATUS_BAR_WIDTH) + 2 * HEIGHT_UNITS + 8 * ASTEROID_SPAWN_DIST;
+						double perimeter_ratio = (double)(rand()) / RAND_MAX;
+						long dist = (int)(perimeter*perimeter_ratio);
+
+						if (dist < (WIDTH_UNITS - STATUS_BAR_WIDTH + 2 * ASTEROID_SPAWN_DIST)) {
+							x = dist + STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST;
+							y = -ASTEROID_SPAWN_DIST;
+						}
+						else if (dist < (WIDTH_UNITS + HEIGHT_UNITS + 4 * ASTEROID_SPAWN_DIST)) {
+							x = WIDTH_UNITS + ASTEROID_SPAWN_DIST;
+							y = (dist - (WIDTH_UNITS + 2 * ASTEROID_SPAWN_DIST)) - ASTEROID_SPAWN_DIST + HEIGHT_UNITS;
+						}
+						else if (dist < (2 * WIDTH_UNITS + HEIGHT_UNITS + 6 * ASTEROID_SPAWN_DIST)) {
+							x = (WIDTH_UNITS + ASTEROID_SPAWN_DIST) - (dist - (WIDTH_UNITS + HEIGHT_UNITS + 4 * ASTEROID_SPAWN_DIST));
+							y = HEIGHT_UNITS + ASTEROID_SPAWN_DIST;
+						}
+						else {
+							x = STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST;
+							y = (HEIGHT_UNITS + ASTEROID_SPAWN_DIST) - (dist - (2 * WIDTH_UNITS + HEIGHT_UNITS + 6*ASTEROID_SPAWN_DIST));
+						}
+					}
+
+					double angle = (rand()*M_PI*2) / RAND_MAX;
+					int power = 10000 + (rand() * 50000) / RAND_MAX;
+
+					asteroids[num_asteroids] = new Asteroid(x, y, (int)(power*cos(angle)), (int)(power*sin(angle)), r);
 					num_asteroids++;
+
 				}
 			}
 
@@ -713,6 +817,13 @@ int main(int, char**) {
 			for (int i = 0; i < num_asteroids; i++) {
 				Asteroid* a = asteroids[i];
 				a->update();
+				if (a->x_pos < STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST || a->x_pos > WIDTH_UNITS + ASTEROID_SPAWN_DIST ||
+						a->y_pos < -ASTEROID_SPAWN_DIST || a->y_pos > HEIGHT_UNITS + ASTEROID_SPAWN_DIST) {
+					delete asteroids[i];
+					num_asteroids--;
+					asteroids[i] = asteroids[num_asteroids];
+					asteroid_spawn_cooldown -= 5 * 60;
+				}
 			}
 
 			// update ships
@@ -721,6 +832,8 @@ int main(int, char**) {
 				Ship* ship = ships[i];
 
 				if (ship->lives == 0) continue;
+
+				if (game_end_cooldown < game_end_delay) continue;
 
 				ship->update();
 				if (game_start_cooldown > 1 * 60) continue;
@@ -872,17 +985,6 @@ int main(int, char**) {
 						Asteroid* a = asteroids[j];
 						double dist = sqrt(pow(ship->x_pos - a->x_pos, 2) + pow(ship->y_pos - a->y_pos, 2));
 						if (dist < (ship->radius + a->radius)) {
-
-							/*
-							double total_force = 20000000000000000000.0 / pow(dist, 2);
-							double x_force = (ship->x_pos - a->x_pos) * total_force / dist;
-							ship->x_vel += (int)(x_force / ship->weight);
-							double y_force = (ship->y_pos - a->y_pos) * total_force / dist;
-							ship->y_vel += (int)(y_force / ship->weight);
-
-							ship->percent += 28;
-							*/
-
 							ship->take_knockback(ship->x_pos - a->x_pos, ship->y_pos - a->y_pos, 100, 20, 28, haptics[j]);
 						}
 					}
@@ -955,30 +1057,35 @@ int main(int, char**) {
 				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 
-				// Check to see if the game is over
-				int number_alive = 0;
-				winner = -1;
-				for (int i = 0; i < 4; i++) {
-					if (!ships[i]) continue;
-					if (ships[i]->lives != 0) {
-						number_alive++;
-						winner = i+1;
-					}
-				}
-				if (number_alive == 1) {
-					currentState = results;
-
-					// remove items
-					for (int j = 0; j < num_items; j++) {
-						delete items[j];
-					}
-					num_items = 0;
-
-					// halt all sound effects
-					Mix_HaltChannel(-1);
-				}
+				
 
 			} // end of update ships
+
+			// Check to see if the game is over
+			int number_alive = 0;
+			winner = -1;
+			for (int i = 0; i < 4; i++) {
+				if (!ships[i]) continue;
+				if (ships[i]->lives != 0) {
+					number_alive++;
+					winner = i + 1;
+				}
+			}
+			if (number_alive == 1 || (number_alive == 2 && selected_team_mode == two_vs_two)) {
+				game_end_cooldown--;
+
+				// halt all sound effects
+				Mix_HaltChannel(-1);
+			}
+			if (game_end_cooldown == 0) {
+				currentState = results;
+
+				// remove items
+				for (int j = 0; j < num_items; j++) {
+					delete items[j];
+				}
+				num_items = 0;
+			}
 
 			if (currentState == results) {
 				continue;
@@ -989,23 +1096,6 @@ int main(int, char**) {
 				// render background
 				if (!xp_mode) {
 					r->render_texture(bg, WIDTH_UNITS / 2, HEIGHT_UNITS / 2, 0, 1.02);
-				}
-
-				// render game start countdown
-				if (game_start_cooldown > 0) {
-					game_start_cooldown--;
-					std::string s;
-					if (game_start_cooldown > 3 * 60) {
-						s = " 3 ";
-					} else if (game_start_cooldown > 2 * 60) {
-						s = " 2 ";
-					} else if (game_start_cooldown > 1 * 60) {
-						s = " 1 ";
-					} else {
-						s = " GO! ";
-					}
-					r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f, 255, 255);
-
 				}
 
 				// render all ship elements
@@ -1039,6 +1129,27 @@ int main(int, char**) {
 
 				// render UI elements
 				{
+					// render game start countdown
+					if (game_start_cooldown > 0) {
+						game_start_cooldown--;
+						std::string s;
+						if (game_start_cooldown > 3 * 60) {
+							s = " 3 ";
+						} else if (game_start_cooldown > 2 * 60) {
+							s = " 2 ";
+						} else if (game_start_cooldown > 1 * 60) {
+							s = " 1 ";
+						} else {
+							s = " GO! ";
+						}
+						r->render_text((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f, 255, 255);
+					}
+
+					// render game end text
+					if (game_end_cooldown < game_end_delay) {
+						r->render_text((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, " GAME SET ", true, true, true, large_f, 255, 255);
+					}
+
 					// render status bar background
 					r->SetRenderDrawColor(128, 128, 128, SDL_ALPHA_OPAQUE);
 					r->render_rect(0, 0, STATUS_BAR_WIDTH, HEIGHT_UNITS);
@@ -1072,12 +1183,10 @@ int main(int, char**) {
 							char str[10];
 							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
 							int blue_and_green = 255 - (int)(255 * ship->percent / 300);
-							int alpha = 255;
 							if (blue_and_green < 0) {
 								blue_and_green = 0;
-								alpha = 255 - (int)(255 * (ship->percent - 300) / 2000);
 							}
-							r->render_text(0, 10000 * (61 + box_height * i), str, false, false, false, medium_f, blue_and_green, alpha);
+							r->render_text(0, 10000 * (61 + box_height * i), str, false, false, false, medium_f, blue_and_green, 255);
 						}
 
 						// render stock counter
@@ -1202,13 +1311,20 @@ int main(int, char**) {
 
 			// render who won plus continue prompt
 			{
-				char winnerMessage[15];
+				char winnerMessage[20];
 
 				if (winner == -1) {
 					sprintf_s(winnerMessage, "No Contest!");
 				}
-				else {
+				else if (selected_team_mode == free_for_all) {
 					sprintf_s(winnerMessage, "Player %d wins!", winner);
+				}
+				else if (selected_team_mode == two_vs_two) {
+					if (winner == 1 || winner == 2) {
+						sprintf_s(winnerMessage, "Red Team wins!");
+					} else if (winner == 3 || winner == 4) {
+						sprintf_s(winnerMessage, "Blue Team wins!");
+					}
 				}
 				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage, true, false, false, medium_f, 255, 255);
 

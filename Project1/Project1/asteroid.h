@@ -17,6 +17,7 @@ public:
 	int radius = 10000 * 100;
 
 	Asteroid(int x, int y, int x_v, int y_v, Renderer* rend);
+	~Asteroid();
 
 	void render();
 	void update();

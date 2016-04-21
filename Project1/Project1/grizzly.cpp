@@ -13,8 +13,11 @@
 #include "bullet.h"
 #include "missile.h"
 
-Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
+Grizzly::Grizzly(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	id = identifier;
+
+	ally1 = a1;
+	ally2 = a2;
 
 	x_pos = x;
 	y_pos = y;
@@ -180,6 +183,8 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;
 			if (ships[k]->id == id) continue;
+			if (ships[k]->id == ally1) continue;
+			if (ships[k]->id == ally2) continue;
 			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 			//std::cout << dist << std::endl;
@@ -246,6 +251,8 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 			for (int k = 0; k < 4; k++) {
 				if (!ships[k]) continue;
 				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
 				if (ships[k]->lives == 0) continue;
 				double dist = sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2));
 				if (dist < min_dist) {
@@ -395,6 +402,8 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 			for (int k = 0; k < 4; k++) {
 				if (!ships[k]) continue;
 				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
 				if (ships[k]->lives == 0) continue;
 				double dist = sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2));
 				if (dist < min_dist) {

@@ -47,7 +47,7 @@ private:
 public:
 	
 
-	Polar(int identifier, int x, int y, Renderer* rend);
+	Polar(int identifier, int a1, int a2, int x, int y, Renderer* rend);
 	~Polar();
 
 	void update();

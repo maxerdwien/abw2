@@ -13,6 +13,9 @@ class Ship {
 		SDL_Texture* shield_tex;
 		SDL_Texture* bounce_tex;
 
+		int ally1;
+		int ally2;
+
 	public:
 		// units of one ten thousandth of a pixel
 		int x_pos = 0;

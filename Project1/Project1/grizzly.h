@@ -36,7 +36,7 @@ private:
 public:
 	
 
-	Grizzly(int identifier, int x, int y, Renderer* rend);
+	Grizzly(int identifier, int a1, int a2, int x, int y, Renderer* rend);
 	~Grizzly();
 
 	void update();

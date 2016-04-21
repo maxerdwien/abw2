@@ -41,7 +41,7 @@ private:
 	int current_flame = 0;
 
 public:
-	Black(int identifier, int x, int y, Renderer* rend);
+	Black(int identifier, int a1, int a2, int x, int y, Renderer* rend);
 	~Black();
 
 	void update();

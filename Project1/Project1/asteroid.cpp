@@ -15,7 +15,18 @@ Asteroid::Asteroid(int x, int y, int x_v, int y_v, Renderer* rend) {
 
 	r = rend;
 
-	tex = r->LoadTexture("..\\Project1\\assets\\asteroid1.png");
+	int tex_number = rand() % 3;
+	if (tex_number == 0) {
+		tex = r->LoadTexture("..\\Project1\\assets\\asteroid1.png");
+	} else if (tex_number == 1) {
+		tex = r->LoadTexture("..\\Project1\\assets\\asteroid2.png");
+	} else {
+		tex = r->LoadTexture("..\\Project1\\assets\\asteroid3.png");
+	}
+}
+
+Asteroid::~Asteroid() {
+	SDL_DestroyTexture(tex);
 }
 
 void Asteroid::render() {
