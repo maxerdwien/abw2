@@ -648,6 +648,7 @@ int main(int, char**) {
 					case SDL_CONTROLLERBUTTONDOWN:
 						controller_index = lookup_controller(e.cbutton.which);
 						ship = ships[controller_index];
+						if (!ship) continue;
 						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
 							ship->do_fire_1 = true;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
@@ -663,6 +664,7 @@ int main(int, char**) {
 					case SDL_CONTROLLERBUTTONUP:
 						controller_index = lookup_controller(e.cbutton.which);
 						ship = ships[controller_index];
+						if (!ship) continue;
 						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
 							ship->do_fire_1 = false;
 						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
@@ -674,6 +676,7 @@ int main(int, char**) {
 					case SDL_CONTROLLERAXISMOTION:
 						controller_index = lookup_controller(e.caxis.which);
 						ship = ships[controller_index];
+						if (!ship) continue;
 						if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
 							double value = (double)e.caxis.value / 32767;
 
@@ -841,7 +844,6 @@ int main(int, char**) {
 				if (ship->invincibility_cooldown > 0) {
 					ship->invincibility_cooldown--;
 				}
-
 
 				// regen stamina
 				ship->stamina += ship->stamina_per_frame;
