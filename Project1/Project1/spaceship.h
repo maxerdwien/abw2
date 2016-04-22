@@ -12,6 +12,9 @@ class Ship {
 		SDL_Texture* cannon_tex;
 		SDL_Texture* shield_tex;
 		SDL_Texture* bounce_tex;
+		SDL_Texture* thrust_low_tex;
+		SDL_Texture* thrust_medium_tex;
+		SDL_Texture* thrust_high_tex;
 
 		int ally1;
 		int ally2;
@@ -58,8 +61,10 @@ class Ship {
 
 		bool do_speed_boost = false;
 
-		const int speed_boost_delay = 60;
+		const int speed_boost_delay = 120;
 		int speed_boost_cooldown = 0;
+
+		const int speed_boost_high_engine_time = 30;
 
 		int percent = 0;
 

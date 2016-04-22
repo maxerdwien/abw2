@@ -508,7 +508,7 @@ int main(int, char**) {
 
 			// render number of stocks
 			char stocks[20];
-			snprintf(stocks, 20, " Stocks: %d (DPAD)", stock_count);
+			snprintf(stocks, 20, " Stocks: %d (DPAD) ", stock_count);
 			r->render_text((WIDTH_UNITS + BARSIZE) / 2, (HEIGHT_UNITS + BARSIZE) / 2, stocks, false, false, true, small_f, 255, 255);
 
 			r->render_cross_bars(BARSIZE);
@@ -684,9 +684,11 @@ int main(int, char**) {
 							//std::cout << left_stick_mag << std::endl;
 							if (left_stick_mag > DEAD_ZONE) {
 								ship->move_dir_x = ship->left_stick_x;
-								ship->face_dir_x = ship->left_stick_x;
 								ship->move_dir_y = ship->left_stick_y;
-								ship->face_dir_y = ship->left_stick_y;
+								if (game_end_cooldown == game_end_delay) {
+									ship->face_dir_x = ship->left_stick_x;
+									ship->face_dir_y = ship->left_stick_y;
+								}
 							} else {
 								ship->move_dir_x = 0;
 								ship->move_dir_y = 0;
@@ -701,9 +703,11 @@ int main(int, char**) {
 							//std::cout << left_stick_mag << std::endl;
 							if (left_stick_mag > DEAD_ZONE) {
 								ship->move_dir_x = ship->left_stick_x;
-								ship->face_dir_x = ship->left_stick_x;
 								ship->move_dir_y = ship->left_stick_y;
-								ship->face_dir_y = ship->left_stick_y;
+								if (game_end_cooldown == game_end_delay) {
+									ship->face_dir_x = ship->left_stick_x;
+									ship->face_dir_y = ship->left_stick_y;
+								}
 							} else {
 								ship->move_dir_x = 0;
 								ship->move_dir_y = 0;
@@ -720,7 +724,6 @@ int main(int, char**) {
 								ship->desired_gun_dir_x = ship->right_stick_x;
 								ship->desired_gun_dir_y = ship->right_stick_y;
 							}
-
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
 							double value = (double)e.caxis.value / 32768;
 
@@ -732,7 +735,6 @@ int main(int, char**) {
 								ship->desired_gun_dir_x = ship->right_stick_x;
 								ship->desired_gun_dir_y = ship->right_stick_y;
 							}
-
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
 							int min_activation = 20000;
 							int min_deactivation = 18000;
@@ -769,29 +771,26 @@ int main(int, char**) {
 					int x;
 					int y;
 					{
-						long perimeter = 2 * (WIDTH_UNITS-STATUS_BAR_WIDTH) + 2 * HEIGHT_UNITS + 8 * ASTEROID_SPAWN_DIST;
+						long perimeter = 2 * (WIDTH_UNITS - STATUS_BAR_WIDTH) + 2 * HEIGHT_UNITS + 8 * ASTEROID_SPAWN_DIST;
 						double perimeter_ratio = (double)(rand()) / RAND_MAX;
 						long dist = (int)(perimeter*perimeter_ratio);
 
 						if (dist < (WIDTH_UNITS - STATUS_BAR_WIDTH + 2 * ASTEROID_SPAWN_DIST)) {
 							x = dist + STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST;
 							y = -ASTEROID_SPAWN_DIST;
-						}
-						else if (dist < (WIDTH_UNITS + HEIGHT_UNITS + 4 * ASTEROID_SPAWN_DIST)) {
+						} else if (dist < (WIDTH_UNITS + HEIGHT_UNITS + 4 * ASTEROID_SPAWN_DIST)) {
 							x = WIDTH_UNITS + ASTEROID_SPAWN_DIST;
 							y = (dist - (WIDTH_UNITS + 2 * ASTEROID_SPAWN_DIST)) - ASTEROID_SPAWN_DIST + HEIGHT_UNITS;
-						}
-						else if (dist < (2 * WIDTH_UNITS + HEIGHT_UNITS + 6 * ASTEROID_SPAWN_DIST)) {
+						} else if (dist < (2 * WIDTH_UNITS + HEIGHT_UNITS + 6 * ASTEROID_SPAWN_DIST)) {
 							x = (WIDTH_UNITS + ASTEROID_SPAWN_DIST) - (dist - (WIDTH_UNITS + HEIGHT_UNITS + 4 * ASTEROID_SPAWN_DIST));
 							y = HEIGHT_UNITS + ASTEROID_SPAWN_DIST;
-						}
-						else {
+						} else {
 							x = STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST;
-							y = (HEIGHT_UNITS + ASTEROID_SPAWN_DIST) - (dist - (2 * WIDTH_UNITS + HEIGHT_UNITS + 6*ASTEROID_SPAWN_DIST));
+							y = (HEIGHT_UNITS + ASTEROID_SPAWN_DIST) - (dist - (2 * WIDTH_UNITS + HEIGHT_UNITS + 6 * ASTEROID_SPAWN_DIST));
 						}
 					}
 
-					double angle = (rand()*M_PI*2) / RAND_MAX;
+					double angle = (rand()*M_PI * 2) / RAND_MAX;
 					int power = 10000 + (rand() * 50000) / RAND_MAX;
 
 					asteroids[num_asteroids] = new Asteroid(x, y, (int)(power*cos(angle)), (int)(power*sin(angle)), r);
@@ -818,7 +817,7 @@ int main(int, char**) {
 				Asteroid* a = asteroids[i];
 				a->update();
 				if (a->x_pos < STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST || a->x_pos > WIDTH_UNITS + ASTEROID_SPAWN_DIST ||
-						a->y_pos < -ASTEROID_SPAWN_DIST || a->y_pos > HEIGHT_UNITS + ASTEROID_SPAWN_DIST) {
+					a->y_pos < -ASTEROID_SPAWN_DIST || a->y_pos > HEIGHT_UNITS + ASTEROID_SPAWN_DIST) {
 					delete asteroids[i];
 					num_asteroids--;
 					asteroids[i] = asteroids[num_asteroids];
@@ -994,15 +993,14 @@ int main(int, char**) {
 					ship->y_pos += ship->y_vel;
 
 					// handle death
-					if (ship->x_pos < (STATUS_BAR_WIDTH - ship->radius) || ship->x_pos > (WIDTH_UNITS + ship->radius) 
-							|| ship->y_pos < (0 - ship->radius) || ship->y_pos > (HEIGHT_UNITS + ship->radius)) {
+					if (ship->x_pos < (STATUS_BAR_WIDTH - ship->radius) || ship->x_pos >(WIDTH_UNITS + ship->radius)
+						|| ship->y_pos < (0 - ship->radius) || ship->y_pos >(HEIGHT_UNITS + ship->radius)) {
 						if (ship->item_times[bounce] > 0 || ship->invincibility_cooldown > 0) {
 							if (ship->x_pos < STATUS_BAR_WIDTH && ship->x_vel < 0) {
 								ship->x_vel *= -1;
 							} else if (ship->x_pos > WIDTH_UNITS && ship->x_vel > 0) {
 								ship->x_vel *= -1;
-							}
-							else if (ship->y_pos < 0 && ship->y_vel < 0) {
+							} else if (ship->y_pos < 0 && ship->y_vel < 0) {
 								ship->y_vel *= -1;
 							} else if (ship->y_pos > HEIGHT_UNITS && ship->y_vel > 0) {
 								ship->y_vel *= -1;
@@ -1057,21 +1055,37 @@ int main(int, char**) {
 				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 
-				
+
 
 			} // end of update ships
 
 			// Check to see if the game is over
-			int number_alive = 0;
-			winner = -1;
-			for (int i = 0; i < 4; i++) {
-				if (!ships[i]) continue;
-				if (ships[i]->lives != 0) {
-					number_alive++;
-					winner = i + 1;
+			bool game_over = false;
+			if (selected_team_mode == free_for_all) {
+				int number_alive = 0;
+				winner = -1;
+				for (int i = 0; i < 4; i++) {
+					if (!ships[i]) continue;
+					if (ships[i]->lives != 0) {
+						number_alive++;
+						winner = i + 1;
+					}
 				}
+				game_over = (number_alive == 1);
+			} else if (selected_team_mode == two_vs_two) {
+				int teams_alive = 0;
+				if (ships[0]->lives != 0 || ships[1]->lives != 0) {
+					teams_alive++;
+					winner = 1;
+				}
+				if (ships[2]->lives != 0 || ships[3]->lives != 0) {
+					teams_alive++;
+					winner = 3;
+				}
+				game_over = (teams_alive == 1);
 			}
-			if (number_alive == 1 || (number_alive == 2 && selected_team_mode == two_vs_two)) {
+
+			if (game_over) {
 				game_end_cooldown--;
 
 				// halt all sound effects
@@ -1286,7 +1300,6 @@ int main(int, char**) {
 
 		// stage select state
 		else if (currentState == stageSelect) {
-
 			currentState = inGame;
 		}
 		// start of options state

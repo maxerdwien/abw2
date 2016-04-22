@@ -72,6 +72,10 @@ Grizzly::Grizzly(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
+	thrust_low_tex = r->LoadTexture("..\\Project1\\assets\\thrustlow.png");
+	thrust_medium_tex = r->LoadTexture("..\\Project1\\assets\\thrustmed.png");
+	thrust_high_tex = r->LoadTexture("..\\Project1\\assets\\thrusthigh.png");
+
 
 	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
 	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\missile.wav");
@@ -90,6 +94,9 @@ Grizzly::~Grizzly() {
 	SDL_DestroyTexture(bounce_bullet_tex);
 	SDL_DestroyTexture(shield_tex);
 	SDL_DestroyTexture(bounce_tex);
+	SDL_DestroyTexture(thrust_low_tex);
+	SDL_DestroyTexture(thrust_medium_tex);
+	SDL_DestroyTexture(thrust_high_tex);
 
 	Mix_FreeChunk(explosion_sfx);
 	Mix_FreeChunk(bullet_sfx);
