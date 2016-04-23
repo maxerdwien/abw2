@@ -102,6 +102,8 @@ int main(int, char**) {
 		blue = 1,
 		yellow = 2,
 		green = 3,
+		teal = 4,
+		magenta = 5,
 	};
 
 	gameState currentState = mainMenu;
@@ -174,7 +176,7 @@ int main(int, char**) {
 		return 1;
 	}
 
-	const int game_start_delay = 4 * 60;
+	const int game_start_delay = 4 * 60 + 3;
 	int game_start_cooldown;
 
 	const int game_end_delay = 2 * 60;
@@ -190,31 +192,38 @@ int main(int, char**) {
 	// load textures
 	SDL_Texture* bg = r->LoadTexture("..\\Project1\\assets\\background.png");
 
-	SDL_Texture* ship_textures[3][4];
+	SDL_Texture* ship_textures[3][6];
 	ship_textures[black][red] = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
 	ship_textures[black][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
 	ship_textures[black][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
 	ship_textures[black][green] = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
+	ship_textures[black][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\black-teal.png");
+	ship_textures[black][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\black-magenta.png");
 
 	ship_textures[grizzly][red] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
 	ship_textures[grizzly][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
 	ship_textures[grizzly][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
 	ship_textures[grizzly][green] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
+	ship_textures[grizzly][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-teal.png");
+	ship_textures[grizzly][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-magenta.png");
 
 	ship_textures[polar][red] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
 	ship_textures[polar][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
 	ship_textures[polar][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
 	ship_textures[polar][green] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
+	ship_textures[polar][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
+	ship_textures[polar][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
 	
 	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
 	
-
 	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\confirm.wav");
+	Mix_Chunk* deselect = Mix_LoadWAV("..\\Project1\\assets\\sounds\\deselect.wav");
 	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\beep.wav");
 	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\item.wav");
 	Mix_Chunk* death_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\death.wav");
+	Mix_Chunk* countdown_tick = Mix_LoadWAV("..\\Project1\\assets\\sounds\\countdown.wav");
 
 
 	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
@@ -358,6 +367,7 @@ int main(int, char**) {
 						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+						Mix_PlayChannel(-1, deselect, 0);
 						if (ready[controller_index] == false) {
 							currentState = mainMenu;
 						} else {
@@ -516,22 +526,33 @@ int main(int, char**) {
 			// render ships selections
 			{
 				if (controllers[0]) {
-					render_character_selector(0, 0, ship_textures[selections[0]][red], selections[0], right_arrow, left_arrow, ready[0]);
+					color c = red;
+					render_character_selector(0, 0, ship_textures[selections[0]][c], selections[0], right_arrow, left_arrow, ready[0]);
 				} else {
 					render_plugin_to_join(0, 0);
 				}
 				if (controllers[1]) {
-					render_character_selector(WIDTH_UNITS / 2 + BARSIZE/2, 0, ship_textures[selections[1]][blue], selections[1], right_arrow, left_arrow, ready[1]);
+					color c;
+					if (selected_team_mode == two_vs_two) c = magenta;
+					else c = blue;
+					render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, 0, ship_textures[selections[1]][c], selections[1], right_arrow, left_arrow, ready[1]);
+
 				} else {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, 0);
 				}
 				if (controllers[2]) {
-					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE/2, ship_textures[selections[2]][yellow], selections[2], right_arrow, left_arrow, ready[2]);
+					color c;
+					if (selected_team_mode == two_vs_two) c = blue;
+					else c = yellow;
+					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[selections[2]][c], selections[2], right_arrow, left_arrow, ready[2]);
 				} else {
 					render_plugin_to_join(0, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
 				if (controllers[3]) {
-					render_character_selector(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2, ship_textures[selections[3]][green], selections[3], right_arrow, left_arrow, ready[3]);
+					color c;
+					if (selected_team_mode == two_vs_two) c = teal;
+					else c = green;
+					render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[selections[3]][c], selections[3], right_arrow, left_arrow, ready[3]);
 				} else {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
@@ -1158,6 +1179,11 @@ int main(int, char**) {
 						} else {
 							s = " GO! ";
 						}
+						if (game_start_cooldown == 4 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
+						if (game_start_cooldown == 3 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
+						if (game_start_cooldown == 2 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
+						if (game_start_cooldown == 1 * 60) Mix_PlayChannel(-1, selected_ship, 0);
+
 						r->render_text((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f, 255, 255);
 					}
 
@@ -1348,13 +1374,22 @@ int main(int, char**) {
 					render_results(WIDTH_UNITS / 8, start_height, ship_textures[selections[0]][red], ships[0]);
 				} 
 				if (ships[1] != NULL) {
-					render_results(3 * WIDTH_UNITS / 8, start_height, ship_textures[selections[1]][blue], ships[1]);
+					color c;
+					if (selected_team_mode == two_vs_two) c = magenta;
+					else c = blue;
+					render_results(3 * WIDTH_UNITS / 8, start_height, ship_textures[selections[1]][c], ships[1]);
 				}
 				if (ships[2] != NULL) {
-					render_results(5 * WIDTH_UNITS / 8, start_height, ship_textures[selections[2]][yellow], ships[2]);
+					color c;
+					if (selected_team_mode == two_vs_two) c = blue;
+					else c = yellow;
+					render_results(5 * WIDTH_UNITS / 8, start_height, ship_textures[selections[2]][c], ships[2]);
 				}
 				if (ships[3] != NULL) {
-				render_results(7 * WIDTH_UNITS / 8, start_height, ship_textures[selections[3]][green], ships[3]);
+					color c;
+					if (selected_team_mode == two_vs_two) c = teal;
+					else c = green;
+					render_results(7 * WIDTH_UNITS / 8, start_height, ship_textures[selections[3]][c], ships[3]);
 				}
 				r->render_text(WIDTH_UNITS / 2, 4 * HEIGHT_UNITS / 5, "Press the A button to continue.", true, false, false, medium_f, 255, 255);
 			}

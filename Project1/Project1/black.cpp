@@ -43,14 +43,29 @@ Black::Black(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
 	} else if (id == 1) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-magenta.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletMagenta.png");
+		}
 	} else if (id == 2) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		}
 	} else {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-teal.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletTeal.png");
+		}
 	}
 
 	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-white.png");
