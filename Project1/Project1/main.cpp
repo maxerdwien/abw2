@@ -217,7 +217,7 @@ int main(int, char**) {
 	Mix_Chunk* death_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\death.wav");
 
 
-	//music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
+	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
 	// "Cyborg Ninja" Kevin MacLeod (incompetech.com)
 	// Licensed under Creative Commons : By Attribution 3.0 License
 	// http ://creativecommons.org/licenses/by/3.0/
