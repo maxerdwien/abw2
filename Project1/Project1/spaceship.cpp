@@ -53,11 +53,14 @@ void Ship::render() {
 		if (id == 0) {
 			r->SetRenderDrawColor(160, 0, 0, SDL_ALPHA_OPAQUE);
 		} else if (id == 1) {
-			r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+			if (ally1 == -1) r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+			else r->SetRenderDrawColor(160, 0, 160, SDL_ALPHA_OPAQUE);
 		} else if (id == 2) {
-			r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
+			if (ally1 == -1) r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
+			else r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
 		} else {
-			r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
+			if (ally1 == -1) r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
+			else r->SetRenderDrawColor(0, 160, 160, SDL_ALPHA_OPAQUE);
 		}
 
 		double angle = atan2(gun_dir_y, gun_dir_x);

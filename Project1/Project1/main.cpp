@@ -58,12 +58,6 @@ enum ship_type {
 	polar = 2,
 };
 
-enum wrap_type {
-	none,
-	direct,
-	inverse,
-};
-
 enum stage {
 	anchorage, // normal
 	fairbanks, // asteroid in middle
@@ -237,7 +231,7 @@ int main(int, char**) {
 		Mix_AllocateChannels(0);
 	}
 
-	Mix_VolumeMusic(MIX_MAX_VOLUME / 8);
+	Mix_VolumeMusic(MIX_MAX_VOLUME / 6);
 
 	// stage stuff
 	int asteroid_spawn_cooldown = 1;
@@ -245,7 +239,6 @@ int main(int, char**) {
 	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
 	bool ready[4] = { false, false, false, false };
-	//bool ready[4] = { true, true, true, true };
 
 
 	bool do_items = false;
@@ -303,8 +296,12 @@ int main(int, char**) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						currentState = characterSelect;
+						Mix_PlayChannel(-1, beep, 0);
+
 					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
 						quit = true;
+						Mix_PlayChannel(-1, deselect, 0);
+
 					}
 					break;
 				}
@@ -439,10 +436,14 @@ int main(int, char**) {
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP) {
 						stock_count++;
 						if (stock_count > 99) stock_count -= 99;
+						Mix_PlayChannel(-1, beep, 0);
+
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
 						stock_count--;
 						if (stock_count < 1) stock_count += 99;
+						Mix_PlayChannel(-1, deselect, 0);
+
 					}
 					break;
 				case SDL_CONTROLLERAXISMOTION:
@@ -588,6 +589,12 @@ int main(int, char**) {
 
 			// init game objects
 			// init asteroids
+			// first, reset them
+			for (int i = 0; i < num_asteroids; i++) {
+				delete asteroids[i];
+			}
+			num_asteroids = 0;
+
 			if (selected_stage == fairbanks) {
 				asteroids[num_asteroids] = new Asteroid((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, 0, 0, r);
 				num_asteroids = 1;
@@ -1110,9 +1117,6 @@ int main(int, char**) {
 
 			if (game_over) {
 				game_end_cooldown--;
-
-				// halt all sound effects
-				Mix_HaltChannel(-1);
 			}
 			if (game_end_cooldown == 0) {
 				currentState = results;
@@ -1122,6 +1126,9 @@ int main(int, char**) {
 					delete items[j];
 				}
 				num_items = 0;
+
+				// halt all sound effects
+				Mix_HaltChannel(-1);
 			}
 
 			if (currentState == results) {
@@ -1210,11 +1217,14 @@ int main(int, char**) {
 							if (ship->id == 0) {
 								r->SetRenderDrawColor(160, 0, 0, SDL_ALPHA_OPAQUE);
 							} else if (ship->id == 1) {
-								r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+								if (ship->ally1 == -1) r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+								else r->SetRenderDrawColor(160, 0, 160, SDL_ALPHA_OPAQUE);
 							} else if (ship->id == 2) {
-								r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
+								if (ship->ally1 == -1) r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
+								else r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
 							} else {
-								r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
+								if (ship->ally1 == -1) r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
+								else r->SetRenderDrawColor(0, 160, 160, SDL_ALPHA_OPAQUE);
 							}
 
 							r->render_rect(0, 10000 * (120 + box_height*i), (int)(((double)STATUS_BAR_WIDTH * ship->stamina) / ship->stamina_max), 10000 * 30);

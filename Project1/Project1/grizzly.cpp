@@ -360,6 +360,8 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 			double dist = sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2));
 			if (!missile->exploded) {
 				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
 				if (dist <= MISSILE_ACTIVATION_RADIUS) {
 					missile->exploded = true;
 					missile->x_vel = 0;
@@ -499,6 +501,8 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 			double dist = sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2));
 			if (!mine->exploded) {
 				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
 				if (dist <= MISSILE_ACTIVATION_RADIUS) {
 					mine->exploded = true;
 					mine->x_vel = 0;

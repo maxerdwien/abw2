@@ -16,8 +16,7 @@ class Ship {
 		SDL_Texture* thrust_medium_tex;
 		SDL_Texture* thrust_high_tex;
 
-		int ally1;
-		int ally2;
+		
 
 	public:
 		// units of one ten thousandth of a pixel
@@ -100,6 +99,8 @@ class Ship {
 		int place = -1;
 
 		int id;
+		int ally1;
+		int ally2;
 
 		virtual ~Ship();
 
