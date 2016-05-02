@@ -12,8 +12,11 @@
 
 #include "bullet.h"
 
-Black::Black(int identifier, int x, int y, Renderer* rend) {
+Black::Black(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	id = identifier;
+
+	ally1 = a1;
+	ally2 = a2;
 
 	x_pos = x;
 	y_pos = y;
@@ -40,14 +43,29 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
 	} else if (id == 1) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-magenta.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletMagenta.png");
+		}
 	} else if (id == 2) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+		}
 	} else {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-teal.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletTeal.png");
+		}
 	}
 
 	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-white.png");
@@ -65,6 +83,10 @@ Black::Black(int identifier, int x, int y, Renderer* rend) {
 	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
+	thrust_low_tex = r->LoadTexture("..\\Project1\\assets\\thrustlow.png");
+	thrust_medium_tex = r->LoadTexture("..\\Project1\\assets\\thrustmed.png");
+	thrust_high_tex = r->LoadTexture("..\\Project1\\assets\\thrusthigh.png");
+
 	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
 	flamethrower_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\flamethrower.wav");
 	charging_shot_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\charging.wav");
@@ -81,6 +103,9 @@ Black::~Black() {
 	SDL_DestroyTexture(bounce_bullet_tex);
 	SDL_DestroyTexture(shield_tex);
 	SDL_DestroyTexture(bounce_tex);
+	SDL_DestroyTexture(thrust_low_tex);
+	SDL_DestroyTexture(thrust_medium_tex);
+	SDL_DestroyTexture(thrust_high_tex);
 
 	Mix_FreeChunk(flamethrower_sfx);
 	Mix_FreeChunk(bullet_sfx);
@@ -112,7 +137,7 @@ void Black::fire_1() {
 		int MUZZLE_VEL = 90000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 3, 150, 30);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -127,7 +152,7 @@ void Black::fire_1() {
 		int MUZZLE_VEL = 90000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 3, 150, 30);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -192,6 +217,8 @@ void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;
 			if (ships[k]->id == id) continue;
+			if (ships[k]->id == ally1) continue;
+			if (ships[k]->id == ally2) continue;
 			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 			//std::cout << dist << std::endl;
@@ -255,7 +282,7 @@ void Black::fire_2() {
 		if (MUZZLE_VEL > 150000) MUZZLE_VEL = 150000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
 		for (int i = 0; i < spread; i++) {
 			new_bullets[i]->radius = 10000 * charge_shot_charge / 4;
 			if (new_bullets[i]->radius > 10000 * 100) new_bullets[i]->radius = 10000 * 100;
@@ -293,12 +320,14 @@ void Black::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 	if (!flame_active) return;
 	double angle = atan2(gun_dir_y, gun_dir_x);
 	for (int i = 0; i < num_flame_hitboxes; i++) {
-		int hb_x = x_pos + flame_dists[i] * cos(angle);
-		int hb_y = y_pos + flame_dists[i] * sin(angle);
+		int hb_x = x_pos + (int)(flame_dists[i] * cos(angle));
+		int hb_y = y_pos + (int)(flame_dists[i] * sin(angle));
 
 		for (int j = 0; j < 4; j++) {
 			if (!ships[j]) continue;
 			if (ships[j]->id == id) continue;
+			if (ships[j]->id == ally1) continue;
+			if (ships[j]->id == ally2) continue;
 			if (ships[j]->lives == 0) continue;
 			Ship* target_ship = ships[j];
 			double dist = sqrt(pow(hb_x - target_ship->x_pos, 2) + pow(hb_y - target_ship->y_pos, 2));
@@ -332,18 +361,18 @@ void Black::render_projectiles_3() {
 		bool render_hitboxes = false;
 		if (render_hitboxes) {
 			for (int i = 0; i < num_flame_hitboxes; i++) {
-				int hb_x = x_pos + flame_dists[i] * cos(angle);
-				int hb_y = y_pos + flame_dists[i] * sin(angle);
+				int hb_x = x_pos + (int)(flame_dists[i] * cos(angle));
+				int hb_y = y_pos + (int)(flame_dists[i] * sin(angle));
 				r->render_texture_abs_size(hitbox_tex, hb_x, hb_y, 0, flame_radii[i]);
 			}
 		}
 
 
 		if (current_flame == 0) {
-			r->render_texture_edge_spin(flame_tex_1, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), angle * 180 / M_PI + 90, 4);
+			r->render_texture_edge_spin(flame_tex_1, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), angle * 180 / M_PI + 90, 4);
 		} else {
 			// works since the textures are the same size
-			r->render_texture_edge_spin(flame_tex_2, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), angle * 180 / M_PI + 90, 4);
+			r->render_texture_edge_spin(flame_tex_2, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), angle * 180 / M_PI + 90, 4);
 		}
 
 		if (!Mix_Playing(flamethrower_channel)) {

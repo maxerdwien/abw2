@@ -28,6 +28,23 @@ void Ship::render() {
 		r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
 	}
 
+	// render thrust
+	double min_accel_for_thusters = 5000;
+	double accel = sqrt(pow(move_dir_x, 2) + pow(move_dir_y, 2));
+	if (accel >= min_accel_for_thusters) {
+		double angle_radians = atan2(face_dir_y, face_dir_x);
+		int thrust_dist = 10000 * 28;
+		if (speed_boost_cooldown > speed_boost_delay - speed_boost_high_engine_time) {
+			r->render_texture_edge_spin(thrust_high_tex, x_pos - thrust_dist*cos(angle_radians), y_pos - thrust_dist*sin(angle_radians), angle + 180, 3 * scale);
+		}
+		else if (speed_boost_cooldown > 0) {
+			r->render_texture_edge_spin(thrust_low_tex, x_pos - thrust_dist*cos(angle_radians), y_pos - thrust_dist*sin(angle_radians), angle + 180, 3 * scale);
+		}
+		else {
+			r->render_texture_edge_spin(thrust_medium_tex, x_pos - thrust_dist*cos(angle_radians), y_pos - thrust_dist*sin(angle_radians), angle + 180, 3 * scale);
+		}
+	}
+
 	// render gun
 	r->render_texture_edge_spin(cannon_tex, x_pos, y_pos, r->atan2_degrees(gun_dir_x, gun_dir_y), 1.75 * scale);
 
@@ -36,11 +53,14 @@ void Ship::render() {
 		if (id == 0) {
 			r->SetRenderDrawColor(160, 0, 0, SDL_ALPHA_OPAQUE);
 		} else if (id == 1) {
-			r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+			if (ally1 == -1) r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+			else r->SetRenderDrawColor(160, 0, 160, SDL_ALPHA_OPAQUE);
 		} else if (id == 2) {
-			r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
+			if (ally1 == -1) r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
+			else r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
 		} else {
-			r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
+			if (ally1 == -1) r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
+			else r->SetRenderDrawColor(0, 160, 160, SDL_ALPHA_OPAQUE);
 		}
 
 		double angle = atan2(gun_dir_y, gun_dir_x);

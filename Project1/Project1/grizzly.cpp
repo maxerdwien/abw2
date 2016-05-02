@@ -13,8 +13,11 @@
 #include "bullet.h"
 #include "missile.h"
 
-Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
+Grizzly::Grizzly(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	id = identifier;
+
+	ally1 = a1;
+	ally2 = a2;
 
 	x_pos = x;
 	y_pos = y;
@@ -40,20 +43,41 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineRed.png");
 		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileRed.png");
 	} else if (id == 1) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
-		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
-		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-magenta.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletMagenta.png");
+			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineMagenta.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileMagenta.png");
+		}
 	} else if (id == 2) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
-		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineYellow.png");
-		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileYellow.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineYellow.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileYellow.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+		}
 	} else {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
-		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineGreen.png");
-		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileGreen.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineGreen.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileGreen.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-teal.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletTeal.png");
+			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineTeal.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileTeal.png");
+		}
 	}
 
 	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-white.png");
@@ -68,6 +92,10 @@ Grizzly::Grizzly(int identifier, int x, int y, Renderer* rend) {
 	SDL_SetTextureAlphaMod(shield_tex, 100); 
 	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
+
+	thrust_low_tex = r->LoadTexture("..\\Project1\\assets\\thrustlow.png");
+	thrust_medium_tex = r->LoadTexture("..\\Project1\\assets\\thrustmed.png");
+	thrust_high_tex = r->LoadTexture("..\\Project1\\assets\\thrusthigh.png");
 
 
 	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
@@ -87,6 +115,9 @@ Grizzly::~Grizzly() {
 	SDL_DestroyTexture(bounce_bullet_tex);
 	SDL_DestroyTexture(shield_tex);
 	SDL_DestroyTexture(bounce_tex);
+	SDL_DestroyTexture(thrust_low_tex);
+	SDL_DestroyTexture(thrust_medium_tex);
+	SDL_DestroyTexture(thrust_high_tex);
 
 	Mix_FreeChunk(explosion_sfx);
 	Mix_FreeChunk(bullet_sfx);
@@ -119,7 +150,7 @@ void Grizzly::fire_1() {
 		int MUZZLE_VEL = 100000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 5, 10, 400);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, (int)(x_pos+gun_length*cos(angle)), (int)(y_pos+gun_length*sin(angle)), MUZZLE_VEL, spread, 5, 10, 400);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -180,6 +211,8 @@ void Grizzly::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, S
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;
 			if (ships[k]->id == id) continue;
+			if (ships[k]->id == ally1) continue;
+			if (ships[k]->id == ally2) continue;
 			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 			//std::cout << dist << std::endl;
@@ -223,7 +256,7 @@ void Grizzly::fire_2() {
 		int MUZZLE_VEL = 70000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), MUZZLE_VEL, spread, 25, 200, 300);
+		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 25, 200, 300);
 		for (int i = 0; i < spread; i++) {
 			missiles[num_missiles] = new_missiles[i];
 			num_missiles++;
@@ -246,6 +279,8 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 			for (int k = 0; k < 4; k++) {
 				if (!ships[k]) continue;
 				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
 				if (ships[k]->lives == 0) continue;
 				double dist = sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2));
 				if (dist < min_dist) {
@@ -261,8 +296,8 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 				double delta_y = ships[target_player]->y_pos - missile->y_pos;
 				double delta_mag = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
 
-				missile->x_accel = MISSILE_ACCEL * delta_x / delta_mag;
-				missile->y_accel = MISSILE_ACCEL * delta_y / delta_mag;
+				missile->x_accel = (int)(MISSILE_ACCEL * delta_x / delta_mag);
+				missile->y_accel = (int)(MISSILE_ACCEL * delta_y / delta_mag);
 
 				missile->x_vel += missile->x_accel;
 				missile->y_vel += missile->y_accel;
@@ -325,6 +360,8 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 			double dist = sqrt(pow(missile->x_pos - ships[k]->x_pos, 2) + pow(missile->y_pos - ships[k]->y_pos, 2));
 			if (!missile->exploded) {
 				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
 				if (dist <= MISSILE_ACTIVATION_RADIUS) {
 					missile->exploded = true;
 					missile->x_vel = 0;
@@ -372,7 +409,7 @@ void Grizzly::fire_3() {
 		int MUZZLE_VEL = 1000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos+gun_length*cos(angle), y_pos+gun_length*sin(angle), MUZZLE_VEL, spread, 35, 200, 300);
+		missile** new_missiles = spawn_missiles(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 35, 200, 300);
 		for (int i = 0; i < spread; i++) {
 			mines[num_mines] = new_missiles[i];
 			num_mines++;
@@ -395,6 +432,8 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 			for (int k = 0; k < 4; k++) {
 				if (!ships[k]) continue;
 				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
 				if (ships[k]->lives == 0) continue;
 				double dist = sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2));
 				if (dist < min_dist) {
@@ -409,8 +448,8 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 				double delta_y = ships[target_player]->y_pos - mine->y_pos;
 				double delta_mag = sqrt(pow(delta_x, 2) + pow(delta_y, 2));
 
-				mine->x_accel = MISSILE_ACCEL * delta_x / delta_mag;
-				mine->y_accel = MISSILE_ACCEL * delta_y / delta_mag;
+				mine->x_accel = (int)(MISSILE_ACCEL * delta_x / delta_mag);
+				mine->y_accel = (int)(MISSILE_ACCEL * delta_y / delta_mag);
 			} else {
 				mine->x_accel = 0;
 				mine->y_accel = 0;
@@ -462,6 +501,8 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 			double dist = sqrt(pow(mine->x_pos - ships[k]->x_pos, 2) + pow(mine->y_pos - ships[k]->y_pos, 2));
 			if (!mine->exploded) {
 				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
 				if (dist <= MISSILE_ACTIVATION_RADIUS) {
 					mine->exploded = true;
 					mine->x_vel = 0;

@@ -1,1 +1,5 @@
 Project1/Project1/Debug/
+*.obj
+*.idb
+Project1/Project1/Debug/vc140.pdb
+*.log

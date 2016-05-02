@@ -14,8 +14,11 @@
 #include "bullet.h"
 
 
-Polar::Polar(int identifier, int x, int y, Renderer* rend) {
+Polar::Polar(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	id = identifier;
+
+	ally1 = a1;
+	ally2 = a2;
 
 	x_pos = x;
 	y_pos = y;
@@ -42,17 +45,35 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
 		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileRed.png");
 	} else if (id == 1) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
-		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletMagenta.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileMagenta.png");
+		}
 	} else if (id == 2) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
-		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileYellow.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileYellow.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+		}
 	} else {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
-		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileGreen.png");
+		if (ally1 == -1) {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileGreen.png");
+		} else {
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
+			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletTeal.png");
+			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileTeal.png");
+		}
 	}
 
 	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-white.png");
@@ -69,6 +90,10 @@ Polar::Polar(int identifier, int x, int y, Renderer* rend) {
 	SDL_SetTextureAlphaMod(shield_tex, 100);
 	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
+
+	thrust_low_tex = r->LoadTexture("..\\Project1\\assets\\thrustlow.png");
+	thrust_medium_tex = r->LoadTexture("..\\Project1\\assets\\thrustmed.png");
+	thrust_high_tex = r->LoadTexture("..\\Project1\\assets\\thrusthigh.png");
 
 	laser_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\laser-active-big.wav");
 	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
@@ -87,6 +112,9 @@ Polar::~Polar() {
 	SDL_DestroyTexture(bounce_bullet_tex);
 	SDL_DestroyTexture(shield_tex);
 	SDL_DestroyTexture(bounce_tex);
+	SDL_DestroyTexture(thrust_low_tex);
+	SDL_DestroyTexture(thrust_medium_tex);
+	SDL_DestroyTexture(thrust_high_tex);
 
 	Mix_FreeChunk(laser_sfx);
 	Mix_FreeChunk(bullet_sfx);
@@ -129,8 +157,8 @@ void Polar::update() {
 		new_angle -= polar_gun_turn_speed;
 	}
 
-	gun_dir_x = 10000 * cos(new_angle);
-	gun_dir_y = 10000 * sin(new_angle);
+	gun_dir_x = (int)(10000 * cos(new_angle));
+	gun_dir_y = (int)(10000 * sin(new_angle));
 }
 
 void Polar::die() {
@@ -147,7 +175,7 @@ void Polar::fire_1() {
 		int MUZZLE_VEL = 40000;
 		int spread = 7;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + gun_length*cos(angle), y_pos + gun_length*sin(angle), MUZZLE_VEL, spread, 5, 10, 100);
+		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, (int)(x_pos + gun_length*cos(angle)), (int)(y_pos + gun_length*sin(angle)), MUZZLE_VEL, spread, 5, 10, 100);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -209,6 +237,8 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 		for (int k = 0; k < 4; k++) {
 			if (!ships[k]) continue;
 			if (ships[k]->id == id) continue;
+			if (ships[k]->id == ally1) continue;
+			if (ships[k]->id == ally2) continue;
 			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(bullet->x_pos - ships[k]->x_pos, 2) + pow(bullet->y_pos - ships[k]->y_pos, 2));
 			//std::cout << dist << std::endl;
@@ -249,7 +279,6 @@ void Polar::fire_2() {
 		missile_cooldown--;
 	}
 
-	/*
 	if (!do_fire_2 && missile_click_used) {
 		for (int i = 0; i < num_g_missiles; i++) {
 			if (!g_missiles[i]->exploded) {
@@ -261,14 +290,13 @@ void Polar::fire_2() {
 			}
 		}
 	}
-	*/
 
 	if (do_fire_2 && !missile_click_used && stamina > 0 && missile_cooldown <= 0) {
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		int velocity = 100000;
-		int x_vel = cos(angle) * velocity;
-		int y_vel = sin(angle) * velocity;
-		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos + gun_length*cos(angle), y_pos+gun_length*sin(angle), x_vel, y_vel);
+		int x_vel = (int)(cos(angle) * velocity);
+		int y_vel = (int)(sin(angle) * velocity);
+		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos + (int)(gun_length*cos(angle)), (int)(y_pos+gun_length*sin(angle)), x_vel, y_vel);
 		num_g_missiles++;
 		missile_cooldown += missile_delay;
 		stamina -= 600;
@@ -314,23 +342,6 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 		m->x_pos += m->x_vel;
 		m->y_pos += m->y_vel;
-
-		// check for collisions with enemies
-		for (int k = 0; k < 4; k++) {
-			if (!ships[k]) continue;
-			if (ships[k]->lives == 0) continue;
-			double dist = sqrt(pow(m->x_pos - ships[k]->x_pos, 2) + pow(m->y_pos - ships[k]->y_pos, 2));
-			if (!m->exploded) {
-				if (ships[k]->id == id) continue;
-				if (dist <= G_MISSILE_ACTIVATION_RADIUS) {
-					m->exploded = true;
-					m->x_vel = 0;
-					m->y_vel = 0;
-					Mix_PlayChannel(-1, blackhole_sfx, 0);
-					missile_click_used = false;
-				}
-			}
-		}
 
 		// check for missile going out of bounds
 		if (m->x_pos < min_x || m->x_pos > max_x || m->y_pos < min_y || m->y_pos > max_y) {
@@ -379,8 +390,8 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 					double force = 10000000000000000.0 / pow(dist, 2);
 					if (force > 70000) force = 70000;
 					double angle = atan2(m->y_pos - ships[k]->y_pos, m->x_pos - ships[k]->x_pos);
-					ships[k]->x_vel += force * cos(angle);
-					ships[k]->y_vel += force * sin(angle);
+					ships[k]->x_vel += (int)(force * cos(angle));
+					ships[k]->y_vel += (int)(force * sin(angle));
 				}
 			}
 		}
@@ -421,14 +432,16 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 	if (laser_active) {
 		// update laser position
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		laser_start_x = x_pos + gun_length * cos(angle);
-		laser_start_y = y_pos + gun_length * sin(angle);
+		laser_start_x = (int)(x_pos + gun_length * cos(angle));
+		laser_start_y = (int)(y_pos + gun_length * sin(angle));
 		laser_end_x = laser_start_x + 10000*gun_dir_x;
 		laser_end_y = laser_start_y + 10000*gun_dir_y;
 
 		for (int i = 0; i < 4; i++) {
 			if (!ships[i]) continue;
 			if (ships[i]->id == id) continue;
+			if (ships[i]->id == ally1) continue;
+			if (ships[i]->id == ally2) continue;
 			if (ships[i]->lives == 0) continue;
 			Ship* target_ship = ships[i];
 			double dist = get_dist(laser_start_x, laser_start_y, laser_end_x, laser_end_y, target_ship->x_pos, target_ship->y_pos);
@@ -444,7 +457,7 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 
 				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
 				
-				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 30+ship_dist/1000000, 1, haptics[i]);
+				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 30+(int)(ship_dist/1000000), 1, haptics[i]);
 				if (hit) {
 					damage_done += 1;
 					target_ship->last_hit = id;
@@ -460,10 +473,10 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 	for (int i = 0; i < num_sparks; i++) {
 		Spark* s = sparks[i];
 		double angle = atan2(s->y_2 - s->y_1, s->x_2 - s->x_1);
-		s->x_1 += cos(angle) * s->vel;
-		s->y_1 += sin(angle) * s->vel;
-		s->x_2 += cos(angle) * s->vel;
-		s->y_2 += sin(angle) * s->vel;
+		s->x_1 += (int)(cos(angle) * s->vel);
+		s->y_1 += (int)(sin(angle) * s->vel);
+		s->x_2 += (int)(cos(angle) * s->vel);
+		s->y_2 += (int)(sin(angle) * s->vel);
 
 		s->remaining_life--;
 		if (s->remaining_life == 0) {

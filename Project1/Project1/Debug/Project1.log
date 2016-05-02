@@ -1,4 +1,5 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+<<<<<<< HEAD
   polar.cpp
 c:\users\max\documents\github\abw2\project1\project1\gravity-missile.h(5): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
 c:\users\max\documents\github\abw2\project1\project1\polar.cpp(132): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
@@ -17,3 +18,8 @@ c:\users\max\documents\github\abw2\project1\project1\polar.cpp(464): warning C42
 c:\users\max\documents\github\abw2\project1\project1\polar.cpp(465): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
 c:\users\max\documents\github\abw2\project1\project1\polar.cpp(466): warning C4244: '+=': conversion from 'double' to 'int', possible loss of data
   Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\acsf.exe
+=======
+  main.cpp
+c:\users\max_000\desktop\abw2\project1\project1\main.cpp(117): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\acsf.exe
+>>>>>>> origin/master
