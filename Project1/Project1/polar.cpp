@@ -421,7 +421,7 @@ void Polar::render_projectiles_2() {
 void Polar::fire_3() {
 	if (do_fire_3 && stamina > 0) {
 		laser_active = true;
-		stamina -= 17;
+		stamina -= 16;
 	} else {
 		laser_active = false;
 		do_fire_3 = false;

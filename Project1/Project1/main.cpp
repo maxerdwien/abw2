@@ -41,9 +41,9 @@ bool dpad_down[4] = { false, false, false, false };
 Renderer* r;
 
 bool quit = false;
-bool is_fullscreen = false;
+bool is_fullscreen = true;
 bool xp_mode = false;
-bool muted = true;
+bool muted = false;
 
 int controller_mappings[4] = { -1, -1, -1, -1 };
 input_state controllers[4];
@@ -343,17 +343,12 @@ int main(int, char**) {
 								all_ready = false;
 							}
 						}
-						// todo: remove this
-						all_ready = true;
-						if (all_ready) {
-							currentState = stageSelect;
-						} else {
 
-							if (!ready[controller_index]) {
-								Mix_PlayChannel(-1, selected_ship, 0);
-							}
-							ready[controller_index] = true;
+						if (!ready[controller_index]) {
+							Mix_PlayChannel(-1, selected_ship, 0);
 						}
+						ready[controller_index] = true;
+						
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						bool all_ready = true;
@@ -362,6 +357,10 @@ int main(int, char**) {
 								all_ready = false;
 							}
 						}
+
+						bool quick_start = false;
+						if (quick_start) all_ready = true;
+
 						if (all_ready) {
 							currentState = stageSelect;
 						}
@@ -1515,8 +1514,8 @@ bool read_global_input(SDL_Event* e) {
 	}
 	case SDL_CONTROLLERBUTTONDOWN:
 		if (e->cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
-			quit = true;
-			event_eaten = true;
+			//quit = true;
+			//event_eaten = true;
 		} else if (e->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
 			//dpad_down[]
 			//xp_mode = !xp_mode;
