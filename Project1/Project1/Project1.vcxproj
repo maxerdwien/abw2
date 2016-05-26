@@ -92,6 +92,7 @@
     <ClInclude Include="bullet.h" />
     <ClInclude Include="gravity-missile.h" />
     <ClInclude Include="grizzly.h" />
+    <ClInclude Include="input-state.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="missile.h" />
     <ClInclude Include="polar.h" />

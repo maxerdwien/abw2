@@ -89,6 +89,9 @@
     <ClInclude Include="asteroid.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="input-state.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Project1.rc">

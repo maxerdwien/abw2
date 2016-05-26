@@ -7,6 +7,8 @@
 #include <SDL_mixer.h>
 #include <time.h>
 
+#include "input-state.h"
+
 #include "spaceship.h"
 #include "grizzly.h"
 #include "black.h"
@@ -44,13 +46,14 @@ bool xp_mode = false;
 bool muted = true;
 
 int controller_mappings[4] = { -1, -1, -1, -1 };
-SDL_GameController* controllers[4] = { NULL, NULL, NULL, NULL };
+input_state controllers[4];
 SDL_Haptic* haptics[4];
 lra LRA[4];
 
 Mix_Music* music;
 
 bool read_global_input(SDL_Event* e);
+void read_input();
 
 enum ship_type {
 	black = 0,
@@ -72,6 +75,9 @@ enum team_mode {
 team_mode selected_team_mode = free_for_all;
 
 stage selected_stage = anchorage;
+
+const double CONTROLLER_MAX_ANGLE = M_PI / 6;
+const int DEAD_ZONE = 5000;
 
 void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
@@ -175,9 +181,6 @@ int main(int, char**) {
 
 	const int game_end_delay = 2 * 60;
 	int game_end_cooldown;
-
-	const double CONTROLLER_MAX_ANGLE = M_PI / 6;
-	const int DEAD_ZONE = 5000;
 
 	const int playerUiWidth = 10;
 
@@ -336,7 +339,7 @@ int main(int, char**) {
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						bool all_ready = true;
 						for (int i = 0; i < 4; i++) {
-							if (controllers[i] && !ready[i]) {
+							if (controllers[i].occupied && !ready[i]) {
 								all_ready = false;
 							}
 						}
@@ -355,7 +358,7 @@ int main(int, char**) {
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						bool all_ready = true;
 						for (int i = 0; i < 4; i++) {
-							if (controllers[i] && !ready[i]) {
+							if (controllers[i].occupied && !ready[i]) {
 								all_ready = false;
 							}
 						}
@@ -526,13 +529,13 @@ int main(int, char**) {
 			
 			// render ships selections
 			{
-				if (controllers[0]) {
+				if (controllers[0].occupied) {
 					color c = red;
 					render_character_selector(0, 0, ship_textures[selections[0]][c], selections[0], right_arrow, left_arrow, ready[0]);
 				} else {
 					render_plugin_to_join(0, 0);
 				}
-				if (controllers[1]) {
+				if (controllers[1].occupied) {
 					color c;
 					if (selected_team_mode == two_vs_two) c = magenta;
 					else c = blue;
@@ -541,7 +544,7 @@ int main(int, char**) {
 				} else {
 					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, 0);
 				}
-				if (controllers[2]) {
+				if (controllers[2].occupied) {
 					color c;
 					if (selected_team_mode == two_vs_two) c = blue;
 					else c = yellow;
@@ -549,7 +552,7 @@ int main(int, char**) {
 				} else {
 					render_plugin_to_join(0, HEIGHT_UNITS / 2 + BARSIZE/2);
 				}
-				if (controllers[3]) {
+				if (controllers[3].occupied) {
 					color c;
 					if (selected_team_mode == two_vs_two) c = teal;
 					else c = green;
@@ -562,7 +565,7 @@ int main(int, char**) {
 			// render "press start to begin"
 			bool all_ready = true;
 			for (int i = 0; i < 4; i++) {
-				if (controllers[i] && !ready[i]) {
+				if (controllers[i].occupied && !ready[i]) {
 					all_ready = false;
 				}
 			}
@@ -620,7 +623,12 @@ int main(int, char**) {
 					ships[i] = NULL;
 				}
 
-				if (!controllers[i]) continue;
+				// hard code player 2 to be an ai
+				if (i == 2 && !controllers[i].occupied) {
+					controllers[i].ai = true;
+				}
+
+				if (!controllers[i].occupied) continue;
 
 				int ally1 = -1;
 				int ally2 = -1;
@@ -667,6 +675,25 @@ int main(int, char**) {
 		// start of in game state
 		else if (currentState == inGame) {
 			// poll input
+			read_input();
+
+			for (int i = 0; i < 4; i++) {
+				input_state is = controllers[i];
+				if (!is.occupied) continue;
+
+				Ship* s = ships[i];
+				
+				s->do_fire_1 = is.rb.state;
+				s->do_fire_2 = is.rt.state;
+				s->do_fire_3 = is.lb.state;
+
+				s->do_speed_boost = is.l3.state;
+
+				if (is.start.state && game_start_cooldown < 2 * 60) {
+					currentState = pause;
+				}
+			}
+			/*
 			{
 				int controller_index;
 				Ship* ship;
@@ -787,6 +814,7 @@ int main(int, char**) {
 					}
 				}
 			}
+			*/
 
 			if (currentState == pause) {
 				continue;
@@ -864,6 +892,27 @@ int main(int, char**) {
 				if (ship->lives == 0) continue;
 
 				if (game_end_cooldown < game_end_delay) continue;
+
+				// update from stick positions
+				double left_stick_mag = sqrt(pow(controllers[i].l_stick_x, 2) + pow(controllers[i].l_stick_y, 2));
+				if (left_stick_mag > DEAD_ZONE) {
+					ship->move_dir_x = controllers[i].l_stick_x;
+					ship->move_dir_y = controllers[i].l_stick_y;
+					if (game_end_cooldown == game_end_delay) {
+						ship->face_dir_x = ship->move_dir_x;
+						ship->face_dir_y = ship->move_dir_y;
+					}
+				} else {
+					ship->move_dir_x = 0;
+					ship->move_dir_y = 0;
+				}
+
+				double right_stick_mag = sqrt(pow(controllers[i].r_stick_x, 2) + pow(controllers[i].r_stick_y, 2));
+				//std::cout << right_stick_mag << std::endl;
+				if (right_stick_mag > DEAD_ZONE) {
+					ship->desired_gun_dir_x = controllers[i].r_stick_x;
+					ship->desired_gun_dir_y = controllers[i].r_stick_y;
+				}
 
 				ship->update();
 				if (game_start_cooldown > 1 * 60) continue;
@@ -1305,7 +1354,7 @@ int main(int, char**) {
 				case SDL_CONTROLLERAXISMOTION:
 					controller_index = lookup_controller(e.caxis.which);
 					if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
-						int min_activation = 20000;
+						int min_activation = 17000;
 						//std::cout << e.caxis.value << std::endl;
 						if (e.caxis.value >= min_activation) {
 							LRA[controller_index].r = true;
@@ -1314,7 +1363,7 @@ int main(int, char**) {
 						}
 					}
 					else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
-						int min_activation = 20000;
+						int min_activation = 17000;
 						//std::cout << e.caxis.value << std::endl;
 						if (e.caxis.value >= min_activation) {
 							LRA[controller_index].l = true;
@@ -1486,7 +1535,8 @@ bool read_global_input(SDL_Event* e) {
 		for (int i = 0; i < 4; i++) {
 			if (controller_mappings[i] == -1) {
 				controller_mappings[i] = instanceID;
-				controllers[i] = temp;
+				controllers[i].controller = temp;
+				controllers[i].occupied = true;
 
 				haptics[i] = SDL_HapticOpen(e->cdevice.which);
 				if (SDL_HapticRumbleInit(haptics[i]) != 0) {
@@ -1510,8 +1560,8 @@ bool read_global_input(SDL_Event* e) {
 		if (slot == -1) printf("something went terribly wrong for controller with instanceID %d", instanceID);
 		std::cout << "disconnecting controller " << instanceID << " from slot " << slot << std::endl;
 		controller_mappings[slot] = -1;
-		SDL_GameControllerClose(controllers[slot]);
-		controllers[slot] = NULL;
+		SDL_GameControllerClose(controllers[slot].controller);
+		controllers[slot].occupied = false;
 		SDL_HapticClose(haptics[slot]);
 		haptics[slot] = NULL;
 		event_eaten = true;
@@ -1521,6 +1571,196 @@ bool read_global_input(SDL_Event* e) {
 	return event_eaten;
 }
 
+void read_input() {
+	// reset 'changed' status
+	for (int i = 0; i < 4; i++) {
+		if (!controllers[i].occupied) continue;
+
+		controllers[i].a.changed = false;
+		controllers[i].b.changed = false;
+		controllers[i].x.changed = false;
+		controllers[i].y.changed = false;
+
+		controllers[i].start.changed = false;
+		controllers[i].select.changed = false;
+		controllers[i].xbox.changed = false;
+		
+		controllers[i].d_u.changed = false;
+		controllers[i].d_d.changed = false;
+		controllers[i].d_l.changed = false;
+		controllers[i].d_r.changed = false;
+		
+		controllers[i].rb.changed = false;
+		controllers[i].lb.changed = false;
+		
+		controllers[i].rt.changed = false;
+		controllers[i].lt.changed = false;
+		
+		controllers[i].r3.changed = false;
+		controllers[i].l3.changed = false;
+	}
+
+	const double CONTROLLER_MAX_ANGLE = M_PI / 6;
+	const int DEAD_ZONE = 5000;
+
+	SDL_Event e;
+	int controller_index;
+	while (SDL_PollEvent(&e)) {
+		if (read_global_input(&e)) continue;
+		switch (e.type) {
+		case SDL_CONTROLLERBUTTONDOWN:
+			controller_index = lookup_controller(e.cbutton.which);
+			if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+				controllers[controller_index].a.state = true;
+				controllers[controller_index].a.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+				controllers[controller_index].b.state = true;
+				controllers[controller_index].b.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
+				controllers[controller_index].x.state = true;
+				controllers[controller_index].x.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
+				controllers[controller_index].y.state = true;
+				controllers[controller_index].y.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+				controllers[controller_index].start.state = true;
+				controllers[controller_index].start.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
+				controllers[controller_index].select.state = true;
+				controllers[controller_index].select.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE) {
+				controllers[controller_index].xbox.state = true;
+				controllers[controller_index].xbox.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP) {
+				controllers[controller_index].d_u.state = true;
+				controllers[controller_index].d_u.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+				controllers[controller_index].d_d.state = true;
+				controllers[controller_index].d_d.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+				controllers[controller_index].d_l.state = true;
+				controllers[controller_index].d_l.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+				controllers[controller_index].d_r.state = true;
+				controllers[controller_index].d_r.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+				controllers[controller_index].rb.state = true;
+				controllers[controller_index].rb.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+				controllers[controller_index].lb.state = true;
+				controllers[controller_index].lb.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSTICK) {
+				controllers[controller_index].r3.state = true;
+				controllers[controller_index].r3.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSTICK) {
+				controllers[controller_index].l3.state = true;
+				controllers[controller_index].l3.changed = true;
+			}
+			break;
+		case SDL_CONTROLLERBUTTONUP:
+			controller_index = lookup_controller(e.cbutton.which);
+			if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+				controllers[controller_index].a.state = false;
+				controllers[controller_index].a.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+				controllers[controller_index].b.state = false;
+				controllers[controller_index].b.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
+				controllers[controller_index].x.state = false;
+				controllers[controller_index].x.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
+				controllers[controller_index].y.state = false;
+				controllers[controller_index].y.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+				controllers[controller_index].start.state = false;
+				controllers[controller_index].start.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
+				controllers[controller_index].select.state = false;
+				controllers[controller_index].select.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE) {
+				controllers[controller_index].xbox.state = false;
+				controllers[controller_index].xbox.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP) {
+				controllers[controller_index].d_u.state = false;
+				controllers[controller_index].d_u.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+				controllers[controller_index].d_d.state = false;
+				controllers[controller_index].d_d.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
+				controllers[controller_index].d_l.state = false;
+				controllers[controller_index].d_l.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
+				controllers[controller_index].d_r.state = false;
+				controllers[controller_index].d_r.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
+				controllers[controller_index].rb.state = false;
+				controllers[controller_index].rb.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
+				controllers[controller_index].lb.state = false;
+				controllers[controller_index].lb.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSTICK) {
+				controllers[controller_index].r3.state = false;
+				controllers[controller_index].r3.changed = true;
+			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSTICK) {
+				controllers[controller_index].l3.state = false;
+				controllers[controller_index].l3.changed = true;
+			}
+			break;
+		case SDL_CONTROLLERAXISMOTION:
+			controller_index = lookup_controller(e.cbutton.which);
+			if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
+				int min_activation = 20000;
+				int min_deactivation = 18000;
+				if (e.caxis.value >= min_activation) {
+					controllers[controller_index].rt.state = true;
+					controllers[controller_index].rt.changed = true;
+				} else if (e.caxis.value <= min_deactivation) {
+					controllers[controller_index].rt.state = false;
+					controllers[controller_index].rt.changed = true;
+				}
+			} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
+				int min_activation = 20000;
+				int min_deactivation = 18000;
+				if (e.caxis.value >= min_activation) {
+					controllers[controller_index].lt.state = true;
+					controllers[controller_index].lt.changed = true;
+				} else if (e.caxis.value <= min_deactivation) {
+					controllers[controller_index].lt.state = false;
+					controllers[controller_index].lt.changed = true;
+				}
+			}
+			
+			else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
+				double value = (double)e.caxis.value / 32767;
+
+				double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+				//std::cout << old_gun_mag << std::endl;
+				controllers[controller_index].l_stick_x = (int)(10000 * circle_x);
+				
+			} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
+				double value = (double)e.caxis.value / 32768;
+
+				double circle_y = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+				//std::cout << old_gun_mag << std::endl;
+				controllers[controller_index].l_stick_y = (int)(10000 * circle_y);
+
+			} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
+				double value = (double)e.caxis.value / 32767;
+
+				double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+				//std::cout << circle_x << std::endl;
+				controllers[controller_index].r_stick_x = (int)(10000 * circle_x);
+				
+			} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
+				double value = (double)e.caxis.value / 32768;
+
+				double circle_y = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
+				controllers[controller_index].r_stick_y = (int)(10000 * circle_y);
+			}
+			break;
+		}
+	}
+}
 
 
 void render_plugin_to_join(int x, int y) {
@@ -1572,7 +1812,7 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 		wep2 = "RT, LT: Gravity Missiles";
 		wep3 = "LB: Laser";
 	}
-	r->render_text(x + box_w / 2, y + 2 * box_h / 5, name, true, false, false, medium_f, 255, 255);
+	r->render_text(x + box_w / 2, y + 4 * box_h / 10, name, true, false, false, medium_f, 255, 255);
 	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f, 255, 255);
 	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep2, false, false, false, medium_f, 255, 255);
 	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep3, false, false, false, medium_f, 255, 255);
