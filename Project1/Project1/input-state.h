@@ -2,6 +2,12 @@
 
 #include <SDL.h>
 
+enum player_status {
+	empty,
+	human,
+	ai,
+};
+
 struct button {
 	bool state = false;
 	bool changed = false;
@@ -37,8 +43,6 @@ struct input_state {
 	button r3;
 	button l3;
 
-	bool occupied = false;
+	player_status status = empty;
 	SDL_GameController* controller = NULL;
-
-	bool ai = false;
 };

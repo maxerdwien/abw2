@@ -334,6 +334,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 					m->x_vel = 0;
 					m->y_vel = 0;
 					Mix_PlayChannel(-1, blackhole_sfx, 0);
+					missile_click_used = false;
 					continue;
 				}
 			}

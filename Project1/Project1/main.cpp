@@ -40,10 +40,12 @@ bool dpad_down[4] = { false, false, false, false };
 
 Renderer* r;
 
+const bool DEBUG_MODE = true;
+
 bool quit = false;
-bool is_fullscreen = true;
+bool is_fullscreen = !DEBUG_MODE;
 bool xp_mode = false;
-bool muted = false;
+bool muted = DEBUG_MODE;
 
 int controller_mappings[4] = { -1, -1, -1, -1 };
 input_state controllers[4];
@@ -79,20 +81,19 @@ stage selected_stage = anchorage;
 const double CONTROLLER_MAX_ANGLE = M_PI / 6;
 const int DEAD_ZONE = 5000;
 
-void render_plugin_to_join(int x, int y);
 int lookup_controller(int instanceID);
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready);
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps);
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship);
 
 int main(int, char**) {
 
-	enum gameState {
-		mainMenu,
+	enum game_state {
+		main_menu,
 		options,
-		characterSelect,
-		stageSelect,
-		initGame,
-		inGame,
+		character_select,
+		stage_select,
+		init_game,
+		in_game,
 		results,
 		pause,
 	};
@@ -106,7 +107,10 @@ int main(int, char**) {
 		magenta = 5,
 	};
 
-	gameState currentState = mainMenu;
+	game_state current_state = main_menu;
+	if (DEBUG_MODE) {
+		current_state = character_select;
+	}
 
 	// init SDL
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
@@ -292,13 +296,13 @@ int main(int, char**) {
 		}
 
 		// start of main menu state
-		if (currentState == mainMenu) {
+		if (current_state == main_menu) {
 			while (SDL_PollEvent(&e)) {
 				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						currentState = characterSelect;
+						current_state = character_select;
 						Mix_PlayChannel(-1, beep, 0);
 
 					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
@@ -326,7 +330,7 @@ int main(int, char**) {
 
 		}
 		// start of character select state
-		else if (currentState == characterSelect) {
+		else if (current_state == character_select) {
 
 			int controller_index;
 
@@ -339,7 +343,7 @@ int main(int, char**) {
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						bool all_ready = true;
 						for (int i = 0; i < 4; i++) {
-							if (controllers[i].occupied && !ready[i]) {
+							if (controllers[i].status == human && !ready[i]) {
 								all_ready = false;
 							}
 						}
@@ -353,22 +357,21 @@ int main(int, char**) {
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						bool all_ready = true;
 						for (int i = 0; i < 4; i++) {
-							if (controllers[i].occupied && !ready[i]) {
+							if (controllers[i].status == human && !ready[i]) {
 								all_ready = false;
 							}
 						}
 
-						bool quick_start = false;
-						if (quick_start) all_ready = true;
+						if (DEBUG_MODE) all_ready = true;
 
 						if (all_ready) {
-							currentState = stageSelect;
+							current_state = stage_select;
 						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
 						Mix_PlayChannel(-1, deselect, 0);
 						if (ready[controller_index] == false) {
-							currentState = mainMenu;
+							current_state = main_menu;
 						} else {
 							ready[controller_index] = false;
 						}
@@ -422,10 +425,18 @@ int main(int, char**) {
 						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
-						if (ready[controller_index]) break;
+						//if (ready[controller_index]) break;
 						Mix_PlayChannel(-1, beep, 0);
-						int random_selection = rand() % 3;
-						selections[controller_index] = (ship_type)random_selection;
+
+						if (controllers[controller_index].status == human) {
+							controllers[controller_index].status = ai;
+							ready[controller_index] = true;
+						} else if (controllers[controller_index].status == ai) {
+							controllers[controller_index].status = human;
+						}
+
+						//int random_selection = rand() % 3;
+						//selections[controller_index] = (ship_type)random_selection;
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
 						if (selected_team_mode == free_for_all) {
@@ -528,43 +539,27 @@ int main(int, char**) {
 			
 			// render ships selections
 			{
-				if (controllers[0].occupied) {
-					color c = red;
-					render_character_selector(0, 0, ship_textures[selections[0]][c], selections[0], right_arrow, left_arrow, ready[0]);
-				} else {
-					render_plugin_to_join(0, 0);
-				}
-				if (controllers[1].occupied) {
-					color c;
-					if (selected_team_mode == two_vs_two) c = magenta;
-					else c = blue;
-					render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, 0, ship_textures[selections[1]][c], selections[1], right_arrow, left_arrow, ready[1]);
+				color c = red;
+				render_character_selector(0, 0, ship_textures[selections[0]][c], selections[0], right_arrow, left_arrow, ready[0], controllers[0].status);
 
-				} else {
-					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, 0);
-				}
-				if (controllers[2].occupied) {
-					color c;
-					if (selected_team_mode == two_vs_two) c = blue;
-					else c = yellow;
-					render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[selections[2]][c], selections[2], right_arrow, left_arrow, ready[2]);
-				} else {
-					render_plugin_to_join(0, HEIGHT_UNITS / 2 + BARSIZE/2);
-				}
-				if (controllers[3].occupied) {
-					color c;
-					if (selected_team_mode == two_vs_two) c = teal;
-					else c = green;
-					render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[selections[3]][c], selections[3], right_arrow, left_arrow, ready[3]);
-				} else {
-					render_plugin_to_join(WIDTH_UNITS / 2 + BARSIZE/2, HEIGHT_UNITS / 2 + BARSIZE/2);
-				}
+				if (selected_team_mode == two_vs_two) c = magenta;
+				else c = blue;
+				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, 0, ship_textures[selections[1]][c], selections[1], right_arrow, left_arrow, ready[1], controllers[1].status);
+
+				if (selected_team_mode == two_vs_two) c = blue;
+				else c = yellow;
+				render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[selections[2]][c], selections[2], right_arrow, left_arrow, ready[2], controllers[2].status);
+
+				if (selected_team_mode == two_vs_two) c = teal;
+				else c = green;
+				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[selections[3]][c], selections[3], right_arrow, left_arrow, ready[3], controllers[3].status);
+
 			}
 
 			// render "press start to begin"
 			bool all_ready = true;
 			for (int i = 0; i < 4; i++) {
-				if (controllers[i].occupied && !ready[i]) {
+				if (controllers[i].status == human && !ready[i]) {
 					all_ready = false;
 				}
 			}
@@ -576,10 +571,10 @@ int main(int, char**) {
 
 		}
 		// start of stage select state
-		else if (currentState == stageSelect) {
-			currentState = initGame;
+		else if (current_state == stage_select) {
+			current_state = init_game;
 		}
-		else if (currentState == initGame) {
+		else if (current_state == init_game) {
 			// begin start game timer
 			game_start_cooldown = game_start_delay;
 			game_end_cooldown = game_end_delay;
@@ -623,11 +618,9 @@ int main(int, char**) {
 				}
 
 				// hard code player 2 to be an ai
-				if (i == 2 && !controllers[i].occupied) {
-					controllers[i].ai = true;
-				}
+				//if (i == 1) controllers[i].status = ai;
 
-				if (!controllers[i].occupied) continue;
+				if (controllers[i].status == empty) continue;
 
 				int ally1 = -1;
 				int ally2 = -1;
@@ -668,17 +661,43 @@ int main(int, char**) {
 			// render background once; this is needed for xp mode
 			r->render_texture(bg, WIDTH_UNITS / 2, HEIGHT_UNITS / 2, 0, 1);
 
-			currentState = inGame;
+			current_state = in_game;
 			
 		}
 		// start of in game state
-		else if (currentState == inGame) {
+		else if (current_state == in_game) {
 			// poll input
 			read_input();
 
+			// ai moves
+			for (int i = 0; i < 4; i++) {
+				if (controllers[i].status == ai) {
+					input_state a = controllers[i];
+					a.rb.state = true;
+					a.rb.changed = true;
+
+					int goal_x = (WIDTH_UNITS - BARSIZE) / 2;
+					int goal_y = HEIGHT_UNITS / 2;
+
+					if (ships[i]->x_pos > goal_x) {
+						a.l_stick_x = -100000000000000;
+					} else {
+						a.l_stick_x = 100000000000000;
+					}
+
+					if (ships[i]->y_pos > goal_y) {
+						a.l_stick_y = -100000000000000;
+					} else {
+						a.l_stick_y = 100000000000000;
+					}
+
+					controllers[i] = a;
+				}
+			}
+
 			for (int i = 0; i < 4; i++) {
 				input_state is = controllers[i];
-				if (!is.occupied) continue;
+				if (is.status == empty) continue;
 
 				Ship* s = ships[i];
 				
@@ -689,133 +708,11 @@ int main(int, char**) {
 				s->do_speed_boost = is.l3.state;
 
 				if (is.start.state && game_start_cooldown < 2 * 60) {
-					currentState = pause;
+					current_state = pause;
 				}
 			}
-			/*
-			{
-				int controller_index;
-				Ship* ship;
-				while (SDL_PollEvent(&e)) {
-					if (read_global_input(&e)) continue;
-					switch (e.type) {
-					case SDL_CONTROLLERBUTTONDOWN:
-						controller_index = lookup_controller(e.cbutton.which);
-						ship = ships[controller_index];
-						if (!ship) continue;
-						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
-							ship->do_fire_1 = true;
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
-							ship->do_fire_3 = true;
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSTICK) {
-							ship->do_speed_boost = true;
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
-							if (game_start_cooldown < 2 * 60) {
-								currentState = pause;
-							}
-						}
-						break;
-					case SDL_CONTROLLERBUTTONUP:
-						controller_index = lookup_controller(e.cbutton.which);
-						ship = ships[controller_index];
-						if (!ship) continue;
-						if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
-							ship->do_fire_1 = false;
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
-							ship->do_fire_3 = false;
-						} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSTICK) {
-							ship->do_speed_boost = false;
-						}
-						break;
-					case SDL_CONTROLLERAXISMOTION:
-						controller_index = lookup_controller(e.caxis.which);
-						ship = ships[controller_index];
-						if (!ship) continue;
-						if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
-							double value = (double)e.caxis.value / 32767;
 
-							double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
-							//std::cout << old_gun_mag << std::endl;
-							ship->left_stick_x = (int)(10000 * circle_x);
-							double left_stick_mag = sqrt(pow(ship->left_stick_x, 2) + pow(ship->left_stick_y, 2));
-							//std::cout << left_stick_mag << std::endl;
-							if (left_stick_mag > DEAD_ZONE) {
-								ship->move_dir_x = ship->left_stick_x;
-								ship->move_dir_y = ship->left_stick_y;
-								if (game_end_cooldown == game_end_delay) {
-									ship->face_dir_x = ship->left_stick_x;
-									ship->face_dir_y = ship->left_stick_y;
-								}
-							} else {
-								ship->move_dir_x = 0;
-								ship->move_dir_y = 0;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
-							double value = (double)e.caxis.value / 32768;
-
-							double circle_y = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
-							//std::cout << old_gun_mag << std::endl;
-							ship->left_stick_y = (int)(10000 * circle_y);
-							double left_stick_mag = sqrt(pow(ship->left_stick_x, 2) + pow(ship->left_stick_y, 2));
-							//std::cout << left_stick_mag << std::endl;
-							if (left_stick_mag > DEAD_ZONE) {
-								ship->move_dir_x = ship->left_stick_x;
-								ship->move_dir_y = ship->left_stick_y;
-								if (game_end_cooldown == game_end_delay) {
-									ship->face_dir_x = ship->left_stick_x;
-									ship->face_dir_y = ship->left_stick_y;
-								}
-							} else {
-								ship->move_dir_x = 0;
-								ship->move_dir_y = 0;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
-							double value = (double)e.caxis.value / 32767;
-
-							double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
-							//std::cout << circle_x << std::endl;
-							ship->right_stick_x = (int)(10000 * circle_x);
-							double right_stick_mag = sqrt(pow(ship->right_stick_x, 2) + pow(ship->right_stick_y, 2));
-							//std::cout << right_stick_mag << std::endl;
-							if (right_stick_mag > DEAD_ZONE) {
-								ship->desired_gun_dir_x = ship->right_stick_x;
-								ship->desired_gun_dir_y = ship->right_stick_y;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
-							double value = (double)e.caxis.value / 32768;
-
-							double circle_y = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
-							ship->right_stick_y = (int)(10000 * circle_y);
-							double right_stick_mag = sqrt(pow(ship->right_stick_x, 2) + pow(ship->right_stick_y, 2));
-							//std::cout << right_stick_mag << std::endl;
-							if (right_stick_mag > DEAD_ZONE) {
-								ship->desired_gun_dir_x = ship->right_stick_x;
-								ship->desired_gun_dir_y = ship->right_stick_y;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
-							int min_activation = 20000;
-							int min_deactivation = 18000;
-							if (e.caxis.value < min_deactivation) {
-								ship->do_fire_2 = false;
-							} else if (e.caxis.value > min_activation) {
-								ship->do_fire_2 = true;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
-							int min_activation = 20000;
-							int min_deactivation = 18000;
-							if (e.caxis.value < min_deactivation) {
-								ship->do_fire_2 = false;
-							} else if (e.caxis.value > min_activation) {
-								ship->do_fire_2 = true;
-							}
-						}
-						break;
-					}
-				}
-			}
-			*/
-
-			if (currentState == pause) {
+			if (current_state == pause) {
 				continue;
 			}
 
@@ -885,7 +782,9 @@ int main(int, char**) {
 
 			// update ships
 			for (int i = 0; i < 4; i++) {
-				if (!ships[i]) continue;
+				//if (!ships[i]) continue;
+				if (controllers[i].status == empty) continue;
+
 				Ship* ship = ships[i];
 
 				if (ship->lives == 0) continue;
@@ -1167,7 +1066,7 @@ int main(int, char**) {
 				game_end_cooldown--;
 			}
 			if (game_end_cooldown == 0) {
-				currentState = results;
+				current_state = results;
 
 				// remove items
 				for (int j = 0; j < num_items; j++) {
@@ -1179,7 +1078,7 @@ int main(int, char**) {
 				Mix_HaltChannel(-1);
 			}
 
-			if (currentState == results) {
+			if (current_state == results) {
 				continue;
 			}
 
@@ -1302,7 +1201,7 @@ int main(int, char**) {
 		} //end of ingame state
 
 		// start pause state
-		else if (currentState == pause) {
+		else if (current_state == pause) {
 			while (SDL_PollEvent(&e)) {
 				int controller_index;
 				if (read_global_input(&e)) continue;
@@ -1318,7 +1217,7 @@ int main(int, char**) {
 								LRA[i].r = false;
 							}
 							winner = -1;
-							currentState = results;
+							current_state = results;
 						}	
 						else {
 							// reset buttons
@@ -1327,7 +1226,7 @@ int main(int, char**) {
 								LRA[i].l = false;
 								LRA[i].r = false;
 							}
-							currentState = inGame;
+							current_state = in_game;
 						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
@@ -1385,21 +1284,21 @@ int main(int, char**) {
 		} //end pause state
 
 		// stage select state
-		else if (currentState == stageSelect) {
-			currentState = inGame;
+		else if (current_state == stage_select) {
+			current_state = in_game;
 		}
 		// start of options state
-		else if (currentState == options) {
+		else if (current_state == options) {
 
 		}
 		// start of results state
-		else if (currentState == results) {
+		else if (current_state == results) {
 			while (SDL_PollEvent(&e)) {
 				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN:
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						currentState = characterSelect;
+						current_state = character_select;
 					}
 					break;
 				}
@@ -1514,8 +1413,8 @@ bool read_global_input(SDL_Event* e) {
 	}
 	case SDL_CONTROLLERBUTTONDOWN:
 		if (e->cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
-			//quit = true;
-			//event_eaten = true;
+			quit = true;
+			event_eaten = true;
 		} else if (e->cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
 			//dpad_down[]
 			//xp_mode = !xp_mode;
@@ -1535,7 +1434,7 @@ bool read_global_input(SDL_Event* e) {
 			if (controller_mappings[i] == -1) {
 				controller_mappings[i] = instanceID;
 				controllers[i].controller = temp;
-				controllers[i].occupied = true;
+				controllers[i].status = human;
 
 				haptics[i] = SDL_HapticOpen(e->cdevice.which);
 				if (SDL_HapticRumbleInit(haptics[i]) != 0) {
@@ -1560,7 +1459,7 @@ bool read_global_input(SDL_Event* e) {
 		std::cout << "disconnecting controller " << instanceID << " from slot " << slot << std::endl;
 		controller_mappings[slot] = -1;
 		SDL_GameControllerClose(controllers[slot].controller);
-		controllers[slot].occupied = false;
+		controllers[slot].status = empty;
 		SDL_HapticClose(haptics[slot]);
 		haptics[slot] = NULL;
 		event_eaten = true;
@@ -1573,7 +1472,7 @@ bool read_global_input(SDL_Event* e) {
 void read_input() {
 	// reset 'changed' status
 	for (int i = 0; i < 4; i++) {
-		if (!controllers[i].occupied) continue;
+		//if (controllers[i].status != human) continue;
 
 		controllers[i].a.changed = false;
 		controllers[i].b.changed = false;
@@ -1609,6 +1508,7 @@ void read_input() {
 		switch (e.type) {
 		case SDL_CONTROLLERBUTTONDOWN:
 			controller_index = lookup_controller(e.cbutton.which);
+			if (controllers[controller_index].status != human) break;
 			if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 				controllers[controller_index].a.state = true;
 				controllers[controller_index].a.changed = true;
@@ -1658,6 +1558,7 @@ void read_input() {
 			break;
 		case SDL_CONTROLLERBUTTONUP:
 			controller_index = lookup_controller(e.cbutton.which);
+			if (controllers[controller_index].status != human) break;
 			if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 				controllers[controller_index].a.state = false;
 				controllers[controller_index].a.changed = true;
@@ -1707,6 +1608,7 @@ void read_input() {
 			break;
 		case SDL_CONTROLLERAXISMOTION:
 			controller_index = lookup_controller(e.cbutton.which);
+			if (controllers[controller_index].status != human) break;
 			if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
 				int min_activation = 20000;
 				int min_deactivation = 18000;
@@ -1762,14 +1664,6 @@ void read_input() {
 }
 
 
-void render_plugin_to_join(int x, int y) {
-	int box_w = (WIDTH_UNITS - BARSIZE) / 2;
-	int box_h = (HEIGHT_UNITS - BARSIZE) / 2;
-
-	r->render_text(x + box_w / 2, y + box_h / 3, "Plug in controller to join", true, false, false, medium_f, 255, 255);
-}
-
-
 int lookup_controller(int instanceID) {
 	for (int i = 0; i < 4; i++) {
 		if (controller_mappings[i] == instanceID) {
@@ -1779,9 +1673,15 @@ int lookup_controller(int instanceID) {
 	return -1;
 }
 
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready) {
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps) {
+	
 	int box_w = (WIDTH_UNITS - BARSIZE) / 2;
 	int box_h = (HEIGHT_UNITS - BARSIZE) / 2;
+
+	if (ps == empty) {
+		r->render_text(x + box_w / 2, y + box_h / 3, "Plug in controller to join", true, false, false, medium_f, 255, 255);
+		return;
+	}
 
 	if (!ready) {
 		r->render_texture(ship_tex, x + box_w / 2, y + box_h / 5, 0, 4);
@@ -1810,6 +1710,10 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 		wep1 = "RB: Shotgun";
 		wep2 = "RT, LT: Gravity Missiles";
 		wep3 = "LB: Laser";
+	}
+
+	if (ps == ai) {
+		name = name.append(" (AI)");
 	}
 	r->render_text(x + box_w / 2, y + 4 * box_h / 10, name, true, false, false, medium_f, 255, 255);
 	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f, 255, 255);
