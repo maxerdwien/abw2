@@ -20,6 +20,15 @@ private:
 	TTF_Font* caladea_large;
 
 public:
+
+	bool render_normal;
+	bool render_debug;
+
+	SDL_Texture* hitbox_tex;
+	SDL_Texture* hurtbox_tex;
+	SDL_Texture* invincible_hurtbox_tex;
+	SDL_Texture* activation_hitbox_tex;
+
 	Renderer(struct SDL_Renderer* r, int w, int h);
 
 	void render_texture(SDL_Texture* texture, int x, int y, double angle, double scaling);

@@ -19,7 +19,7 @@ struct missile {
 	bool players_hit[4];
 };
 
-const int MISSILE_ACTIVATION_RADIUS = 100 * 10000;
+const int MISSILE_ACTIVATION_RADIUS = 70 * 10000;
 const int MISSILE_MAX_RADIUS = 120 * 10000;
 const int MISSILE_RADIUS_PER_FRAME = 5 * 10000;
 

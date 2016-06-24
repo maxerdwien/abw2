@@ -30,7 +30,13 @@ Asteroid::~Asteroid() {
 }
 
 void Asteroid::render() {
-	r->render_texture_abs_size(tex, x_pos, y_pos, angle, radius);
+	if (r->render_normal) {
+		r->render_texture_abs_size(tex, x_pos, y_pos, angle, radius);
+	}
+	if (r->render_debug) {
+		r->render_texture_abs_size(r->hitbox_tex, x_pos, y_pos, 0, radius);
+	}
+	
 }
 
 void Asteroid::update() {

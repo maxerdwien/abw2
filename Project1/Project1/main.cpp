@@ -707,7 +707,7 @@ int main(int, char**) {
 
 				s->do_speed_boost = is.l3.state;
 
-				if (is.start.state && game_start_cooldown < 2 * 60) {
+				if (is.start.state && is.start.changed && game_start_cooldown < 2 * 60) {
 					current_state = pause;
 				}
 			}
@@ -1231,6 +1231,18 @@ int main(int, char**) {
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						LRA[controller_index].a = true;
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
+						if (r->render_normal && !r->render_debug) {
+							r->render_debug = true;
+						}
+						else if (r->render_normal && r->render_debug) {
+							r->render_normal = false;
+						}
+						else {
+							r->render_normal = true;
+							r->render_debug = false;
+						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 						LRA[controller_index].l = true;
