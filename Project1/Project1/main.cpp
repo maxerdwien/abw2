@@ -679,16 +679,28 @@ int main(int, char**) {
 					int goal_x = (WIDTH_UNITS - BARSIZE) / 2;
 					int goal_y = HEIGHT_UNITS / 2;
 
-					if (ships[i]->x_pos > goal_x) {
-						a.l_stick_x = -100000000000000;
-					} else {
-						a.l_stick_x = 100000000000000;
+					a.l_stick_x = goal_x - ships[i]->x_pos;
+					a.l_stick_y = goal_y - ships[i]->y_pos;
+
+					// select target
+					int target_ship = -1;
+					double min_dist = 9999999999;
+					Ship* me = ships[i];
+					for (int j = 0; j < 4; j++) {
+						if (i == j) continue;
+
+						Ship* them = ships[j];
+						if (!them) continue;
+						double dist = sqrt(pow(me->x_pos - them->x_pos, 2) + pow(me->y_pos - them->y_pos, 2));
+						if (dist < min_dist) {
+							min_dist = dist;
+							target_ship = j;
+						}
 					}
 
-					if (ships[i]->y_pos > goal_y) {
-						a.l_stick_y = -100000000000000;
-					} else {
-						a.l_stick_y = 100000000000000;
+					if (target_ship != -1) {
+						a.r_stick_x = ships[target_ship]->x_pos - me->x_pos;
+						a.r_stick_y = ships[target_ship]->y_pos - me->y_pos;
 					}
 
 					controllers[i] = a;
@@ -1243,6 +1255,8 @@ int main(int, char**) {
 							r->render_normal = true;
 							r->render_debug = false;
 						}
+						// todo: re-render screen
+
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 						LRA[controller_index].l = true;

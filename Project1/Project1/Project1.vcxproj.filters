@@ -51,6 +51,12 @@
     <ClCompile Include="asteroid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="weapon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="flamethrower.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="spaceship.h">
@@ -90,6 +96,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="input-state.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="weapon.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flamethrower.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
