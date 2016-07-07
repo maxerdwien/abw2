@@ -673,8 +673,8 @@ int main(int, char**) {
 			for (int i = 0; i < 4; i++) {
 				if (controllers[i].status == ai) {
 					input_state a = controllers[i];
-					a.rb.state = true;
-					a.rb.changed = true;
+					a.lb.state = true;
+					a.lb.changed = true;
 
 					int goal_x = (WIDTH_UNITS - BARSIZE) / 2;
 					int goal_y = HEIGHT_UNITS / 2;
@@ -698,11 +698,37 @@ int main(int, char**) {
 						}
 					}
 
+					// aim straight at them
 					if (target_ship != -1) {
 						a.r_stick_x = ships[target_ship]->x_pos - me->x_pos;
 						a.r_stick_y = ships[target_ship]->y_pos - me->y_pos;
 					}
 
+					if (target_ship != -1) {
+						double enemy_speed = sqrt(pow(ships[target_ship]->x_vel, 2) + pow(ships[target_ship]->y_vel, 2));
+						double bullet_speed = 70000;
+
+						double straight_angle = atan2(ships[target_ship]->y_pos - me->y_pos, ships[target_ship]->x_pos - me->x_pos);
+
+						double beta = atan2(ships[target_ship]->y_vel, ships[target_ship]->x_vel) - straight_angle;
+						if (beta < 0) beta += 2 * M_PI;
+
+						double stuff = (enemy_speed * sin(beta)) / bullet_speed;
+						if (stuff > 1) stuff = 1;
+						if (stuff < -1) stuff = -1;
+						double alpha = asin(stuff);
+
+						std::cout << "beta: " << beta << "\talpha: " << alpha << "\tstuff: " << (enemy_speed * sin(beta)) / bullet_speed << std::endl;
+
+						double aim_angle = straight_angle;
+						bool lead_target = false;
+						if (lead_target) {
+							aim_angle += alpha;
+						}
+
+						a.r_stick_x = 100000 * cos(aim_angle);
+						a.r_stick_y = 100000 * sin(aim_angle);
+					}
 					controllers[i] = a;
 				}
 			}
