@@ -341,12 +341,6 @@ int main(int, char**) {
 					controller_index = lookup_controller(e.cbutton.which);
 					
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						bool all_ready = true;
-						for (int i = 0; i < 4; i++) {
-							if (controllers[i].status == human && !ready[i]) {
-								all_ready = false;
-							}
-						}
 
 						if (!ready[controller_index]) {
 							Mix_PlayChannel(-1, selected_ship, 0);
@@ -676,7 +670,7 @@ int main(int, char**) {
 					a.lb.state = true;
 					a.lb.changed = true;
 
-					int goal_x = (WIDTH_UNITS - BARSIZE) / 2;
+					int goal_x = (WIDTH_UNITS - BARSIZE) / 2 + BARSIZE;
 					int goal_y = HEIGHT_UNITS / 2;
 
 					a.l_stick_x = goal_x - ships[i]->x_pos;
@@ -718,7 +712,7 @@ int main(int, char**) {
 						if (stuff < -1) stuff = -1;
 						double alpha = asin(stuff);
 
-						std::cout << "beta: " << beta << "\talpha: " << alpha << "\tstuff: " << (enemy_speed * sin(beta)) / bullet_speed << std::endl;
+						//std::cout << "beta: " << beta << "\talpha: " << alpha << "\tstuff: " << (enemy_speed * sin(beta)) / bullet_speed << std::endl;
 
 						double aim_angle = straight_angle;
 						bool lead_target = false;
