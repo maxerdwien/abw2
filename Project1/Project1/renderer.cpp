@@ -16,9 +16,11 @@ Renderer::Renderer(SDL_Renderer* r, int w, int h) {
 
 	TTF_Init();
 
-	caladea = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 36 * ratio);
-	caladea_small = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 28 * ratio);
-	caladea_large = TTF_OpenFont("..\\Project1\\assets\\caladea-regular.ttf", 44 * ratio);
+	const char* file = "..\\Project1\\assets\\caladea-regular.ttf";
+	caladea_large = TTF_OpenFont(file, 44 * ratio);
+	caladea = TTF_OpenFont(file, 36 * ratio);
+	caladea_small = TTF_OpenFont(file, 28 * ratio);
+	
 }
 
 double Renderer::atan2_degrees(int x_vel, int y_vel) {

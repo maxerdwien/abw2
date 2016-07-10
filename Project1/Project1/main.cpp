@@ -334,12 +334,6 @@ int main(int, char**) {
 					controller_index = lookup_controller(e.cbutton.which);
 					
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						bool all_ready = true;
-						for (int i = 0; i < 4; i++) {
-							if (controllers[i] && !ready[i]) {
-								all_ready = false;
-							}
-						}
 
 						if (!ready[controller_index]) {
 							Mix_PlayChannel(-1, selected_ship, 0);
@@ -354,9 +348,6 @@ int main(int, char**) {
 								all_ready = false;
 							}
 						}
-
-						bool quick_start = false;
-						if (quick_start) all_ready = true;
 
 						if (all_ready) {
 							currentState = stageSelect;
@@ -766,16 +757,16 @@ int main(int, char**) {
 								ship->desired_gun_dir_y = ship->right_stick_y;
 							}
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
-							int min_activation = 20000;
-							int min_deactivation = 18000;
+							int min_activation = 15000;
+							int min_deactivation = 13000;
 							if (e.caxis.value < min_deactivation) {
 								ship->do_fire_2 = false;
 							} else if (e.caxis.value > min_activation) {
 								ship->do_fire_2 = true;
 							}
 						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
-							int min_activation = 20000;
-							int min_deactivation = 18000;
+							int min_activation = 15000;
+							int min_deactivation = 13000;
 							if (e.caxis.value < min_deactivation) {
 								ship->do_fire_2 = false;
 							} else if (e.caxis.value > min_activation) {
@@ -843,17 +834,19 @@ int main(int, char**) {
 			}
 
 			// update asteroids
-			for (int i = 0; i < num_asteroids; i++) {
-				Asteroid* a = asteroids[i];
-				a->update();
-				if (a->x_pos < STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST || a->x_pos > WIDTH_UNITS + ASTEROID_SPAWN_DIST ||
-					a->y_pos < -ASTEROID_SPAWN_DIST || a->y_pos > HEIGHT_UNITS + ASTEROID_SPAWN_DIST) {
-					delete asteroids[i];
-					num_asteroids--;
-					asteroids[i] = asteroids[num_asteroids];
-					asteroid_spawn_cooldown -= 5 * 60;
+			//if (game_end_cooldown >= game_end_delay) {
+				for (int i = 0; i < num_asteroids; i++) {
+					Asteroid* a = asteroids[i];
+					a->update();
+					if (a->x_pos < STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST || a->x_pos > WIDTH_UNITS + ASTEROID_SPAWN_DIST ||
+						a->y_pos < -ASTEROID_SPAWN_DIST || a->y_pos > HEIGHT_UNITS + ASTEROID_SPAWN_DIST) {
+						delete asteroids[i];
+						num_asteroids--;
+						asteroids[i] = asteroids[num_asteroids];
+						asteroid_spawn_cooldown -= 5 * 60;
+					}
 				}
-			}
+			//}
 
 			// update ships
 			for (int i = 0; i < 4; i++) {
