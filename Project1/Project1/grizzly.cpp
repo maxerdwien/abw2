@@ -244,7 +244,13 @@ void Grizzly::render_projectiles_1() {
 		} else {
 			tex = bullet_tex;
 		}
-		r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
+		
+		if (r->render_normal) {
+			r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
+		}
+		if (r->render_debug) {
+			r->render_texture_abs_size(r->hitbox_tex, bullets[j]->x_pos, bullets[j]->y_pos, 0, bullets[j]->radius);
+		}
 	}
 }
 
@@ -362,7 +368,7 @@ void Grizzly::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, S
 				if (ships[k]->id == id) continue;
 				if (ships[k]->id == ally1) continue;
 				if (ships[k]->id == ally2) continue;
-				if (dist <= MISSILE_ACTIVATION_RADIUS) {
+				if (dist <= (MISSILE_ACTIVATION_RADIUS + ships[k]->radius)) {
 					missile->exploded = true;
 					missile->x_vel = 0;
 					missile->y_vel = 0;
@@ -394,9 +400,22 @@ void Grizzly::render_projectiles_2() {
 			} else {
 				tex = missile_tex;
 			}
-			r->render_texture(tex, missiles[j]->x_pos, missiles[j]->y_pos, angle, 1.8);
+			if (r->render_normal) {
+				r->render_texture(tex, missiles[j]->x_pos, missiles[j]->y_pos, angle, 1.8);
+			}
+			if (r->render_debug) {
+				r->render_texture_abs_size(r->hitbox_tex, missiles[j]->x_pos, missiles[j]->y_pos, 0, missiles[j]->radius);
+				r->render_texture_abs_size(r->activation_hitbox_tex, missiles[j]->x_pos, missiles[j]->y_pos, 0, MISSILE_ACTIVATION_RADIUS);
+			}
+			
 		} else {
-			r->render_texture_abs_size(explosion_tex, missiles[j]->x_pos, missiles[j]->y_pos, 0, missiles[j]->radius);
+			if (r->render_normal) {
+				r->render_texture_abs_size(explosion_tex, missiles[j]->x_pos, missiles[j]->y_pos, 0, missiles[j]->radius);
+			}
+			if (r->render_debug) {
+				r->render_texture_abs_size(r->hitbox_tex, missiles[j]->x_pos, missiles[j]->y_pos, 0, missiles[j]->radius);
+			}
+			
 		}
 	}
 }
@@ -503,7 +522,7 @@ void Grizzly::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, S
 				if (ships[k]->id == id) continue;
 				if (ships[k]->id == ally1) continue;
 				if (ships[k]->id == ally2) continue;
-				if (dist <= MISSILE_ACTIVATION_RADIUS) {
+				if (dist <= (MISSILE_ACTIVATION_RADIUS + ships[k]->radius)) {
 					mine->exploded = true;
 					mine->x_vel = 0;
 					mine->y_vel = 0;
@@ -529,9 +548,22 @@ void Grizzly::render_projectiles_3() {
 	for (int j = 0; j < num_mines; j++) {
 		if (!mines[j]->exploded) {
 			double angle = r->atan2_degrees(mines[j]->x_vel, mines[j]->y_vel);
-			r->render_texture(mine_tex, mines[j]->x_pos, mines[j]->y_pos, angle, 1.8);
+			if (r->render_normal) {
+				r->render_texture(mine_tex, mines[j]->x_pos, mines[j]->y_pos, angle, 1.8);
+			}
+			if (r->render_debug) {
+				r->render_texture_abs_size(r->hitbox_tex, mines[j]->x_pos, mines[j]->y_pos, 0, mines[j]->radius);
+				r->render_texture_abs_size(r->activation_hitbox_tex, mines[j]->x_pos, mines[j]->y_pos, 0, MISSILE_ACTIVATION_RADIUS);
+			}
+			
 		} else {
-			r->render_texture_abs_size(explosion_tex, mines[j]->x_pos, mines[j]->y_pos, 0, mines[j]->radius);
+			if (r->render_normal) {
+				r->render_texture_abs_size(explosion_tex, mines[j]->x_pos, mines[j]->y_pos, 0, mines[j]->radius);
+			}
+			if (r->render_debug) {
+				r->render_texture_abs_size(r->hitbox_tex, mines[j]->x_pos, mines[j]->y_pos, 0, mines[j]->radius);
+			}
+			
 		}
 	}
 }

@@ -75,6 +75,7 @@
   <ItemGroup>
     <ClCompile Include="asteroid.cpp" />
     <ClCompile Include="black.cpp" />
+    <ClCompile Include="flamethrower.cpp" />
     <ClCompile Include="gravity-missile.cpp" />
     <ClCompile Include="grizzly.cpp" />
     <ClCompile Include="item.cpp" />
@@ -85,13 +86,16 @@
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="spaceship.cpp" />
     <ClCompile Include="spark.cpp" />
+    <ClCompile Include="weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asteroid.h" />
     <ClInclude Include="black.h" />
     <ClInclude Include="bullet.h" />
+    <ClInclude Include="flamethrower.h" />
     <ClInclude Include="gravity-missile.h" />
     <ClInclude Include="grizzly.h" />
+    <ClInclude Include="input-state.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="missile.h" />
     <ClInclude Include="polar.h" />
@@ -99,6 +103,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="spaceship.h" />
     <ClInclude Include="spark.h" />
+    <ClInclude Include="weapon.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Project1.rc" />

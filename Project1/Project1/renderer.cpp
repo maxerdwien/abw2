@@ -16,10 +16,25 @@ Renderer::Renderer(SDL_Renderer* r, int w, int h) {
 
 	TTF_Init();
 
+<<<<<<< HEAD
 	const char* file = "..\\Project1\\assets\\caladea-regular.ttf";
 	caladea_large = TTF_OpenFont(file, 44 * ratio);
 	caladea = TTF_OpenFont(file, 36 * ratio);
 	caladea_small = TTF_OpenFont(file, 28 * ratio);
+=======
+	const char* font_file = "..\\Project1\\assets\\caladea-regular.ttf";
+	caladea_large = TTF_OpenFont(font_file, 44 * ratio); 
+	caladea = TTF_OpenFont(font_file, 36 * ratio);
+	caladea_small = TTF_OpenFont(font_file, 28 * ratio);
+
+	render_normal = true;
+	render_debug = false;
+
+	hitbox_tex = LoadTexture("..\\Project1\\assets\\hitbox.png");
+	hurtbox_tex = LoadTexture("..\\Project1\\assets\\hurtbox.png");
+	invincible_hurtbox_tex = LoadTexture("..\\Project1\\assets\\invincible_hurtbox.png");
+	activation_hitbox_tex = LoadTexture("..\\Project1\\assets\\activation_hitbox.png");
+>>>>>>> origin/master
 	
 }
 

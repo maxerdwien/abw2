@@ -270,7 +270,13 @@ void Polar::render_projectiles_1() {
 		} else {
 			tex = bullet_tex;
 		}
-		r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
+		if (r->render_normal) {
+			r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, 1);
+		}
+		if (r->render_debug) {
+			r->render_texture_abs_size(r->hitbox_tex, bullets[j]->x_pos, bullets[j]->y_pos, 0, bullets[j]->radius);
+		}
+		
 	}
 }
 
@@ -334,6 +340,7 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 					m->x_vel = 0;
 					m->y_vel = 0;
 					Mix_PlayChannel(-1, blackhole_sfx, 0);
+					missile_click_used = false;
 					continue;
 				}
 			}
@@ -374,7 +381,18 @@ void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 			if (!ships[k]) continue;
 			if (ships[k]->lives == 0) continue;
 			double dist = sqrt(pow(m->x_pos - ships[k]->x_pos, 2) + pow(m->y_pos - ships[k]->y_pos, 2));
-			if (m->exploded) {
+			if (!m->exploded) {
+				if (ships[k]->id == id) continue;
+				if (ships[k]->id == ally1) continue;
+				if (ships[k]->id == ally2) continue;
+				if (dist <= (ships[k]->radius + m->radius)) {
+					m->exploded = true;
+					m->x_vel = 0;
+					m->y_vel = 0;
+					Mix_PlayChannel(-1, blackhole_sfx, 0);
+					missile_click_used = false;
+				}
+			} else {
 				if (dist <= (ships[k]->radius + m->radius)) {
 					if (m->damage_counter % 3 == 0) {
 						bool hit = ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
@@ -408,12 +426,24 @@ void Polar::render_projectiles_2() {
 			} else {
 				tex = missile_tex;
 			}
-			r->render_texture(tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, angle, 3);
+			if (r->render_normal) {
+				r->render_texture(tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, angle, 3);
+			}
+			if (r->render_debug) {
+				r->render_texture_abs_size(r->activation_hitbox_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, 0, g_missiles[j]->radius);
+			}
+			
 		} else {
-			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle, g_missiles[j]->radius);
-			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle, g_missiles[j]->radius);
-			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle+45, g_missiles[j]->radius);
-			r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle+45, g_missiles[j]->radius);
+			if (r->render_normal) {
+				r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle, g_missiles[j]->radius);
+				r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle, g_missiles[j]->radius);
+				r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle + 45, g_missiles[j]->radius);
+				r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle + 45, g_missiles[j]->radius);
+			}
+			if (r->render_debug) {
+				r->render_texture_abs_size(r->hitbox_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, 0, g_missiles[j]->radius);
+			}
+			
 		}
 	}
 }
@@ -503,7 +533,9 @@ void Polar::render_projectiles_3() {
 	for (int i = 0; i < num_sparks; i++) {
 		Spark* s = sparks[i];
 		r->SetRenderDrawColor(255, 255, 0, SDL_ALPHA_OPAQUE);
-		r->render_line_w_end(s->x_1, s->y_1, s->x_2, s->y_2);
+		if (r->render_normal) {
+			r->render_line_w_end(s->x_1, s->y_1, s->x_2, s->y_2);
+		}
 	}
 }
 

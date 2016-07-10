@@ -19,13 +19,25 @@ void Ship::render() {
 	double angle = r->atan2_degrees(face_dir_x, face_dir_y);
 
 	if (invincibility_cooldown > 0) {
-		if (invincibility_cooldown % invincibility_switch_rate < (2 *invincibility_switch_rate/3)) {
-			r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
-		} else {
-			r->render_texture(ship_invincible_tex, x_pos, y_pos, angle, 3 * scale);
+		
+		if (r->render_normal) {
+			if (invincibility_cooldown % invincibility_switch_rate < (2 * invincibility_switch_rate / 3)) {
+				r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
+			} else {
+				r->render_texture(ship_invincible_tex, x_pos, y_pos, angle, 3 * scale);
+			}
+		}
+		if (r->render_debug) {
+			r->render_texture_abs_size(r->invincible_hurtbox_tex, x_pos, y_pos, 0, radius);
 		}
 	} else {
-		r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
+		if (r->render_normal) {
+			r->render_texture(ship_tex, x_pos, y_pos, angle, 3 * scale);
+		}
+		if (r->render_debug) {
+			r->render_texture_abs_size(r->hurtbox_tex, x_pos, y_pos, 0, radius);
+		}
+		
 	}
 
 	// render thrust
@@ -33,7 +45,7 @@ void Ship::render() {
 	double accel = sqrt(pow(move_dir_x, 2) + pow(move_dir_y, 2));
 	if (accel >= min_accel_for_thusters) {
 		double angle_radians = atan2(face_dir_y, face_dir_x);
-		int thrust_dist = 10000 * 28;
+		int thrust_dist = 10000 * 28 * scale;
 		if (speed_boost_cooldown > speed_boost_delay - speed_boost_high_engine_time) {
 			r->render_texture_edge_spin(thrust_high_tex, x_pos - thrust_dist*cos(angle_radians), y_pos - thrust_dist*sin(angle_radians), angle + 180, 3 * scale);
 		}

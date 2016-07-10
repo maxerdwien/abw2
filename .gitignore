@@ -3,3 +3,11 @@ Project1/Project1/Debug/
 *.idb
 Project1/Project1/Debug/vc140.pdb
 *.log
+*.log
+*.suo
+*.exe
+*.ilk
+*.pdb
+*.idb
+Project1/.vs/acsf/v14/.suo
+*.pdb

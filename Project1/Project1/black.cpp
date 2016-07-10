@@ -77,7 +77,6 @@ Black::Black(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	flame_tex_1 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame1.png");
 	flame_tex_2 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame2.png");
 
-	hitbox_tex = r->LoadTexture("..\\Project1\\assets\\sun.png");
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
 	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
@@ -99,7 +98,6 @@ Black::~Black() {
 	SDL_DestroyTexture(cannon_tex);
 	SDL_DestroyTexture(flame_tex_1);
 	SDL_DestroyTexture(flame_tex_2);
-	SDL_DestroyTexture(hitbox_tex);
 	SDL_DestroyTexture(bounce_bullet_tex);
 	SDL_DestroyTexture(shield_tex);
 	SDL_DestroyTexture(bounce_tex);
@@ -251,7 +249,13 @@ void Black::render_projectiles_1() {
 		} else {
 			tex = bullet_tex;
 		}
-		r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, ((double)bullets[j]->radius/10000.0)/5);
+		if (r->render_normal) {
+			r->render_texture(tex, bullets[j]->x_pos, bullets[j]->y_pos, angle, ((double)bullets[j]->radius / 10000.0) / 5);
+		}
+		if (r->render_debug) {
+			r->render_texture_abs_size(r->hitbox_tex, bullets[j]->x_pos, bullets[j]->y_pos, 0, bullets[j]->radius);
+		}
+		
 	}
 }
 
@@ -357,22 +361,24 @@ void Black::render_projectiles_3() {
 
 		double angle = atan2(gun_dir_y, gun_dir_x);
 
-		// render hitboxes
-		bool render_hitboxes = false;
-		if (render_hitboxes) {
-			for (int i = 0; i < num_flame_hitboxes; i++) {
-				int hb_x = x_pos + (int)(flame_dists[i] * cos(angle));
-				int hb_y = y_pos + (int)(flame_dists[i] * sin(angle));
-				r->render_texture_abs_size(hitbox_tex, hb_x, hb_y, 0, flame_radii[i]);
+		
+
+		if (r->render_normal) {
+			if (current_flame == 0) {
+				r->render_texture_edge_spin(flame_tex_1, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), angle * 180 / M_PI + 90, 4);
+			} else {
+				// works since the textures are the same size
+				r->render_texture_edge_spin(flame_tex_2, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), angle * 180 / M_PI + 90, 4);
 			}
 		}
 
-
-		if (current_flame == 0) {
-			r->render_texture_edge_spin(flame_tex_1, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), angle * 180 / M_PI + 90, 4);
-		} else {
-			// works since the textures are the same size
-			r->render_texture_edge_spin(flame_tex_2, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), angle * 180 / M_PI + 90, 4);
+		// render hitboxes
+		if (r->render_debug) {
+			for (int i = 0; i < num_flame_hitboxes; i++) {
+				int hb_x = x_pos + (int)(flame_dists[i] * cos(angle));
+				int hb_y = y_pos + (int)(flame_dists[i] * sin(angle));
+				r->render_texture_abs_size(r->hitbox_tex, hb_x, hb_y, 0, flame_radii[i]);
+			}
 		}
 
 		if (!Mix_Playing(flamethrower_channel)) {
