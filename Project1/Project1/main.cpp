@@ -341,18 +341,6 @@ int main(int, char**) {
 					controller_index = lookup_controller(e.cbutton.which);
 					
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-						bool all_ready = true;
-						for (int i = 0; i < 4; i++) {
-							if (controllers[i].status == human && !ready[i]) {
-								all_ready = false;
-							}
-						}
->>>>>>> origin/master
->>>>>>> origin/master
 
 						if (!ready[controller_index]) {
 							Mix_PlayChannel(-1, selected_ship, 0);
@@ -368,11 +356,7 @@ int main(int, char**) {
 							}
 						}
 
-<<<<<<< HEAD
-=======
 						if (DEBUG_MODE) all_ready = true;
-
->>>>>>> origin/master
 						if (all_ready) {
 							current_state = stage_select;
 						}
@@ -705,90 +689,6 @@ int main(int, char**) {
 							min_dist = dist;
 							target_ship = j;
 						}
-<<<<<<< HEAD
-						break;
-					case SDL_CONTROLLERAXISMOTION:
-						controller_index = lookup_controller(e.caxis.which);
-						ship = ships[controller_index];
-						if (!ship) continue;
-						if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
-							double value = (double)e.caxis.value / 32767;
-
-							double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
-							//std::cout << old_gun_mag << std::endl;
-							ship->left_stick_x = (int)(10000 * circle_x);
-							double left_stick_mag = sqrt(pow(ship->left_stick_x, 2) + pow(ship->left_stick_y, 2));
-							//std::cout << left_stick_mag << std::endl;
-							if (left_stick_mag > DEAD_ZONE) {
-								ship->move_dir_x = ship->left_stick_x;
-								ship->move_dir_y = ship->left_stick_y;
-								if (game_end_cooldown == game_end_delay) {
-									ship->face_dir_x = ship->left_stick_x;
-									ship->face_dir_y = ship->left_stick_y;
-								}
-							} else {
-								ship->move_dir_x = 0;
-								ship->move_dir_y = 0;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
-							double value = (double)e.caxis.value / 32768;
-
-							double circle_y = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
-							//std::cout << old_gun_mag << std::endl;
-							ship->left_stick_y = (int)(10000 * circle_y);
-							double left_stick_mag = sqrt(pow(ship->left_stick_x, 2) + pow(ship->left_stick_y, 2));
-							//std::cout << left_stick_mag << std::endl;
-							if (left_stick_mag > DEAD_ZONE) {
-								ship->move_dir_x = ship->left_stick_x;
-								ship->move_dir_y = ship->left_stick_y;
-								if (game_end_cooldown == game_end_delay) {
-									ship->face_dir_x = ship->left_stick_x;
-									ship->face_dir_y = ship->left_stick_y;
-								}
-							} else {
-								ship->move_dir_x = 0;
-								ship->move_dir_y = 0;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX) {
-							double value = (double)e.caxis.value / 32767;
-
-							double circle_x = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
-							//std::cout << circle_x << std::endl;
-							ship->right_stick_x = (int)(10000 * circle_x);
-							double right_stick_mag = sqrt(pow(ship->right_stick_x, 2) + pow(ship->right_stick_y, 2));
-							//std::cout << right_stick_mag << std::endl;
-							if (right_stick_mag > DEAD_ZONE) {
-								ship->desired_gun_dir_x = ship->right_stick_x;
-								ship->desired_gun_dir_y = ship->right_stick_y;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY) {
-							double value = (double)e.caxis.value / 32768;
-
-							double circle_y = sin(value * CONTROLLER_MAX_ANGLE) / sin(CONTROLLER_MAX_ANGLE);
-							ship->right_stick_y = (int)(10000 * circle_y);
-							double right_stick_mag = sqrt(pow(ship->right_stick_x, 2) + pow(ship->right_stick_y, 2));
-							//std::cout << right_stick_mag << std::endl;
-							if (right_stick_mag > DEAD_ZONE) {
-								ship->desired_gun_dir_x = ship->right_stick_x;
-								ship->desired_gun_dir_y = ship->right_stick_y;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
-							int min_activation = 15000;
-							int min_deactivation = 13000;
-							if (e.caxis.value < min_deactivation) {
-								ship->do_fire_2 = false;
-							} else if (e.caxis.value > min_activation) {
-								ship->do_fire_2 = true;
-							}
-						} else if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT) {
-							int min_activation = 15000;
-							int min_deactivation = 13000;
-							if (e.caxis.value < min_deactivation) {
-								ship->do_fire_2 = false;
-							} else if (e.caxis.value > min_activation) {
-								ship->do_fire_2 = true;
-							}
-=======
 					}
 
 					// aim straight at them
@@ -817,7 +717,6 @@ int main(int, char**) {
 						bool lead_target = false;
 						if (lead_target) {
 							aim_angle += alpha;
->>>>>>> origin/master
 						}
 
 						a.r_stick_x = 100000 * cos(aim_angle);
