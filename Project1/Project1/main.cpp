@@ -301,7 +301,7 @@ int main(int, char**) {
 	char buf[buffer_size];
 	memset(buf, 0, buffer_size);
 
-	bool be_server = true;
+	bool be_server = false;
 	if (be_server) {
 
 		ADDRINFO* address_info;
@@ -333,6 +333,33 @@ int main(int, char**) {
 
 		printf("recieved %d bytes\n", message_len);
 		printf("%s\n", buf);
+	} else {
+		ADDRINFO* address_info;
+		PCSTR server_ip = "2601:282:a03:9e30:7812:e4af:d650:e3ee";
+		int ret_val = getaddrinfo(server_ip, port, &hints, &address_info);
+		if (ret_val != 0) {
+			printf("failed to get address info\n");
+		}
+		if (address_info->ai_next != NULL) {
+			printf("more than one address info was returned\n");
+		}
+
+		SOCKET connection_socket = socket(address_info->ai_family, address_info->ai_socktype, address_info->ai_protocol);
+		if (connection_socket == INVALID_SOCKET) {
+			printf("problem\n");
+		}
+
+		ret_val = connect(connection_socket, address_info->ai_addr, (int)address_info->ai_addrlen);
+		if (ret_val == SOCKET_ERROR) {
+			printf("socket error, %d\n", WSAGetLastError());
+		}
+
+		char message[buffer_size] = "hello world";
+
+		ret_val = send(connection_socket, message, buffer_size, 0);
+		if (ret_val == 0) {
+			printf("failed to send");
+		}
 	}
 
 	// game loop

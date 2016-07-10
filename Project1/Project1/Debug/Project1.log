@@ -1,6 +1,59 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  weapon.cpp
+  spark.cpp
+c:\users\max\documents\github\abw2\project1\project1\spark.cpp(9): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\spark.cpp(10): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\spark.cpp(12): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\spark.cpp(14): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+  spaceship.cpp
+c:\users\max\documents\github\abw2\project1\project1\spaceship.cpp(48): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\spaceship.cpp(50): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\spaceship.cpp(53): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\spaceship.cpp(56): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\spaceship.cpp(80): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  renderer.cpp
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(20): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(21): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(22): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(42): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(43): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(48): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(49): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(57): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(58): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(63): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(64): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(76): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(77): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(78): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(103): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(104): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(122): warning C4838: conversion from 'int' to 'Uint8' requires a narrowing conversion
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(150): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(151): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(152): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(153): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(159): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(160): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(178): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(179): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(226): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(252): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(253): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(254): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\renderer.cpp(255): warning C4244: '*=': conversion from 'double' to 'int', possible loss of data
+  polar.cpp
+  missile.cpp
+  bullet.cpp
   main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(130): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(778): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(779): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-  Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\acsf.exe
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(130): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(805): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+c:\users\max\documents\github\abw2\project1\project1\main.cpp(806): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+  item.cpp
+  grizzly.cpp
+  gravity-missile.cpp
+  flamethrower.cpp
+  black.cpp
+  asteroid.cpp
+  Generating Code...
+  Project1.vcxproj -> C:\Users\max\Documents\GitHub\abw2\Project1\Debug\acsf.exe
