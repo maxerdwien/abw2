@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include <winsock2.h>
+#include <ws2tcpip.h>
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -167,7 +168,7 @@ int main(int, char**) {
 		WINDOW_HEIGHT = 720;
 	}
 
-	window = SDL_CreateWindow("Alaskan Cosmobear Spacefighting", 675, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("alaskan cosmobear spacefighting", 675, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
 		std::cout << "SDL_CreateWindow error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
@@ -282,43 +283,57 @@ int main(int, char**) {
 	}
 
 	// internet junk
-	const int port = 8888;
+	const char* port = "7534";
 
 	WSADATA wsa;
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
 		printf("wsa startup error, %d\n", WSAGetLastError());
 	}
-
-	SOCKET s = socket(AF_INET, SOCK_DGRAM, 0);
-	if (s == INVALID_SOCKET) {
-		printf("failed to create socket, %d\n", WSAGetLastError());
-	}
-
-	struct sockaddr_in server;
-	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = htons(port);
-
-	if (bind(s, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR) {
-		printf("failed to bind or something, %d", WSAGetLastError());
-	}
 	
+	ADDRINFO hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET6;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
+
 	const int buffer_size = 512;
 	char buf[buffer_size];
-
 	memset(buf, 0, buffer_size);
 
-	struct sockaddr_in client;
-	int slen = sizeof(sockaddr_in);
-	int message_len = recvfrom(s, buf, buffer_size, 0, (struct sockaddr*)&client, &slen);
-	if (message_len == SOCKET_ERROR) {
-		printf("recvfrom failed, %d", WSAGetLastError());
+	bool be_server = true;
+	if (be_server) {
+
+		ADDRINFO* address_info;
+		int ret_val = getaddrinfo(NULL, port, &hints, &address_info);
+		if (ret_val != 0) {
+			printf("could not get address info\n");
+		}
+
+		if (address_info->ai_next != NULL) {
+			printf("problem\n");
+		}
+
+		SOCKET s = socket(address_info->ai_family, address_info->ai_socktype, address_info->ai_protocol);
+		if (s == INVALID_SOCKET) {
+			printf("socket creation failure\n");
+		}
+
+		int bind_result = bind(s, address_info->ai_addr, (int)address_info->ai_addrlen);
+		if (bind_result == SOCKET_ERROR) {
+			printf("failed to bind\n");
+		}
+
+		SOCKADDR_STORAGE from;
+		int fromlen = sizeof(from);
+		int message_len = recvfrom(s, buf, buffer_size, 0, (LPSOCKADDR)&from, &fromlen);
+		if (message_len == SOCKET_ERROR) {
+			printf("recvfrom failed, %d", WSAGetLastError());
+		}
+
+		printf("recieved %d bytes\n", message_len);
+		printf("%s\n", buf);
 	}
-
-	//printf("Received packet from %s:%d\n", inet_ntop(client.sin_addr), ntohs(client.sin_port));
-	printf("Data: %s\n", buf);
-
 
 	// game loop
 	while (!quit) {
