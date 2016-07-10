@@ -27,7 +27,7 @@ Item::Item(int x, int y, item_type t, Renderer* rend) {
 		tex = r->LoadTexture("..\\Project1\\assets\\powerUpOrange.png");
 		text = "bounce off edges!";
 		break;
-	case small:
+	case small_pwrup:
 		tex = r->LoadTexture("..\\Project1\\assets\\powerUpYellow.png");
 		text = "hard to hit!";
 		break;

@@ -2,6 +2,8 @@
 #include <string>
 #include <math.h>
 
+#include <winsock2.h>
+
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_mixer.h>
@@ -278,6 +280,45 @@ int main(int, char**) {
 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 		SDL_ShowCursor(0);
 	}
+
+	// internet junk
+	const int port = 8888;
+
+	WSADATA wsa;
+
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+		printf("wsa startup error, %d\n", WSAGetLastError());
+	}
+
+	SOCKET s = socket(AF_INET, SOCK_DGRAM, 0);
+	if (s == INVALID_SOCKET) {
+		printf("failed to create socket, %d\n", WSAGetLastError());
+	}
+
+	struct sockaddr_in server;
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = INADDR_ANY;
+	server.sin_port = htons(port);
+
+	if (bind(s, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR) {
+		printf("failed to bind or something, %d", WSAGetLastError());
+	}
+	
+	const int buffer_size = 512;
+	char buf[buffer_size];
+
+	memset(buf, 0, buffer_size);
+
+	struct sockaddr_in client;
+	int slen = sizeof(sockaddr_in);
+	int message_len = recvfrom(s, buf, buffer_size, 0, (struct sockaddr*)&client, &slen);
+	if (message_len == SOCKET_ERROR) {
+		printf("recvfrom failed, %d", WSAGetLastError());
+	}
+
+	//printf("Received packet from %s:%d\n", inet_ntop(client.sin_addr), ntohs(client.sin_port));
+	printf("Data: %s\n", buf);
+
 
 	// game loop
 	while (!quit) {
@@ -876,7 +917,7 @@ int main(int, char**) {
 						}
 					}
 
-					if (ship->item_times[small] > 0) {
+					if (ship->item_times[item_type::small_pwrup] > 0) {
 						ship->radius = ship->normal_radius / 2;
 						ship->gun_length = ship->normal_gun_length / 2;
 					} else {

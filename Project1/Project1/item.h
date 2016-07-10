@@ -5,7 +5,7 @@ enum item_type {
 	laser_sights,
 	speed_up,
 	bounce,
-	small,
+	small_pwrup,
 	bullet_bounce,
 
 	NUM_ITEM_TYPES

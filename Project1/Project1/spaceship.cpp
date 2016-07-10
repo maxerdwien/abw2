@@ -13,7 +13,7 @@ Ship::~Ship() {
 
 void Ship::render() {
 	double scale = 1;
-	if (item_times[small] > 0) {
+	if (item_times[small_pwrup] > 0) {
 		scale = 0.5;
 	}
 	double angle = r->atan2_degrees(face_dir_x, face_dir_y);
