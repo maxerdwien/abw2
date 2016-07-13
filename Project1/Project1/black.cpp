@@ -135,7 +135,7 @@ void Black::fire_1() {
 		int MUZZLE_VEL = 90000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
+		Bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -150,7 +150,7 @@ void Black::fire_1() {
 		int MUZZLE_VEL = 90000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
+		Bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -167,7 +167,7 @@ void Black::fire_1() {
 
 void Black::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
-		struct bullet* bullet = bullets[j];
+		Bullet* bullet = bullets[j];
 
 		bullet->x_vel += bullet->x_accel;
 		bullet->y_vel += bullet->y_accel;
@@ -286,7 +286,7 @@ void Black::fire_2() {
 		if (MUZZLE_VEL > 150000) MUZZLE_VEL = 150000;
 		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
+		Bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
 		for (int i = 0; i < spread; i++) {
 			new_bullets[i]->radius = 10000 * charge_shot_charge / 4;
 			if (new_bullets[i]->radius > 10000 * 100) new_bullets[i]->radius = 10000 * 100;
@@ -387,4 +387,12 @@ void Black::render_projectiles_3() {
 	} else {
 		Mix_HaltChannel(flamethrower_channel);
 	}
+}
+
+int Black::serialize(char* buf, int i) {
+	return 0;
+}
+
+int Black::deserialize(char*buf, int i) {
+	return 0;
 }

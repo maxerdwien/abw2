@@ -121,6 +121,10 @@ class Ship {
 		virtual void fire_3() = 0;
 		virtual void update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) = 0;
 		virtual void render_projectiles_3() = 0;
+
+		virtual int serialize(char* buf, int i) = 0;
+
+		virtual int deserialize(char*buf, int i) = 0;
 };
 
 

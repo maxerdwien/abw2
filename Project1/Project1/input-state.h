@@ -6,6 +6,7 @@ enum player_status {
 	empty,
 	human,
 	ai,
+	online,
 };
 
 struct button {

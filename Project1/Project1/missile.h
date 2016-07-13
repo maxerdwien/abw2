@@ -1,4 +1,6 @@
-struct missile {
+class Missile {
+public:
+
 	int x_pos;
 	int y_pos;
 
@@ -25,6 +27,6 @@ const int MISSILE_RADIUS_PER_FRAME = 5 * 10000;
 
 const int MISSILE_ACCEL = 1800;
 
-struct missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling);
+Missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling);
 
-missile** spawn_missiles(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, int damage, int base_knockback, int knockback_scaling);
+Missile** spawn_missiles(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, int damage, int base_knockback, int knockback_scaling);

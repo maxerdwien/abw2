@@ -2,8 +2,8 @@
 
 #include "missile.h"
 
-struct missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling) {
-	struct missile* miss = new struct missile;
+Missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling) {
+	Missile* miss = new Missile;
 
 	miss->x_pos = x_pos;
 	miss->y_pos = y_pos;
@@ -23,12 +23,12 @@ struct missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int dam
 	return miss;
 }
 
-missile** spawn_missiles(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, int damage, int base_knockback, int knockback_scaling) {
+Missile** spawn_missiles(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, int damage, int base_knockback, int knockback_scaling) {
 
 
 	double spread_angle = 3.14159 * 0.2;
 
-	missile** new_missiles = (missile**)malloc(sizeof(missile*) * spread);
+	Missile** new_missiles = (Missile**)malloc(sizeof(Missile*) * spread);
 
 	if (spread % 2 == 0) {
 

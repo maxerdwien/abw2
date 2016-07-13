@@ -20,7 +20,7 @@ private:
 
 	int laser_channel;
 
-	struct bullet* bullets[1000];
+	class Bullet* bullets[1000];
 	int num_bullets = 0;
 
 	const int spread_delay = 30;
@@ -66,4 +66,7 @@ public:
 	void render_projectiles_3();
 
 	double Polar::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_0);
+
+	int serialize(char* buf, int i);
+	int deserialize(char*buf, int i);
 };

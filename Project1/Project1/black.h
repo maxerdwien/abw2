@@ -19,7 +19,7 @@ private:
 	int charging_channel;
 	int flamethrower_channel;
 
-	struct bullet* bullets[1000];
+	class Bullet* bullets[1000];
 	int num_bullets = 0;
 
 	const int burst_delay_1 = 60;
@@ -57,4 +57,7 @@ public:
 	void fire_3();
 	void update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]);
 	void render_projectiles_3();
+
+	int serialize(char* buf, int i);
+	int deserialize(char*buf, int i);
 };

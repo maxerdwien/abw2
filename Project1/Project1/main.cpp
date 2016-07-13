@@ -84,9 +84,15 @@ stage selected_stage = anchorage;
 const double CONTROLLER_MAX_ANGLE = M_PI / 6;
 const int DEAD_ZONE = 5000;
 
+const int buffer_size = 512;
+char buf[buffer_size];
+
 int lookup_controller(int instanceID);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps);
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship);
+void render_game(int game_end_cooldown, int game_end_delay, int game_start_cooldown,
+	Mix_Chunk* countdown_tick, Mix_Chunk* selected_ship, SDL_Texture* bg,
+	Ship* ships[], Item* items[], int num_items, Asteroid* asteroids[], int num_asteroids);
 
 int main(int, char**) {
 
@@ -297,11 +303,9 @@ int main(int, char**) {
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
 
-	const int buffer_size = 512;
-	char buf[buffer_size];
 	memset(buf, 0, buffer_size);
 
-	bool be_server = false;
+	bool be_server = true;
 	if (be_server) {
 
 		ADDRINFO* address_info;
@@ -333,6 +337,13 @@ int main(int, char**) {
 
 		printf("recieved %d bytes\n", message_len);
 		printf("%s\n", buf);
+
+		char hostname[NI_MAXHOST];
+		// todo: worry about return value
+		getnameinfo((LPSOCKADDR)&from, fromlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST);
+
+		sendto(s, buf, buffer_size, 0, (LPSOCKADDR)&from, fromlen);
+
 	} else {
 		ADDRINFO* address_info;
 		PCSTR server_ip = "2601:282:a03:9e30:7812:e4af:d650:e3ee";
@@ -360,6 +371,12 @@ int main(int, char**) {
 		if (ret_val == 0) {
 			printf("failed to send");
 		}
+
+		memset(buf, 0, sizeof(buf));
+
+		recv(connection_socket, buf, buffer_size, 0);
+		printf("%s\n", buf);
+
 	}
 
 	// game loop
@@ -652,7 +669,11 @@ int main(int, char**) {
 		}
 		else if (current_state == init_game) {
 			// begin start game timer
-			game_start_cooldown = game_start_delay;
+			if (!DEBUG_MODE) {
+				game_start_cooldown = game_start_delay;
+			} else {
+				game_start_cooldown = 0;
+			}
 			game_end_cooldown = game_end_delay;
 
 			// reset 'ready' status of all players
@@ -830,7 +851,10 @@ int main(int, char**) {
 				continue;
 			}
 
-			// update
+			// ----- update -----
+			if (game_end_cooldown != game_end_delay) {
+				goto end_of_update;
+			}
 			// spawn asteroids
 			if (selected_stage == juneau) {
 				asteroid_spawn_cooldown--;
@@ -882,19 +906,17 @@ int main(int, char**) {
 			}
 
 			// update asteroids
-			//if (game_end_cooldown >= game_end_delay) {
-				for (int i = 0; i < num_asteroids; i++) {
-					Asteroid* a = asteroids[i];
-					a->update();
-					if (a->x_pos < STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST || a->x_pos > WIDTH_UNITS + ASTEROID_SPAWN_DIST ||
-						a->y_pos < -ASTEROID_SPAWN_DIST || a->y_pos > HEIGHT_UNITS + ASTEROID_SPAWN_DIST) {
-						delete asteroids[i];
-						num_asteroids--;
-						asteroids[i] = asteroids[num_asteroids];
-						asteroid_spawn_cooldown -= 5 * 60;
-					}
+			for (int i = 0; i < num_asteroids; i++) {
+				Asteroid* a = asteroids[i];
+				a->update();
+				if (a->x_pos < STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST || a->x_pos > WIDTH_UNITS + ASTEROID_SPAWN_DIST ||
+					a->y_pos < -ASTEROID_SPAWN_DIST || a->y_pos > HEIGHT_UNITS + ASTEROID_SPAWN_DIST) {
+					delete asteroids[i];
+					num_asteroids--;
+					asteroids[i] = asteroids[num_asteroids];
+					asteroid_spawn_cooldown -= 5 * 60;
 				}
-			//}
+			}
 
 			// update ships
 			for (int i = 0; i < 4; i++) {
@@ -1123,7 +1145,9 @@ int main(int, char**) {
 								ship->lives = 0;
 							}
 
-							ship->invincibility_cooldown += ship->respawn_invincibility_delay;
+							if (!DEBUG_MODE) {
+								ship->invincibility_cooldown += ship->respawn_invincibility_delay;
+							}
 
 							ship->x_pos = ship->respawn_x;
 							ship->y_pos = ship->respawn_y;
@@ -1145,12 +1169,14 @@ int main(int, char**) {
 
 				// update projectiles
 				ship->update_projectiles_1(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
-				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
+				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 
 
 
 			} // end of update ships
+
+		end_of_update:
 
 			// Check to see if the game is over
 			bool game_over = false;
@@ -1178,6 +1204,10 @@ int main(int, char**) {
 				game_over = (teams_alive == 1);
 			}
 
+			if (game_start_cooldown > 0) {
+				game_start_cooldown--;
+			}
+
 			if (game_over) {
 				game_end_cooldown--;
 			}
@@ -1198,122 +1228,15 @@ int main(int, char**) {
 				continue;
 			}
 
-			// begin rendering
-			{
-				// render background
-				if (!xp_mode) {
-					r->render_texture(bg, WIDTH_UNITS / 2, HEIGHT_UNITS / 2, 0, 1.02);
-				}
+			// get serialized data
+			memset(buf, 0, buffer_size);
+			int size = ships[0]->serialize(buf, 0);
 
-				// render all ship elements
-				for (int i = 0; i < 4; i++) {
-					if (!ships[i]) continue;
-					Ship* ship = ships[i];
-					if (ship->lives == 0) continue;
-					ship->render();
-				}
+			render_game(game_end_cooldown, game_end_delay, game_start_cooldown,
+				countdown_tick, selected_ship, bg,
+				ships, items, num_items, asteroids, num_asteroids);
+			SDL_RenderPresent(renderer);
 
-				for (int i = 0; i < 4; i++) {
-					if (!ships[i]) continue;
-					Ship* ship = ships[i];
-					if (ship->lives == 0) continue;
-
-					// render projectiles
-					ship->render_projectiles_1();
-					ship->render_projectiles_2();
-					ship->render_projectiles_3();
-				}
-
-				// render items
-				for (int i = 0; i < num_items; i++) {
-					items[i]->render();
-				}
-
-				// render asteroids
-				for (int i = 0; i < num_asteroids; i++) {
-					asteroids[i]->render();
-				}
-
-				// render UI elements
-				{
-					// render game start countdown
-					if (game_start_cooldown > 0) {
-						game_start_cooldown--;
-						std::string s;
-						if (game_start_cooldown > 3 * 60) {
-							s = " 3 ";
-						} else if (game_start_cooldown > 2 * 60) {
-							s = " 2 ";
-						} else if (game_start_cooldown > 1 * 60) {
-							s = " 1 ";
-						} else {
-							s = " GO! ";
-						}
-						if (game_start_cooldown == 4 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
-						if (game_start_cooldown == 3 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
-						if (game_start_cooldown == 2 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
-						if (game_start_cooldown == 1 * 60) Mix_PlayChannel(-1, selected_ship, 0);
-
-						r->render_text((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f, 255, 255);
-					}
-
-					// render game end text
-					if (game_end_cooldown < game_end_delay) {
-						r->render_text((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, " GAME SET ", true, true, true, large_f, 255, 255);
-					}
-
-					// render status bar background
-					r->SetRenderDrawColor(128, 128, 128, SDL_ALPHA_OPAQUE);
-					r->render_rect(0, 0, STATUS_BAR_WIDTH, HEIGHT_UNITS);
-
-					int box_height = 150;
-
-					// render each ship's UI elements
-					for (int i = 0; i < 4; i++) {
-						if (!ships[i]) continue;
-						Ship* ship = ships[i];
-						if (ship->lives == 0) continue;
-						
-						// render stamina bar
-						{
-							// set stamina bar color
-							if (ship->id == 0) {
-								r->SetRenderDrawColor(160, 0, 0, SDL_ALPHA_OPAQUE);
-							} else if (ship->id == 1) {
-								if (ship->ally1 == -1) r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
-								else r->SetRenderDrawColor(160, 0, 160, SDL_ALPHA_OPAQUE);
-							} else if (ship->id == 2) {
-								if (ship->ally1 == -1) r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
-								else r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
-							} else {
-								if (ship->ally1 == -1) r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
-								else r->SetRenderDrawColor(0, 160, 160, SDL_ALPHA_OPAQUE);
-							}
-
-							r->render_rect(0, 10000 * (120 + box_height*i), (int)(((double)STATUS_BAR_WIDTH * ship->stamina) / ship->stamina_max), 10000 * 30);
-						}
-
-						// render percentages
-						{
-							char str[10];
-							snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
-							int blue_and_green = 255 - (int)(255 * ship->percent / 300);
-							if (blue_and_green < 0) {
-								blue_and_green = 0;
-							}
-							r->render_text(0, 10000 * (61 + box_height * i), str, false, false, false, medium_f, blue_and_green, 255);
-						}
-
-						// render stock counter
-						{
-							char playerLives[20];
-							sprintf_s(playerLives, "Lives: %d", ship->lives);
-							r->render_text(0, 10000 * (10 + box_height * i), playerLives, false, false, false, medium_f, 255, 255);
-						}
-					}
-				}
-				SDL_RenderPresent(renderer);
-			}
 		} //end of ingame state
 
 		// start pause state
@@ -1359,7 +1282,9 @@ int main(int, char**) {
 							r->render_normal = true;
 							r->render_debug = false;
 						}
-						// todo: re-render screen
+						render_game(game_end_cooldown, game_end_delay, game_start_cooldown,
+							countdown_tick, selected_ship, bg,
+							ships, items, num_items, asteroids, num_asteroids);
 
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
@@ -1867,4 +1792,120 @@ void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
 	r->render_text(x, y + 10000 * 130, suicideResult, true, false, false, small_f, 255, 255);
 	r->render_text(x, y + 10000 * 160, damageGiven, true, false, false, small_f, 255, 255);
 	r->render_text(x, y + 10000 * 190, damageTaken, true, false, false, small_f, 255, 255);
+}
+
+void render_game(int game_end_cooldown, int game_end_delay, int game_start_cooldown,
+		Mix_Chunk* countdown_tick, Mix_Chunk* selected_ship, SDL_Texture* bg,
+		Ship* ships[], Item* items[], int num_items, Asteroid* asteroids[], int num_asteroids) {
+	// render background
+	if (!xp_mode) {
+		r->render_texture(bg, WIDTH_UNITS / 2, HEIGHT_UNITS / 2, 0, 1.02);
+	}
+
+	// render all ship elements
+	for (int i = 0; i < 4; i++) {
+		if (!ships[i]) continue;
+		Ship* ship = ships[i];
+		if (ship->lives == 0) continue;
+		ship->render();
+	}
+
+	for (int i = 0; i < 4; i++) {
+		if (!ships[i]) continue;
+		Ship* ship = ships[i];
+		if (ship->lives == 0) continue;
+
+		// render projectiles
+		ship->render_projectiles_1();
+		ship->render_projectiles_2();
+		ship->render_projectiles_3();
+	}
+
+	// render items
+	for (int i = 0; i < num_items; i++) {
+		items[i]->render();
+	}
+
+	// render asteroids
+	for (int i = 0; i < num_asteroids; i++) {
+		asteroids[i]->render();
+	}
+
+	// render UI elements
+	{
+		// render game start countdown
+		if (game_start_cooldown > 0) {
+			std::string s;
+			if (game_start_cooldown > 3 * 60) {
+				s = " 3 ";
+			} else if (game_start_cooldown > 2 * 60) {
+				s = " 2 ";
+			} else if (game_start_cooldown > 1 * 60) {
+				s = " 1 ";
+			} else {
+				s = " GO! ";
+			}
+			if (game_start_cooldown == 4 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
+			if (game_start_cooldown == 3 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
+			if (game_start_cooldown == 2 * 60) Mix_PlayChannel(-1, countdown_tick, 0);
+			if (game_start_cooldown == 1 * 60) Mix_PlayChannel(-1, selected_ship, 0);
+
+			r->render_text((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, s, true, true, true, large_f, 255, 255);
+		}
+
+		// render game end text
+		if (game_end_cooldown < game_end_delay) {
+			r->render_text((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, " GAME SET ", true, true, true, large_f, 255, 255);
+		}
+
+		// render status bar background
+		r->SetRenderDrawColor(128, 128, 128, SDL_ALPHA_OPAQUE);
+		r->render_rect(0, 0, STATUS_BAR_WIDTH, HEIGHT_UNITS);
+
+		int box_height = 150;
+
+		// render each ship's UI elements
+		for (int i = 0; i < 4; i++) {
+			if (!ships[i]) continue;
+			Ship* ship = ships[i];
+			if (ship->lives == 0) continue;
+
+			// render stamina bar
+			{
+				// set stamina bar color
+				if (ship->id == 0) {
+					r->SetRenderDrawColor(160, 0, 0, SDL_ALPHA_OPAQUE);
+				} else if (ship->id == 1) {
+					if (ship->ally1 == -1) r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+					else r->SetRenderDrawColor(160, 0, 160, SDL_ALPHA_OPAQUE);
+				} else if (ship->id == 2) {
+					if (ship->ally1 == -1) r->SetRenderDrawColor(210, 210, 0, SDL_ALPHA_OPAQUE);
+					else r->SetRenderDrawColor(0, 0, 160, SDL_ALPHA_OPAQUE);
+				} else {
+					if (ship->ally1 == -1) r->SetRenderDrawColor(0, 160, 0, SDL_ALPHA_OPAQUE);
+					else r->SetRenderDrawColor(0, 160, 160, SDL_ALPHA_OPAQUE);
+				}
+
+				r->render_rect(0, 10000 * (120 + box_height*i), (int)(((double)STATUS_BAR_WIDTH * ship->stamina) / ship->stamina_max), 10000 * 30);
+			}
+
+			// render percentages
+			{
+				char str[10];
+				snprintf(str, 10, "P%d: %d%%", i + 1, ship->percent);
+				int blue_and_green = 255 - (int)(255 * ship->percent / 300);
+				if (blue_and_green < 0) {
+					blue_and_green = 0;
+				}
+				r->render_text(0, 10000 * (61 + box_height * i), str, false, false, false, medium_f, blue_and_green, 255);
+			}
+
+			// render stock counter
+			{
+				char playerLives[20];
+				sprintf_s(playerLives, "Lives: %d", ship->lives);
+				r->render_text(0, 10000 * (10 + box_height * i), playerLives, false, false, false, medium_f, 255, 255);
+			}
+		}
+	}
 }

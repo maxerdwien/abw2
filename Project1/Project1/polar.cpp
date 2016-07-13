@@ -175,7 +175,7 @@ void Polar::fire_1() {
 		int MUZZLE_VEL = 40000;
 		int spread = 7;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, (int)(x_pos + gun_length*cos(angle)), (int)(y_pos + gun_length*sin(angle)), MUZZLE_VEL, spread, 5, 10, 100);
+		Bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, (int)(x_pos + gun_length*cos(angle)), (int)(y_pos + gun_length*sin(angle)), MUZZLE_VEL, spread, 5, 10, 100);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
@@ -190,7 +190,7 @@ void Polar::fire_1() {
 
 void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
-		struct bullet* bullet = bullets[j];
+		Bullet* bullet = bullets[j];
 
 		bullet->x_vel += bullet->x_accel;
 		bullet->y_vel += bullet->y_accel;
@@ -551,4 +551,12 @@ double Polar::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_
 	double dist = numerator / denom;
 
 	return dist;
+}
+
+int Polar::serialize(char* buf, int i) {
+	return 0;
+}
+
+int Polar::deserialize(char*buf, int i) {
+	return 0;
 }

@@ -2,8 +2,8 @@
 #include <string>
 #include "bullet.h"
 
-struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling) {
-	struct bullet* bull = new struct bullet;
+Bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling) {
+	Bullet* bull = new Bullet;
 	
 	bull->x_pos = x_pos;
 	bull->y_pos = y_pos;
@@ -18,10 +18,10 @@ struct bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damag
 	return bull;
 }
 
-bullet** spawn_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, int damage, int base_knockback, int knockback_scaling) {
+Bullet** spawn_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, int damage, int base_knockback, int knockback_scaling) {
 	double spread_angle = 3.14159 * 0.1;
 
-	bullet** new_bullets = (bullet**)malloc(sizeof(bullet*) * spread);
+	Bullet** new_bullets = (Bullet**)malloc(sizeof(Bullet*) * spread);
 
 	if (spread % 2 == 0) {
 
