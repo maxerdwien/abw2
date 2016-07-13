@@ -340,9 +340,16 @@ int main(int, char**) {
 
 		char hostname[NI_MAXHOST];
 		// todo: worry about return value
-		getnameinfo((LPSOCKADDR)&from, fromlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST);
+		ret_val = getnameinfo((LPSOCKADDR)&from, fromlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST);
+		if (ret_val != 0) {
+			printf("could not get name info\n");
+		}
 
-		sendto(s, buf, buffer_size, 0, (LPSOCKADDR)&from, fromlen);
+		Sleep(2000);
+		ret_val = sendto(s, buf, buffer_size, 0, (LPSOCKADDR)&from, fromlen);
+		if (ret_val == SOCKET_ERROR) {
+			printf("may-fucking-day\n");
+		}
 
 	} else {
 		ADDRINFO* address_info;
@@ -374,7 +381,10 @@ int main(int, char**) {
 
 		memset(buf, 0, sizeof(buf));
 
-		recv(connection_socket, buf, buffer_size, 0);
+		int amount_read = recv(connection_socket, buf, buffer_size, 0);
+		if (amount_read == SOCKET_ERROR) {
+			printf("holy fucking shit\n");
+		}
 		printf("%s\n", buf);
 
 	}
