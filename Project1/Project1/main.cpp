@@ -94,6 +94,8 @@ void render_game(int game_end_cooldown, int game_end_delay, int game_start_coold
 	Mix_Chunk* countdown_tick, Mix_Chunk* selected_ship, SDL_Texture* bg,
 	Ship* ships[], Item* items[], int num_items, Asteroid* asteroids[], int num_asteroids);
 
+SOCKET connect_to_ip(PCSTR ip_address);
+
 int main(int, char**) {
 
 	enum game_state {
@@ -305,6 +307,8 @@ int main(int, char**) {
 
 	memset(buf, 0, buffer_size);
 
+	SOCKET sock;
+
 	bool be_server = true;
 	if (be_server) {
 
@@ -338,6 +342,7 @@ int main(int, char**) {
 		printf("recieved %d bytes\n", message_len);
 		printf("%s\n", buf);
 
+		/*
 		char hostname[NI_MAXHOST];
 		// todo: worry about return value
 		ret_val = getnameinfo((LPSOCKADDR)&from, fromlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST);
@@ -345,47 +350,38 @@ int main(int, char**) {
 			printf("could not get name info\n");
 		}
 
+		ret_val = connect(s, address_info->ai_addr, (int)address_info->ai_addrlen);
+		if (ret_val == SOCKET_ERROR) {
+			printf("socket error, %d\n", WSAGetLastError());
+		}
+
 		Sleep(2000);
 		ret_val = sendto(s, buf, buffer_size, 0, (LPSOCKADDR)&from, fromlen);
 		if (ret_val == SOCKET_ERROR) {
 			printf("may-fucking-day\n");
 		}
+		*/
 
 	} else {
-		ADDRINFO* address_info;
-		PCSTR server_ip = "2601:282:a03:9e30:7812:e4af:d650:e3ee";
-		int ret_val = getaddrinfo(server_ip, port, &hints, &address_info);
-		if (ret_val != 0) {
-			printf("failed to get address info\n");
-		}
-		if (address_info->ai_next != NULL) {
-			printf("more than one address info was returned\n");
-		}
-
-		SOCKET connection_socket = socket(address_info->ai_family, address_info->ai_socktype, address_info->ai_protocol);
-		if (connection_socket == INVALID_SOCKET) {
-			printf("problem\n");
-		}
-
-		ret_val = connect(connection_socket, address_info->ai_addr, (int)address_info->ai_addrlen);
-		if (ret_val == SOCKET_ERROR) {
-			printf("socket error, %d\n", WSAGetLastError());
-		}
+		sock = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee");
+		
 
 		char message[buffer_size] = "hello world";
 
-		ret_val = send(connection_socket, message, buffer_size, 0);
+		int ret_val = send(sock, message, buffer_size, 0);
 		if (ret_val == 0) {
 			printf("failed to send");
 		}
 
+		/*
 		memset(buf, 0, sizeof(buf));
 
-		int amount_read = recv(connection_socket, buf, buffer_size, 0);
+		int amount_read = recv(sock, buf, buffer_size, 0);
 		if (amount_read == SOCKET_ERROR) {
 			printf("holy fucking shit\n");
 		}
 		printf("%s\n", buf);
+		*/
 
 	}
 
@@ -1918,4 +1914,35 @@ void render_game(int game_end_cooldown, int game_end_delay, int game_start_coold
 			}
 		}
 	}
+}
+
+SOCKET connect_to_ip(PCSTR ip_address) {
+	const char* port = "7534";
+
+	ADDRINFO hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET6;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
+
+	ADDRINFO* address_info;
+	int ret_val = getaddrinfo(ip_address, port, &hints, &address_info);
+	if (ret_val != 0) {
+		printf("failed to get address info\n");
+	}
+	if (address_info->ai_next != NULL) {
+		printf("more than one address info was returned\n");
+	}
+
+	SOCKET sock = socket(address_info->ai_family, address_info->ai_socktype, address_info->ai_protocol);
+	if (sock == INVALID_SOCKET) {
+		printf("problem\n");
+	}
+
+	ret_val = connect(sock, address_info->ai_addr, (int)address_info->ai_addrlen);
+	if (ret_val == SOCKET_ERROR) {
+		printf("socket error, %d\n", WSAGetLastError());
+	}
+
+	return sock;
 }
