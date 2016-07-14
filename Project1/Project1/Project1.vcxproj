@@ -84,6 +84,7 @@
     <ClCompile Include="missile.cpp" />
     <ClCompile Include="polar.cpp" />
     <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="serializer.cpp" />
     <ClCompile Include="spaceship.cpp" />
     <ClCompile Include="spark.cpp" />
     <ClCompile Include="weapon.cpp" />

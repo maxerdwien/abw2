@@ -1,11 +1,10 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  serializer.cpp
+  grizzly.cpp
+  bullet.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  polar.cpp
   main.cpp
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(142): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(818): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-c:\users\max_000\desktop\abw2\project1\project1\main.cpp(819): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-spark.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'spark.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
-renderer.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'renderer.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
-item.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'item.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
-gravity-missile.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'gravity-missile.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
-asteroid.obj : warning LNK4099: PDB 'vc140.pdb' was not found with 'asteroid.obj' or at 'C:\Users\max_000\Desktop\abw2\Project1\Debug\vc140.pdb'; linking object as if no debug info
+  black.cpp
   Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\acsf.exe

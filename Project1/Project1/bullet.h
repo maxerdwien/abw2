@@ -17,6 +17,9 @@ public:
 	int knockback_scaling = 0;
 
 	int radius = 5 * 10000;
+
+	int serialize(char* buf, int i);
+	int deserialize(char* buf, int i);
 };
 
 Bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling);

@@ -1232,13 +1232,21 @@ int main(int, char**) {
 			// get serialized data
 			if (os == online_status::host) {
 				memset(buf, 0, buffer_size);
-				int size = ships[0]->serialize(buf, 0);
+				int size = 0;
+				for (int i = 0; i < 4; i++) {
+					if (!ships[i]) continue;
+					size = ships[i]->serialize(buf, size);
+				}
 				send_buffer(them, buf);
 			}
 			else if (os == online_status::client) {
 				memset(buf, 0, buffer_size);
 				get_buffer(me, buf);
-				ships[0]->deserialize(buf, 0);
+				int size = 0;
+				for (int i = 0; i < 4; i++) {
+					if (!ships[i]) continue;
+					size = ships[i]->deserialize(buf, size);
+				}
 			}
 
 			render_game(game_end_cooldown, game_end_delay, game_start_cooldown,

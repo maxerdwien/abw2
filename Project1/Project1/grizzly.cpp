@@ -15,6 +15,8 @@
 #include "bullet.h"
 #include "missile.h"
 
+
+
 Grizzly::Grizzly(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	id = identifier;
 
@@ -571,21 +573,53 @@ void Grizzly::render_projectiles_3() {
 }
 
 int Grizzly::serialize(char* buf, int i) {
-	//i = serialize_int(num_bullets, buf, i);
-	//for (int j = 0; j < num_bullets; j++) {
-		//bullets[j]->serialize(buf, i);
-	//}
-
 	i = serialize_int(x_pos, buf, i);
 	i = serialize_int(y_pos, buf, i);
+
+	i = serialize_int(face_dir_x, buf, i);
+	i = serialize_int(face_dir_y, buf, i);
+
+	i = serialize_int(gun_dir_x, buf, i);
+	i = serialize_int(gun_dir_y, buf, i);
+
+	i = serialize_int(percent, buf, i);
+	i = serialize_int(lives, buf, i);
+
+	i = serialize_int(stamina, buf, i);
+
+	i = serialize_int(radius, buf, i);
+	i = serialize_int(gun_length, buf, i);
+
+	i = serialize_int(num_bullets, buf, i);
+	for (int j = 0; j < num_bullets; j++) {
+		bullets[j]->serialize(buf, i);
+	}
 
 	return i;
 }
 
 int Grizzly::deserialize(char*buf, int i) {
-	//i = deserialize_int(&num_bullets, buf, i);
 	i = deserialize_int(&x_pos, buf, i);
 	i = deserialize_int(&y_pos, buf, i);
+
+	i = deserialize_int(&face_dir_x, buf, i);
+	i = deserialize_int(&face_dir_y, buf, i);
+
+	i = deserialize_int(&gun_dir_x, buf, i);
+	i = deserialize_int(&gun_dir_y, buf, i);
+
+	i = deserialize_int(&percent, buf, i);
+	i = deserialize_int(&lives, buf, i);
+
+	i = deserialize_int(&stamina, buf, i);
+
+	i = deserialize_int(&radius, buf, i);
+	i = deserialize_int(&gun_length, buf, i);
+
+	i = deserialize_int(&num_bullets, buf, i);
+	for (int j = 0; j < num_bullets; j++) {
+		bullets[j]->deserialize(buf, i);
+	}
 
 	return i;
 }

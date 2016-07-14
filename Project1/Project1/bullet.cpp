@@ -1,6 +1,10 @@
 #include <math.h>
 #include <string>
+
+#include "serializer.h"
 #include "bullet.h"
+
+
 
 Bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling) {
 	Bullet* bull = new Bullet;
@@ -46,5 +50,24 @@ Bullet** spawn_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int v
 	}
 
 	return new_bullets;
+}
 
+int Bullet::serialize(char* buf, int i) {
+	i = serialize_int(x_pos, buf, i);
+	i = serialize_int(y_pos, buf, i);
+
+	i = serialize_int(x_vel, buf, i);
+	i = serialize_int(x_vel, buf, i);
+
+	return i;
+}
+
+int Bullet::deserialize(char* buf, int i) {
+	i = deserialize_int(&x_pos, buf, i);
+	i = deserialize_int(&y_pos, buf, i);
+
+	i = deserialize_int(&x_vel, buf, i);
+	i = deserialize_int(&x_vel, buf, i);
+
+	return i;
 }
