@@ -102,6 +102,12 @@ void get_buffer(SOCKET me, char* buf);
 
 int main(int, char**) {
 
+	enum class online_status {
+		local,
+		host,
+		client,
+	};
+
 	enum game_state {
 		main_menu,
 		options,
@@ -308,8 +314,8 @@ int main(int, char**) {
 	SOCKET them;
 	SOCKET me;
 
-	bool be_server = true;
-	if (be_server) {
+	online_status os = online_status::host;
+	if (os == online_status::host) {
 
 		me = get_local_socket();
 
@@ -355,7 +361,7 @@ int main(int, char**) {
 		}
 		*/
 
-	} else {
+	} else if (os == online_status::client) {
 		them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee");
 		
 		char message[buffer_size] = "hello world";
@@ -368,7 +374,6 @@ int main(int, char**) {
 
 		get_buffer(me, buf);
 		printf("%s\n", buf);
-
 	}
 
 	// game loop
@@ -757,6 +762,10 @@ int main(int, char**) {
 		else if (current_state == in_game) {
 			// poll input
 			read_input();
+
+			if (os == online_status::client) {
+				goto end_of_update;
+			}
 
 			// ai moves
 			for (int i = 0; i < 4; i++) {
@@ -1221,8 +1230,16 @@ int main(int, char**) {
 			}
 
 			// get serialized data
-			memset(buf, 0, buffer_size);
-			int size = ships[0]->serialize(buf, 0);
+			if (os == online_status::host) {
+				memset(buf, 0, buffer_size);
+				int size = ships[0]->serialize(buf, 0);
+				send_buffer(them, buf);
+			}
+			else if (os == online_status::client) {
+				memset(buf, 0, buffer_size);
+				get_buffer(me, buf);
+				ships[0]->deserialize(buf, 0);
+			}
 
 			render_game(game_end_cooldown, game_end_delay, game_start_cooldown,
 				countdown_tick, selected_ship, bg,
