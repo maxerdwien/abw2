@@ -97,6 +97,9 @@ void render_game(int game_end_cooldown, int game_end_delay, int game_start_coold
 SOCKET connect_to_ip(PCSTR ip_address);
 SOCKET get_local_socket();
 
+void send_buffer(SOCKET them, char* buf);
+void get_buffer(SOCKET me, char* buf);
+
 int main(int, char**) {
 
 	enum game_state {
@@ -337,10 +340,7 @@ int main(int, char**) {
 		them = connect_to_ip(hostname);
 
 		char message[buffer_size] = "hello world yourself";
-		ret_val = send(them, message, buffer_size, 0);
-		if (ret_val == 0) {
-			printf("failed to send");
-		}
+		send_buffer(them, message);
 
 		/*
 		ret_val = connect(s, address_info->ai_addr, (int)address_info->ai_addrlen);
@@ -360,22 +360,14 @@ int main(int, char**) {
 		
 		char message[buffer_size] = "hello world";
 
-		me = get_local_socket();
+		send_buffer(them, message);
 
-		int ret_val = send(me, message, buffer_size, 0);
-		if (ret_val == 0) {
-			printf("failed to send");
-		}
-
-		/*
 		memset(buf, 0, sizeof(buf));
 
-		int amount_read = recv(sock, buf, buffer_size, 0);
-		if (amount_read == SOCKET_ERROR) {
-			printf("holy fucking shit\n");
-		}
+		me = get_local_socket();
+
+		get_buffer(me, buf);
 		printf("%s\n", buf);
-		*/
 
 	}
 
@@ -1972,4 +1964,17 @@ SOCKET get_local_socket() {
 	}
 
 	return s;
+}
+
+void send_buffer(SOCKET them, char* buf) {
+	int ret_val = send(them, buf, buffer_size, 0);
+	if (ret_val == 0) {
+		printf("failed to send");
+	}
+}
+void get_buffer(SOCKET me, char* buf) {
+	int amount_read = recv(me, buf, buffer_size, 0);
+	if (amount_read == SOCKET_ERROR) {
+		printf("holy fucking shit\n");
+	}
 }
