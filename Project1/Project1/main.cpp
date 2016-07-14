@@ -84,7 +84,7 @@ stage selected_stage = anchorage;
 const double CONTROLLER_MAX_ANGLE = M_PI / 6;
 const int DEAD_ZONE = 5000;
 
-const int buffer_size = 512;
+const int buffer_size = 1024;
 char buf[buffer_size];
 
 int lookup_controller(int instanceID);
@@ -314,7 +314,7 @@ int main(int, char**) {
 	SOCKET them;
 	SOCKET me;
 
-	online_status os = online_status::host;
+	online_status os = online_status::local;
 	if (os == online_status::host) {
 
 		me = get_local_socket();
@@ -1243,6 +1243,20 @@ int main(int, char**) {
 				memset(buf, 0, buffer_size);
 				get_buffer(me, buf);
 				int size = 0;
+				for (int i = 0; i < 4; i++) {
+					if (!ships[i]) continue;
+					size = ships[i]->deserialize(buf, size);
+				}
+			}
+			else if (os == online_status::local) {
+				// just serialize and deserialize for testing
+				int size = 0;
+				for (int i = 0; i < 4; i++) {
+					if (!ships[i]) continue;
+					size = ships[i]->serialize(buf, size);
+				}
+
+				size = 0;
 				for (int i = 0; i < 4; i++) {
 					if (!ships[i]) continue;
 					size = ships[i]->deserialize(buf, size);

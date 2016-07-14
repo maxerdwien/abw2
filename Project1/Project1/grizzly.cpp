@@ -592,7 +592,7 @@ int Grizzly::serialize(char* buf, int i) {
 
 	i = serialize_int(num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {
-		bullets[j]->serialize(buf, i);
+		i = bullets[j]->serialize(buf, i);
 	}
 
 	return i;
@@ -618,7 +618,8 @@ int Grizzly::deserialize(char*buf, int i) {
 
 	i = deserialize_int(&num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {
-		bullets[j]->deserialize(buf, i);
+		bullets[j] = new Bullet();
+		i = bullets[j]->deserialize(buf, i);
 	}
 
 	return i;

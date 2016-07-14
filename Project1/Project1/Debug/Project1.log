@@ -1,10 +1,3 @@
 ﻿C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V140\Microsoft.CppBuild.targets(392,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-  serializer.cpp
-  grizzly.cpp
   bullet.cpp
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  polar.cpp
-  main.cpp
-  black.cpp
   Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\acsf.exe
