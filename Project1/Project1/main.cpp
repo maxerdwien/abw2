@@ -95,6 +95,7 @@ void render_game(int game_end_cooldown, int game_end_delay, int game_start_coold
 	Ship* ships[], Item* items[], int num_items, Asteroid* asteroids[], int num_asteroids);
 
 SOCKET connect_to_ip(PCSTR ip_address);
+SOCKET get_local_socket();
 
 int main(int, char**) {
 
@@ -291,7 +292,6 @@ int main(int, char**) {
 	}
 
 	// internet junk
-	const char* port = "7534";
 
 	WSADATA wsa;
 
@@ -299,42 +299,27 @@ int main(int, char**) {
 		printf("wsa startup error, %d\n", WSAGetLastError());
 	}
 	
-	ADDRINFO hints;
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET6;
-	hints.ai_socktype = SOCK_DGRAM;
-	hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
 
 	memset(buf, 0, buffer_size);
 
-	SOCKET sock;
+	SOCKET them;
+	SOCKET me;
 
 	bool be_server = true;
 	if (be_server) {
 
-		ADDRINFO* address_info;
-		int ret_val = getaddrinfo(NULL, port, &hints, &address_info);
-		if (ret_val != 0) {
-			printf("could not get address info\n");
+		me = get_local_socket();
+
+		char name[80];
+		if (gethostname(name, sizeof(name)) == SOCKET_ERROR) {
+			printf("problemo");
 		}
 
-		if (address_info->ai_next != NULL) {
-			printf("problem\n");
-		}
-
-		SOCKET s = socket(address_info->ai_family, address_info->ai_socktype, address_info->ai_protocol);
-		if (s == INVALID_SOCKET) {
-			printf("socket creation failure\n");
-		}
-
-		int bind_result = bind(s, address_info->ai_addr, (int)address_info->ai_addrlen);
-		if (bind_result == SOCKET_ERROR) {
-			printf("failed to bind\n");
-		}
+		//struct hostent* phe = gethostbyname(name);
 
 		SOCKADDR_STORAGE from;
 		int fromlen = sizeof(from);
-		int message_len = recvfrom(s, buf, buffer_size, 0, (LPSOCKADDR)&from, &fromlen);
+		int message_len = recvfrom(me, buf, buffer_size, 0, (LPSOCKADDR)&from, &fromlen);
 		if (message_len == SOCKET_ERROR) {
 			printf("recvfrom failed, %d", WSAGetLastError());
 		}
@@ -342,14 +327,22 @@ int main(int, char**) {
 		printf("recieved %d bytes\n", message_len);
 		printf("%s\n", buf);
 
-		/*
 		char hostname[NI_MAXHOST];
 		// todo: worry about return value
-		ret_val = getnameinfo((LPSOCKADDR)&from, fromlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST);
+		int ret_val = getnameinfo((LPSOCKADDR)&from, fromlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST);
 		if (ret_val != 0) {
 			printf("could not get name info\n");
 		}
 
+		them = connect_to_ip(hostname);
+
+		char message[buffer_size] = "hello world yourself";
+		ret_val = send(them, message, buffer_size, 0);
+		if (ret_val == 0) {
+			printf("failed to send");
+		}
+
+		/*
 		ret_val = connect(s, address_info->ai_addr, (int)address_info->ai_addrlen);
 		if (ret_val == SOCKET_ERROR) {
 			printf("socket error, %d\n", WSAGetLastError());
@@ -363,12 +356,13 @@ int main(int, char**) {
 		*/
 
 	} else {
-		sock = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee");
+		them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee");
 		
-
 		char message[buffer_size] = "hello world";
 
-		int ret_val = send(sock, message, buffer_size, 0);
+		me = get_local_socket();
+
+		int ret_val = send(me, message, buffer_size, 0);
 		if (ret_val == 0) {
 			printf("failed to send");
 		}
@@ -1945,4 +1939,37 @@ SOCKET connect_to_ip(PCSTR ip_address) {
 	}
 
 	return sock;
+}
+
+SOCKET get_local_socket() {
+
+	const char* port = "7534";
+
+	ADDRINFO hints;
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET6;
+	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
+
+	ADDRINFO* address_info;
+	int ret_val = getaddrinfo(NULL, port, &hints, &address_info);
+	if (ret_val != 0) {
+		printf("could not get address info\n");
+	}
+
+	if (address_info->ai_next != NULL) {
+		printf("problem\n");
+	}
+
+	SOCKET s = socket(address_info->ai_family, address_info->ai_socktype, address_info->ai_protocol);
+	if (s == INVALID_SOCKET) {
+		printf("socket creation failure\n");
+	}
+
+	int bind_result = bind(s, address_info->ai_addr, (int)address_info->ai_addrlen);
+	if (bind_result == SOCKET_ERROR) {
+		printf("failed to bind\n");
+	}
+
+	return s;
 }
