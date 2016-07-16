@@ -559,7 +559,6 @@ void Grizzly::render_projectiles_3() {
 				r->render_texture_abs_size(r->hitbox_tex, mines[j]->x_pos, mines[j]->y_pos, 0, mines[j]->radius);
 				r->render_texture_abs_size(r->activation_hitbox_tex, mines[j]->x_pos, mines[j]->y_pos, 0, MISSILE_ACTIVATION_RADIUS);
 			}
-			
 		} else {
 			if (r->render_normal) {
 				r->render_texture_abs_size(explosion_tex, mines[j]->x_pos, mines[j]->y_pos, 0, mines[j]->radius);
@@ -576,6 +575,9 @@ int Grizzly::serialize(char* buf, int i) {
 	i = serialize_int(x_pos, buf, i);
 	i = serialize_int(y_pos, buf, i);
 
+	i = serialize_int(move_dir_x, buf, i);
+	i = serialize_int(move_dir_y, buf, i); 
+	
 	i = serialize_int(face_dir_x, buf, i);
 	i = serialize_int(face_dir_y, buf, i);
 
@@ -590,9 +592,23 @@ int Grizzly::serialize(char* buf, int i) {
 	i = serialize_int(radius, buf, i);
 	i = serialize_int(gun_length, buf, i);
 
+	for (int j = 0; j < NUM_ITEM_TYPES; j++) {
+		i = serialize_int(item_times[j], buf, i);
+	}
+
 	i = serialize_int(num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {
 		i = bullets[j]->serialize(buf, i);
+	}
+
+	i = serialize_int(num_missiles, buf, i);
+	for (int j = 0; j < num_missiles; j++) {
+		i = missiles[j]->serialize(buf, i);
+	}
+
+	i = serialize_int(num_mines, buf, i);
+	for (int j = 0; j < num_mines; j++) {
+		i = mines[j]->serialize(buf, i);
 	}
 
 	return i;
@@ -602,6 +618,9 @@ int Grizzly::deserialize(char*buf, int i) {
 	i = deserialize_int(&x_pos, buf, i);
 	i = deserialize_int(&y_pos, buf, i);
 
+	i = deserialize_int(&move_dir_x, buf, i);
+	i = deserialize_int(&move_dir_y, buf, i);
+	
 	i = deserialize_int(&face_dir_x, buf, i);
 	i = deserialize_int(&face_dir_y, buf, i);
 
@@ -616,10 +635,26 @@ int Grizzly::deserialize(char*buf, int i) {
 	i = deserialize_int(&radius, buf, i);
 	i = deserialize_int(&gun_length, buf, i);
 
+	for (int j = 0; j < NUM_ITEM_TYPES; j++) {
+		i = deserialize_int(&item_times[j], buf, i);
+	}
+
 	i = deserialize_int(&num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {
 		bullets[j] = new Bullet();
 		i = bullets[j]->deserialize(buf, i);
+	}
+
+	i = deserialize_int(&num_missiles, buf, i);
+	for (int j = 0; j < num_missiles; j++) {
+		missiles[j] = new Missile();
+		i = missiles[j]->deserialize(buf, i);
+	}
+
+	i = deserialize_int(&num_mines, buf, i);
+	for (int j = 0; j < num_mines; j++) {
+		mines[j] = new Missile();
+		i = mines[j]->deserialize(buf, i);
 	}
 
 	return i;

@@ -301,20 +301,18 @@ int main(int, char**) {
 	}
 
 	// internet junk
-
 	WSADATA wsa;
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
 		printf("wsa startup error, %d\n", WSAGetLastError());
 	}
-	
 
 	memset(buf, 0, buffer_size);
 
 	SOCKET them;
 	SOCKET me;
 
-	online_status os = online_status::local;
+	online_status os = online_status::host;
 	if (os == online_status::host) {
 
 		me = get_local_socket();
@@ -2008,7 +2006,7 @@ SOCKET get_local_socket() {
 void send_buffer(SOCKET them, char* buf) {
 	int ret_val = send(them, buf, buffer_size, 0);
 	if (ret_val == 0) {
-		printf("failed to send");
+		printf("failed to send\n");
 	}
 }
 void get_buffer(SOCKET me, char* buf) {

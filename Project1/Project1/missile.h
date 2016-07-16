@@ -19,6 +19,9 @@ public:
 	int radius = 5 * 10000;
 
 	bool players_hit[4];
+
+	int serialize(char* buf, int i);
+	int deserialize(char* buf, int i);
 };
 
 const int MISSILE_ACTIVATION_RADIUS = 70 * 10000;

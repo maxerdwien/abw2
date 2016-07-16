@@ -1,5 +1,6 @@
 #include <string>
 
+#include "serializer.h"
 #include "missile.h"
 
 Missile* init_missile(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling) {
@@ -54,5 +55,32 @@ Missile** spawn_missiles(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int
 	}
 
 	return new_missiles;
+}
 
+int Missile::serialize(char* buf, int i) {
+	i = serialize_int(x_pos, buf, i);
+	i = serialize_int(y_pos, buf, i);
+
+	i = serialize_int(x_vel, buf, i);
+	i = serialize_int(y_vel, buf, i);
+
+	i = serialize_int(radius, buf, i);
+
+	i = serialize_bool(exploded, buf, i);
+
+	return i;
+}
+
+int Missile::deserialize(char* buf, int i) {
+	i = deserialize_int(&x_pos, buf, i);
+	i = deserialize_int(&y_pos, buf, i);
+
+	i = deserialize_int(&x_vel, buf, i);
+	i = deserialize_int(&y_vel, buf, i);
+
+	i = deserialize_int(&radius, buf, i);
+
+	i = deserialize_bool(&exploded, buf, i);
+
+	return i;
 }
