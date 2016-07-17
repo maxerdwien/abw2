@@ -704,7 +704,7 @@ int main(int, char**) {
 			};
 
 			if (os == online_status::host) {
-				controllers[1].status = client;
+				controllers[0].status = client;
 			} else if (os == online_status::client) {
 				
 			}

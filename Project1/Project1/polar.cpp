@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include "serializer.h"
+
 #include "asteroid.h"
 #include "spaceship.h"
 #include "spark.h"
@@ -554,9 +556,57 @@ double Polar::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_
 }
 
 int Polar::serialize(char* buf, int i) {
-	return 0;
+	i = serialize_ship(buf, i);
+
+	i = serialize_int(num_bullets, buf, i);
+	for (int j = 0; j < num_bullets; j++) {
+		i = bullets[j]->serialize(buf, i);
+	}
+
+	i = serialize_int(num_g_missiles, buf, i);
+	for (int j = 0; j < num_g_missiles; j++) {
+		i = g_missiles[j]->serialize(buf, i);
+	}
+
+	i = serialize_bool(laser_active, buf, i);
+
+	i = serialize_int(laser_start_x, buf, i);
+	i = serialize_int(laser_start_y, buf, i);
+	i = serialize_int(laser_end_x, buf, i);
+	i = serialize_int(laser_end_y, buf, i);
+
+	i = serialize_int(num_sparks, buf, i);
+	for (int j = 0; j < num_sparks; j++) {
+		i = sparks[j]->serialize(buf, i);
+	}
+
+	return i;
 }
 
 int Polar::deserialize(char*buf, int i) {
-	return 0;
+	i = deserialize_ship(buf, i);
+
+	i = deserialize_int(&num_bullets, buf, i);
+	for (int j = 0; j < num_bullets; j++) {
+		i = bullets[j]->deserialize(buf, i);
+	}
+
+	i = deserialize_int(&num_g_missiles, buf, i);
+	for (int j = 0; j < num_g_missiles; j++) {
+		i = g_missiles[j]->deserialize(buf, i);
+	}
+
+	i = deserialize_bool(&laser_active, buf, i);
+
+	i = deserialize_int(&laser_start_x, buf, i);
+	i = deserialize_int(&laser_start_y, buf, i);
+	i = deserialize_int(&laser_end_x, buf, i);
+	i = deserialize_int(&laser_end_y, buf, i);
+
+	i = deserialize_int(&num_sparks, buf, i);
+	for (int j = 0; j < num_sparks; j++) {
+		i = sparks[j]->deserialize(buf, i);
+	}
+
+	return i;
 }

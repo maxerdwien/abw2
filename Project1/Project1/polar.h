@@ -26,6 +26,7 @@ private:
 	const int spread_delay = 30;
 	int spread_cooldown = 0;
 
+	// todo: you can only have one gravity missile
 	class Gravity_Missile* g_missiles[10];
 	int num_g_missiles = 0;
 

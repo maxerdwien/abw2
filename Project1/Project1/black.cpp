@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include <SDL_mixer.h>
 
+#include "serializer.h"
+
 #include "asteroid.h"
 
 #include "spaceship.h"
@@ -390,9 +392,31 @@ void Black::render_projectiles_3() {
 }
 
 int Black::serialize(char* buf, int i) {
-	return 0;
+	i = serialize_ship(buf, i);
+
+	i = serialize_int(num_bullets, buf, i);
+	for (int j = 0; j < num_bullets; j++) {
+		i = bullets[j]->serialize(buf, i);
+	}
+
+	i = serialize_bool(flame_active, buf, i);
+	i = serialize_int(flame_switch_cooldown, buf, i);
+	i = serialize_int(current_flame, buf, i);
+
+	return i;
 }
 
 int Black::deserialize(char*buf, int i) {
-	return 0;
+	i = deserialize_ship(buf, i);
+
+	i = deserialize_int(&num_bullets, buf, i);
+	for (int j = 0; j < num_bullets; j++) {
+		i = bullets[j]->deserialize(buf, i);
+	}
+
+	i = deserialize_bool(&flame_active, buf, i);
+	i = deserialize_int(&flame_switch_cooldown, buf, i);
+	i = deserialize_int(&current_flame, buf, i);
+
+	return i;
 }

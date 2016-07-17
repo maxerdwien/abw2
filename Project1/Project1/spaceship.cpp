@@ -3,6 +3,8 @@
 
 #include "asteroid.h"
 
+#include "serializer.h"
+
 #include "spaceship.h"
 #include "renderer.h"
 #include "item.h"
@@ -116,4 +118,66 @@ bool Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockbac
 	SDL_HapticRumblePlay(haptic, haptic_amount, 160);
 
 	return true;
+}
+
+int Ship::serialize_ship(char* buf, int i) {
+	i = serialize_int(x_pos, buf, i);
+	i = serialize_int(y_pos, buf, i);
+
+	i = serialize_int(move_dir_x, buf, i);
+	i = serialize_int(move_dir_y, buf, i);
+
+	i = serialize_int(face_dir_x, buf, i);
+	i = serialize_int(face_dir_y, buf, i);
+
+	i = serialize_int(gun_dir_x, buf, i);
+	i = serialize_int(gun_dir_y, buf, i);
+
+	i = serialize_int(percent, buf, i);
+	i = serialize_int(lives, buf, i);
+
+	i = serialize_int(stamina, buf, i);
+
+	i = serialize_int(radius, buf, i);
+	i = serialize_int(gun_length, buf, i);
+
+	i = serialize_int(speed_boost_cooldown, buf, i);
+	i = serialize_int(invincibility_cooldown, buf, i);
+
+	for (int j = 0; j < NUM_ITEM_TYPES; j++) {
+		i = serialize_int(item_times[j], buf, i);
+	}
+
+	return i;
+}
+
+int Ship::deserialize_ship(char* buf, int i) {
+	i = deserialize_int(&x_pos, buf, i);
+	i = deserialize_int(&y_pos, buf, i);
+
+	i = deserialize_int(&move_dir_x, buf, i);
+	i = deserialize_int(&move_dir_y, buf, i);
+
+	i = deserialize_int(&face_dir_x, buf, i);
+	i = deserialize_int(&face_dir_y, buf, i);
+
+	i = deserialize_int(&gun_dir_x, buf, i);
+	i = deserialize_int(&gun_dir_y, buf, i);
+
+	i = deserialize_int(&percent, buf, i);
+	i = deserialize_int(&lives, buf, i);
+
+	i = deserialize_int(&stamina, buf, i);
+
+	i = deserialize_int(&radius, buf, i);
+	i = deserialize_int(&gun_length, buf, i);
+
+	i = deserialize_int(&speed_boost_cooldown, buf, i);
+	i = deserialize_int(&invincibility_cooldown, buf, i);
+
+	for (int j = 0; j < NUM_ITEM_TYPES; j++) {
+		i = deserialize_int(&item_times[j], buf, i);
+	}
+
+	return i;
 }

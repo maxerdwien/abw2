@@ -572,29 +572,7 @@ void Grizzly::render_projectiles_3() {
 }
 
 int Grizzly::serialize(char* buf, int i) {
-	i = serialize_int(x_pos, buf, i);
-	i = serialize_int(y_pos, buf, i);
-
-	i = serialize_int(move_dir_x, buf, i);
-	i = serialize_int(move_dir_y, buf, i); 
-	
-	i = serialize_int(face_dir_x, buf, i);
-	i = serialize_int(face_dir_y, buf, i);
-
-	i = serialize_int(gun_dir_x, buf, i);
-	i = serialize_int(gun_dir_y, buf, i);
-
-	i = serialize_int(percent, buf, i);
-	i = serialize_int(lives, buf, i);
-
-	i = serialize_int(stamina, buf, i);
-
-	i = serialize_int(radius, buf, i);
-	i = serialize_int(gun_length, buf, i);
-
-	for (int j = 0; j < NUM_ITEM_TYPES; j++) {
-		i = serialize_int(item_times[j], buf, i);
-	}
+	i = serialize_ship(buf, i);
 
 	i = serialize_int(num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {
@@ -615,29 +593,7 @@ int Grizzly::serialize(char* buf, int i) {
 }
 
 int Grizzly::deserialize(char*buf, int i) {
-	i = deserialize_int(&x_pos, buf, i);
-	i = deserialize_int(&y_pos, buf, i);
-
-	i = deserialize_int(&move_dir_x, buf, i);
-	i = deserialize_int(&move_dir_y, buf, i);
-	
-	i = deserialize_int(&face_dir_x, buf, i);
-	i = deserialize_int(&face_dir_y, buf, i);
-
-	i = deserialize_int(&gun_dir_x, buf, i);
-	i = deserialize_int(&gun_dir_y, buf, i);
-
-	i = deserialize_int(&percent, buf, i);
-	i = deserialize_int(&lives, buf, i);
-
-	i = deserialize_int(&stamina, buf, i);
-
-	i = deserialize_int(&radius, buf, i);
-	i = deserialize_int(&gun_length, buf, i);
-
-	for (int j = 0; j < NUM_ITEM_TYPES; j++) {
-		i = deserialize_int(&item_times[j], buf, i);
-	}
+	i = serialize_ship(buf, i);
 
 	i = deserialize_int(&num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {
