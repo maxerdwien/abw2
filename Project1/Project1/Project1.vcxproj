@@ -78,6 +78,7 @@
     <ClCompile Include="flamethrower.cpp" />
     <ClCompile Include="gravity-missile.cpp" />
     <ClCompile Include="grizzly.cpp" />
+    <ClCompile Include="input-state.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="bullet.cpp" />

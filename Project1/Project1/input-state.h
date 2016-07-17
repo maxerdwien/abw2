@@ -1,12 +1,10 @@
 #pragma once
 
-#include <SDL.h>
-
 enum player_status {
 	empty,
 	human,
 	ai,
-	online,
+	client,
 };
 
 struct button {
@@ -14,7 +12,8 @@ struct button {
 	bool changed = false;
 };
 
-struct input_state {
+class Input_State {
+public:
 	int r_stick_x = 0;
 	int r_stick_y = 0;
 
@@ -46,4 +45,10 @@ struct input_state {
 
 	player_status status = empty;
 	SDL_GameController* controller = NULL;
+
+	int serialize_button(button b, char* buf, int i);
+	int deserialize_button(button b, char* buf, int i); 
+	
+	int serialize(char* buf, int i);
+	int deserialize(char* buf, int i);
 };

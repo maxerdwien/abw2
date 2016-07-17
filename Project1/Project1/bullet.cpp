@@ -59,6 +59,8 @@ int Bullet::serialize(char* buf, int i) {
 	i = serialize_int(x_vel, buf, i);
 	i = serialize_int(y_vel, buf, i);
 
+	i = serialize_int(radius, buf, i);
+
 	return i;
 }
 
@@ -68,6 +70,8 @@ int Bullet::deserialize(char* buf, int i) {
 
 	i = deserialize_int(&x_vel, buf, i);
 	i = deserialize_int(&y_vel, buf, i);
+
+	i = deserialize_int(&radius, buf, i);
 
 	return i;
 }
