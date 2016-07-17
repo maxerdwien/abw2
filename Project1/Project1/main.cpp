@@ -706,7 +706,11 @@ int main(int, char**) {
 				3 * HEIGHT_UNITS / 4
 			};
 
-			controllers[1].status = client;
+			if (os == online_status::host) {
+				controllers[1].status = client;
+			} else if (os == online_status::client) {
+				
+			}
 
 			for (int i = 0; i < 4; i++) {
 				if (ships[i]) {
@@ -1594,8 +1598,7 @@ void read_input() {
 		switch (e.type) {
 		case SDL_CONTROLLERBUTTONDOWN:
 			controller_index = lookup_controller(e.cbutton.which);
-			if (controllers[controller_index].status != human &&
-				controllers[controller_index].status != client) break;
+			if (controllers[controller_index].status != human) break;
 			if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 				controllers[controller_index].a.state = true;
 				controllers[controller_index].a.changed = true;
@@ -1645,8 +1648,7 @@ void read_input() {
 			break;
 		case SDL_CONTROLLERBUTTONUP:
 			controller_index = lookup_controller(e.cbutton.which);
-			if (controllers[controller_index].status != human &&
-				controllers[controller_index].status != client) break;
+			if (controllers[controller_index].status != human) break;
 			if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 				controllers[controller_index].a.state = false;
 				controllers[controller_index].a.changed = true;
@@ -1696,8 +1698,7 @@ void read_input() {
 			break;
 		case SDL_CONTROLLERAXISMOTION:
 			controller_index = lookup_controller(e.cbutton.which);
-			if (controllers[controller_index].status != human &&
-				controllers[controller_index].status != client) break;
+			if (controllers[controller_index].status != human) break;
 			if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
 				int min_activation = 20000;
 				int min_deactivation = 18000;
@@ -2031,7 +2032,7 @@ void get_input_data_forever(void* ptr) {
 			size = controllers[i].deserialize(input_data_buffer, size);
 		}
 
-		printf("recieved %d bytes\n", size);
+		printf("recieved %d bytes: %s\n", size, input_data_buffer);
 	}
 }
 
