@@ -318,7 +318,7 @@ int main(int, char**) {
 
 	memset(render_data_buffer, 0, render_data_buffer_size);
 
-	online_status os = online_status::local;
+	online_status os = online_status::host;
 	if (os == online_status::host) {
 
 		me = get_local_socket();
@@ -1805,17 +1805,17 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	if (shipType == 0) {
 		name = "BLACK";
 		wep1 = "RB: Burst Shot";
-		wep2 = "RT, LT: Charge Shot";
+		wep2 = "RT: Charge Shot";
 		wep3 = "LB: Flamethrower";
 	} else if (shipType == 1) {
 		name = "GRIZZLY";
 		wep1 = "RB: Bullets";
-		wep2 = "RT, LT: Missiles";
+		wep2 = "RT: Missiles";
 		wep3 = "LB: Mines";
 	} else {
 		name = "POLAR";
 		wep1 = "RB: Shotgun";
-		wep2 = "RT, LT: Gravity Missiles";
+		wep2 = "RT: Gravity Missiles";
 		wep3 = "LB: Laser";
 	}
 
@@ -1824,8 +1824,8 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	}
 	r->render_text(x + box_w / 2, y + 4 * box_h / 10, name, true, false, false, medium_f, 255, 255);
 	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f, 255, 255);
-	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep2, false, false, false, medium_f, 255, 255);
-	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep3, false, false, false, medium_f, 255, 255);
+	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep3, false, false, false, medium_f, 255, 255);
+	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep2, false, false, false, medium_f, 255, 255);
 }
 
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
@@ -2041,15 +2041,16 @@ void get_buffer(SOCKET me, char* buf) {
 
 void get_input_data_forever(void* ptr) {
 	while (1) {
-		memset(render_data_buffer, 0, render_data_buffer_size);
-		get_buffer(me, render_data_buffer);
+		memset(input_data_buffer, 0, input_data_buffer_size);
+		get_buffer(me, input_data_buffer);
 		int size = 0;
 		for (int i = 0; i < 4; i++) {
 			if (controllers[i].status != client) continue;
 			size = controllers[i].deserialize(input_data_buffer, size);
+			//printf("deserializing controller %d\n", i);
 		}
 
-		printf("recieved %d bytes: %s\n", size, input_data_buffer);
+		//printf("recieved %d bytes: %s\n", size, input_data_buffer);
 	}
 }
 
