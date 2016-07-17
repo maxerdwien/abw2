@@ -87,6 +87,11 @@ const int DEAD_ZONE = 5000;
 const int buffer_size = 1024;
 char buf[buffer_size];
 
+SOCKET them;
+SOCKET me;
+
+Ship* ships[4] = { NULL, NULL, NULL, NULL };
+
 int lookup_controller(int instanceID);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps);
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship);
@@ -99,6 +104,8 @@ SOCKET get_local_socket();
 
 void send_buffer(SOCKET them, char* buf);
 void get_buffer(SOCKET me, char* buf);
+
+void get_buffer_forever(void* ptr);
 
 int main(int, char**) {
 
@@ -275,8 +282,6 @@ int main(int, char**) {
 	
 	int winner;
 
-	Ship* ships[4] = { NULL, NULL, NULL, NULL };
-
 	Item* items[100];
 	int num_items = 0;
 
@@ -309,10 +314,10 @@ int main(int, char**) {
 
 	memset(buf, 0, buffer_size);
 
-	SOCKET them;
-	SOCKET me;
+	
 
-	online_status os = online_status::host;
+
+	online_status os = online_status::local;
 	if (os == online_status::host) {
 
 		me = get_local_socket();
@@ -372,6 +377,7 @@ int main(int, char**) {
 
 		get_buffer(me, buf);
 		printf("%s\n", buf);
+
 	}
 
 	// game loop
@@ -671,6 +677,11 @@ int main(int, char**) {
 			}
 			game_end_cooldown = game_end_delay;
 
+			// start threads to listen for online input
+			if (os == online_status::client) {
+				_beginthread(get_buffer_forever, 0, 0);
+			}
+
 			// reset 'ready' status of all players
 			for (int i = 0; i < 4; i++) {
 				ready[i] = false;
@@ -743,6 +754,7 @@ int main(int, char**) {
 					break;
 				}
 			}
+
 
 			for (int i = 0; i < 4; i++) {
 				if (!ships[i]) continue;
@@ -1238,13 +1250,7 @@ int main(int, char**) {
 				send_buffer(them, buf);
 			}
 			else if (os == online_status::client) {
-				memset(buf, 0, buffer_size);
-				get_buffer(me, buf);
-				int size = 0;
-				for (int i = 0; i < 4; i++) {
-					if (!ships[i]) continue;
-					size = ships[i]->deserialize(buf, size);
-				}
+				
 			}
 			else if (os == online_status::local) {
 				// just serialize and deserialize for testing
@@ -2013,5 +2019,17 @@ void get_buffer(SOCKET me, char* buf) {
 	int amount_read = recv(me, buf, buffer_size, 0);
 	if (amount_read == SOCKET_ERROR) {
 		printf("holy fucking shit\n");
+	}
+}
+
+void get_buffer_forever(void* ptr) {
+	while (1) {
+		memset(buf, 0, buffer_size);
+		get_buffer(me, buf);
+		int size = 0;
+		for (int i = 0; i < 4; i++) {
+			if (!ships[i]) continue;
+			size = ships[i]->deserialize(buf, size);
+		}
 	}
 }
