@@ -318,10 +318,7 @@ int main(int, char**) {
 
 	memset(render_data_buffer, 0, render_data_buffer_size);
 
-	
-
-
-	online_status os = online_status::host;
+	online_status os = online_status::local;
 	if (os == online_status::host) {
 
 		me = get_local_socket();
@@ -770,6 +767,25 @@ int main(int, char**) {
 
 			if (os == online_status::client) {
 				goto end_of_update;
+			}
+			if (os == online_status::local) {
+				
+				controllers[0].serialize(input_data_buffer, 0);
+				controllers[1].deserialize(input_data_buffer, 0);
+
+				/*
+				int size = 0;
+				for (int i = 0; i < 4; i++) {
+					if (controllers[i].status == empty) continue;
+					size = controllers[i].serialize(input_data_buffer, size);
+				}
+
+				size = 0;
+				for (int i = 0; i < 4; i++) {
+					if (controllers[i].status == empty) continue;
+					size = controllers[i].deserialize(input_data_buffer, size);
+				}
+				*/
 			}
 
 			// ai moves
@@ -1563,6 +1579,7 @@ void read_input() {
 	// reset 'changed' status
 	for (int i = 0; i < 4; i++) {
 		//if (controllers[i].status != human) continue;
+		if (controllers[i].status == client) continue;
 
 		controllers[i].a.changed = false;
 		controllers[i].b.changed = false;
