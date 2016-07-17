@@ -765,7 +765,6 @@ int main(int, char**) {
 			read_input();
 
 			if (os == online_status::client) {
-				controllers[1].deserialize(input_data_buffer, 0);
 				goto end_of_update;
 			}
 
@@ -856,7 +855,7 @@ int main(int, char**) {
 
 			// ----- update -----
 			if (game_end_cooldown != game_end_delay) {
-				goto end_of_update;
+				//goto end_of_update;
 			}
 			// spawn asteroids
 			if (selected_stage == juneau) {
@@ -1179,8 +1178,6 @@ int main(int, char**) {
 
 			} // end of update ships
 
-		end_of_update:
-
 			// Check to see if the game is over
 			bool game_over = false;
 			if (selected_team_mode == free_for_all) {
@@ -1231,6 +1228,9 @@ int main(int, char**) {
 				continue;
 			}
 
+			end_of_update:
+
+
 			// get serialized data
 			if (os == online_status::host) {
 				memset(render_data_buffer, 0, render_data_buffer_size);
@@ -1242,7 +1242,11 @@ int main(int, char**) {
 				send_buffer(them, render_data_buffer);
 			}
 			else if (os == online_status::client) {
+				memset(input_data_buffer, 0, input_data_buffer_size);
 				
+				controllers[1].serialize(input_data_buffer, 0);
+
+				send_buffer(them, input_data_buffer);
 			}
 			else if (os == online_status::local) {
 				// just serialize and deserialize for testing
@@ -1590,7 +1594,8 @@ void read_input() {
 		switch (e.type) {
 		case SDL_CONTROLLERBUTTONDOWN:
 			controller_index = lookup_controller(e.cbutton.which);
-			if (controllers[controller_index].status != human) break;
+			if (controllers[controller_index].status != human &&
+				controllers[controller_index].status != client) break;
 			if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 				controllers[controller_index].a.state = true;
 				controllers[controller_index].a.changed = true;
@@ -1640,7 +1645,8 @@ void read_input() {
 			break;
 		case SDL_CONTROLLERBUTTONUP:
 			controller_index = lookup_controller(e.cbutton.which);
-			if (controllers[controller_index].status != human) break;
+			if (controllers[controller_index].status != human &&
+				controllers[controller_index].status != client) break;
 			if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 				controllers[controller_index].a.state = false;
 				controllers[controller_index].a.changed = true;
@@ -1690,7 +1696,8 @@ void read_input() {
 			break;
 		case SDL_CONTROLLERAXISMOTION:
 			controller_index = lookup_controller(e.cbutton.which);
-			if (controllers[controller_index].status != human) break;
+			if (controllers[controller_index].status != human &&
+				controllers[controller_index].status != client) break;
 			if (e.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT) {
 				int min_activation = 20000;
 				int min_deactivation = 18000;
@@ -2023,6 +2030,8 @@ void get_input_data_forever(void* ptr) {
 			if (controllers[i].status != client) continue;
 			size = controllers[i].deserialize(input_data_buffer, size);
 		}
+
+		printf("recieved %d bytes\n", size);
 	}
 }
 

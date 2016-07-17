@@ -45,10 +45,11 @@ public:
 
 	player_status status = empty;
 	SDL_GameController* controller = NULL;
-
-	int serialize_button(button b, char* buf, int i);
-	int deserialize_button(button b, char* buf, int i); 
 	
 	int serialize(char* buf, int i);
 	int deserialize(char* buf, int i);
+
+private:
+	int serialize_button(button b, char* buf, int i);
+	int deserialize_button(button b, char* buf, int i);
 };
