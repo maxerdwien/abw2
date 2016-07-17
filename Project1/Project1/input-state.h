@@ -51,5 +51,5 @@ public:
 
 private:
 	int serialize_button(button b, char* buf, int i);
-	int deserialize_button(button b, char* buf, int i);
+	int deserialize_button(button* b, char* buf, int i);
 };
