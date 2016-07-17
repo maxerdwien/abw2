@@ -588,11 +588,13 @@ int Polar::deserialize(char*buf, int i) {
 
 	i = deserialize_int(&num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {
+		bullets[j] = new Bullet();
 		i = bullets[j]->deserialize(buf, i);
 	}
 
 	i = deserialize_int(&num_g_missiles, buf, i);
 	for (int j = 0; j < num_g_missiles; j++) {
+		g_missiles[j] = new Gravity_Missile();
 		i = g_missiles[j]->deserialize(buf, i);
 	}
 
@@ -605,6 +607,7 @@ int Polar::deserialize(char*buf, int i) {
 
 	i = deserialize_int(&num_sparks, buf, i);
 	for (int j = 0; j < num_sparks; j++) {
+		sparks[j] = new Spark();
 		i = sparks[j]->deserialize(buf, i);
 	}
 

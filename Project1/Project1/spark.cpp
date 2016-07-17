@@ -3,6 +3,8 @@
 #include "serializer.h"
 #include "spark.h"
 
+Spark::Spark() {}
+
 Spark::Spark(int x, int y) {
 	x_1 = x;
 	y_1 = y;

@@ -13,6 +13,7 @@ public:
 	int vel;
 
 	Spark(int x, int y);
+	Spark();
 
 	int serialize(char* buf, int i);
 	int deserialize(char* buf, int i);

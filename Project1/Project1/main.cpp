@@ -84,10 +84,10 @@ stage selected_stage = anchorage;
 const double CONTROLLER_MAX_ANGLE = M_PI / 6;
 const int DEAD_ZONE = 5000;
 
-const int render_data_buffer_size = 1024;
+const int render_data_buffer_size = 4096;
 char render_data_buffer[render_data_buffer_size];
 
-const int input_data_buffer_size = 1024;
+const int input_data_buffer_size = 4096;
 char input_data_buffer[input_data_buffer_size];
 
 SOCKET them;

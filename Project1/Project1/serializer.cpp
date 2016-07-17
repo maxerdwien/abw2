@@ -4,8 +4,8 @@
 #include <string>
 
 int serialize_int(int x, char* buffer, int index) {
-	if (index + sizeof(int) >= 1024) {
-		printf("cannot serialize; above limit of 1024 bytes\n");
+	if (index + sizeof(int) >= 4096) {
+		printf("cannot serialize; above limit of 4096 bytes\n");
 		return -1;
 	}
 	std::memcpy(buffer + index, &x, sizeof(int));
@@ -21,8 +21,8 @@ int deserialize_int(int* x, char* buffer, int index) {
 }
 
 int serialize_bool(bool x, char* buffer, int index) {
-	if (index + sizeof(bool) >= 1024) {
-		printf("cannot serialize; above limit of 1024 bytes\n");
+	if (index + sizeof(bool) >= 4096) {
+		printf("cannot serialize; above limit of 4096 bytes\n");
 		return -1;
 	}
 	std::memcpy(buffer + index, &x, sizeof(bool));
@@ -38,8 +38,8 @@ int deserialize_bool(bool* x, char* buffer, int index) {
 }
 
 int serialize_double(double x, char* buffer, int index) {
-	if (index + sizeof(double) >= 1024) {
-		printf("cannot serialize; above limit of 1024 bytes\n");
+	if (index + sizeof(double) >= 4096) {
+		printf("cannot serialize; above limit of 4096 bytes\n");
 		return -1;
 	}
 	std::memcpy(buffer + index, &x, sizeof(double));

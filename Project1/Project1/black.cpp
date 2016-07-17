@@ -411,6 +411,7 @@ int Black::deserialize(char*buf, int i) {
 
 	i = deserialize_int(&num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {
+		bullets[j] = new Bullet();
 		i = bullets[j]->deserialize(buf, i);
 	}
 

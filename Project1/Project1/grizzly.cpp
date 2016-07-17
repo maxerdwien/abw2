@@ -593,7 +593,7 @@ int Grizzly::serialize(char* buf, int i) {
 }
 
 int Grizzly::deserialize(char*buf, int i) {
-	i = serialize_ship(buf, i);
+	i = deserialize_ship(buf, i);
 
 	i = deserialize_int(&num_bullets, buf, i);
 	for (int j = 0; j < num_bullets; j++) {

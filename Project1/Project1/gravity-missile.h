@@ -31,6 +31,7 @@ public:
 	int damage_counter = 0;
 
 	Gravity_Missile(int x, int y, int x_v, int y_v);
+	Gravity_Missile();
 
 	int serialize(char* buf, int i);
 	int deserialize(char* buf, int i);

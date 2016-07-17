@@ -2,6 +2,8 @@
 
 #include "serializer.h"
 
+Gravity_Missile::Gravity_Missile() {}
+
 Gravity_Missile::Gravity_Missile(int x, int y, int x_v, int y_v) {
 	x_pos = x;
 	y_pos = y;
