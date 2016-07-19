@@ -10,6 +10,8 @@
 #include <SDL_mixer.h>
 #include <time.h>
 
+#include "serializer.h"
+
 #include "input-state.h"
 
 #include "spaceship.h"
@@ -94,6 +96,12 @@ SOCKET them;
 SOCKET me;
 
 Ship* ships[4] = { NULL, NULL, NULL, NULL };
+
+Item* items[100];
+int num_items = 0;
+
+Asteroid* asteroids[100];
+int num_asteroids = 0;
 
 int lookup_controller(int instanceID);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps);
@@ -285,14 +293,9 @@ int main(int, char**) {
 	SDL_Event e;
 	
 	int winner;
-
-	Item* items[100];
-	int num_items = 0;
+	
 
 	int item_spawn_cooldown = 60 * 30;
-	
-	Asteroid* asteroids[100];
-	int num_asteroids = 0;
 
 	int stock_count = 4;
 
@@ -877,6 +880,20 @@ int main(int, char**) {
 			if (game_end_cooldown != game_end_delay) {
 				//goto end_of_update;
 			}
+
+			// spawn items
+			if (do_items) {
+				item_spawn_cooldown--;
+				if (item_spawn_cooldown == 0) {
+					item_spawn_cooldown = (20 * 60) + (rand() % (10 * 60));
+					int x_pos = 10000 * (rand() % ((WIDTH_UNITS - STATUS_BAR_WIDTH) / 10000)) + STATUS_BAR_WIDTH;
+					int y_pos = 10000 * (rand() % (HEIGHT_UNITS / 10000));
+					int type = rand() % NUM_ITEM_TYPES;
+					items[num_items] = new Item(x_pos, y_pos, (item_type)type, r);
+					num_items++;
+				}
+			}
+
 			// spawn asteroids
 			if (selected_stage == juneau) {
 				asteroid_spawn_cooldown--;
@@ -911,19 +928,6 @@ int main(int, char**) {
 					asteroids[num_asteroids] = new Asteroid(x, y, (int)(power*cos(angle)), (int)(power*sin(angle)), r);
 					num_asteroids++;
 
-				}
-			}
-
-			// spawn items
-			if (do_items) {
-				item_spawn_cooldown--;
-				if (item_spawn_cooldown == 0) {
-					item_spawn_cooldown = (20 * 60) + (rand() % (10 * 60));
-					int x_pos = 10000 * (rand() % ((WIDTH_UNITS - STATUS_BAR_WIDTH) / 10000)) + STATUS_BAR_WIDTH;
-					int y_pos = 10000 * (rand() % (HEIGHT_UNITS / 10000));
-					int type = rand() % NUM_ITEM_TYPES;
-					items[num_items] = new Item(x_pos, y_pos, (item_type)type, r);
-					num_items++;
 				}
 			}
 
@@ -1255,10 +1259,18 @@ int main(int, char**) {
 			if (os == online_status::host) {
 				memset(render_data_buffer, 0, render_data_buffer_size);
 				int size = 0;
+				// ships
 				for (int i = 0; i < 4; i++) {
 					if (!ships[i]) continue;
 					size = ships[i]->serialize(render_data_buffer, size);
 				}
+
+				// items
+				size = serialize_int(num_items, render_data_buffer, size);
+				for (int i = 0; i < num_items; i++) {
+					size = items[i]->serialize(render_data_buffer, size);
+				}
+
 				send_buffer(them, render_data_buffer);
 			}
 			else if (os == online_status::client) {
@@ -2059,9 +2071,17 @@ void get_render_data_forever(void* ptr) {
 		memset(render_data_buffer, 0, render_data_buffer_size);
 		get_buffer(me, render_data_buffer);
 		int size = 0;
+		// ships
 		for (int i = 0; i < 4; i++) {
 			if (!ships[i]) continue;
 			size = ships[i]->deserialize(render_data_buffer, size);
+		}
+
+		// items
+		size = deserialize_int(&num_items, render_data_buffer, size);
+		for (int i = 0; i < num_items; i++) {
+			items[i] = new Item(0, 0, shield, r);
+			size = items[i]->deserialize(render_data_buffer, size);
 		}
 	}
 }

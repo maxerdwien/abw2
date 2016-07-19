@@ -1,6 +1,6 @@
 #pragma once
 
-enum item_type {
+enum item_type : int {
 	shield,
 	laser_sights,
 	speed_up,
@@ -21,7 +21,7 @@ public:
 	int x_pos;
 	int y_pos;
 
-	int radius = 20 * 10000;
+	const int radius = 20 * 10000;
 
 	bool picked_up = false;
 
@@ -32,4 +32,7 @@ public:
 	Item(int x, int y, item_type t, Renderer* rend);
 
 	void render();
+
+	int serialize(char* buf, int i);
+	int deserialize(char* buf, int i);
 };

@@ -1,7 +1,10 @@
 
 #include "renderer.h"
 
+#include "serializer.h"
+
 #include "item.h"
+
 Item::Item(int x, int y, item_type t, Renderer* rend) {
 	x_pos = x;
 	y_pos = y;
@@ -38,10 +41,37 @@ Item::Item(int x, int y, item_type t, Renderer* rend) {
 	}
 }
 
+
+
 void Item::render() {
 	if (picked_up) {
 		r->render_text(x_pos, y_pos, text, true, true, false, small_f, 255, alpha);
 	} else {
 		r->render_texture(tex, x_pos, y_pos, 0, 2);
 	}
+}
+
+int Item::serialize(char* buf, int i) {
+	i = serialize_int((int)type, buf, i);
+
+	i = serialize_int(x_pos, buf, i);
+	i = serialize_int(y_pos, buf, i);
+
+	i = serialize_bool(picked_up, buf, i);
+	i = serialize_int(alpha, buf, i);
+
+	return i;
+}
+
+int Item::deserialize(char* buf, int i) {
+	int* x = (int*)&type;
+	i = deserialize_int((int*)&type, buf, i);
+
+	i = deserialize_int(&x_pos, buf, i);
+	i = deserialize_int(&y_pos, buf, i);
+
+	i = deserialize_bool(&picked_up, buf, i);
+	i = deserialize_int(&alpha, buf, i);
+
+	return i;
 }

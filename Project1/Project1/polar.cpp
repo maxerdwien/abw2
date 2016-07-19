@@ -278,7 +278,6 @@ void Polar::render_projectiles_1() {
 		if (r->render_debug) {
 			r->render_texture_abs_size(r->hitbox_tex, bullets[j]->x_pos, bullets[j]->y_pos, 0, bullets[j]->radius);
 		}
-		
 	}
 }
 
