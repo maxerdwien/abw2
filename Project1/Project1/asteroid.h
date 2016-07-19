@@ -21,4 +21,7 @@ public:
 
 	void render();
 	void update();
+
+	int serialize(char* buf, int i);
+	int deserialize(char* buf, int i);
 };

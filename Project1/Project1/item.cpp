@@ -41,8 +41,6 @@ Item::Item(int x, int y, item_type t, Renderer* rend) {
 	}
 }
 
-
-
 void Item::render() {
 	if (picked_up) {
 		r->render_text(x_pos, y_pos, text, true, true, false, small_f, 255, alpha);
@@ -64,7 +62,6 @@ int Item::serialize(char* buf, int i) {
 }
 
 int Item::deserialize(char* buf, int i) {
-	int* x = (int*)&type;
 	i = deserialize_int((int*)&type, buf, i);
 
 	i = deserialize_int(&x_pos, buf, i);

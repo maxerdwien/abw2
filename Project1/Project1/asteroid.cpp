@@ -1,6 +1,8 @@
 #include <string>
 #include <SDL_image.h>
 
+#include "serializer.h"
+
 #include "renderer.h"
 #include "asteroid.h"
 
@@ -44,4 +46,22 @@ void Asteroid::update() {
 
 	x_pos += x_vel;
 	y_pos += y_vel;
+}
+
+int Asteroid::serialize(char* buf, int i) {
+	i = serialize_int(x_pos, buf, i);
+	i = serialize_int(y_pos, buf, i);
+
+	i = serialize_double(angle, buf, i);
+
+	return i;
+}
+
+int Asteroid::deserialize(char* buf, int i) {
+	i = deserialize_int(&x_pos, buf, i);
+	i = deserialize_int(&y_pos, buf, i);
+
+	i = deserialize_double(&angle, buf, i);
+
+	return i;
 }

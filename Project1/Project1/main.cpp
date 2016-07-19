@@ -1265,11 +1265,17 @@ int main(int, char**) {
 					size = ships[i]->serialize(render_data_buffer, size);
 				}
 
-				// items
-				size = serialize_int(num_items, render_data_buffer, size);
-				for (int i = 0; i < num_items; i++) {
-					size = items[i]->serialize(render_data_buffer, size);
+				// asteroids
+				size = serialize_int(num_asteroids, render_data_buffer, size);
+				for (int i = 0; i < num_asteroids; i++) {
+					size = asteroids[i]->serialize(render_data_buffer, size);
 				}
+
+				// items
+				//size = serialize_int(num_items, render_data_buffer, size);
+				//for (int i = 0; i < num_items; i++) {
+				//	size = items[i]->serialize(render_data_buffer, size);
+				//}
 
 				send_buffer(them, render_data_buffer);
 			}
@@ -2077,11 +2083,18 @@ void get_render_data_forever(void* ptr) {
 			size = ships[i]->deserialize(render_data_buffer, size);
 		}
 
-		// items
-		size = deserialize_int(&num_items, render_data_buffer, size);
-		for (int i = 0; i < num_items; i++) {
-			items[i] = new Item(0, 0, shield, r);
-			size = items[i]->deserialize(render_data_buffer, size);
+		// asteroids
+		size = deserialize_int(&num_asteroids, render_data_buffer, size);
+		for (int i = 0; i < num_asteroids; i++) {
+			asteroids[i] = new Asteroid(0, 0, 0, 0, r);
+			size = asteroids[i]->deserialize(render_data_buffer, size);
 		}
+
+		// items
+		//size = deserialize_int(&num_items, render_data_buffer, size);
+		//for (int i = 0; i < num_items; i++) {
+		//	items[i] = new Item(0, 0, shield, r);
+		//	size = items[i]->deserialize(render_data_buffer, size);
+		//}
 	}
 }
