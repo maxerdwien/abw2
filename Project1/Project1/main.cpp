@@ -321,7 +321,7 @@ int main(int, char**) {
 
 	memset(render_data_buffer, 0, render_data_buffer_size);
 
-	online_status os = online_status::host;
+	online_status os = online_status::local;
 	if (os == online_status::host) {
 
 		me = get_local_socket();
@@ -1272,10 +1272,10 @@ int main(int, char**) {
 				}
 
 				// items
-				//size = serialize_int(num_items, render_data_buffer, size);
-				//for (int i = 0; i < num_items; i++) {
-				//	size = items[i]->serialize(render_data_buffer, size);
-				//}
+				size = serialize_int(num_items, render_data_buffer, size);
+				for (int i = 0; i < num_items; i++) {
+					size = items[i]->serialize(render_data_buffer, size);
+				}
 
 				send_buffer(them, render_data_buffer);
 			}
@@ -2077,6 +2077,7 @@ void get_render_data_forever(void* ptr) {
 		memset(render_data_buffer, 0, render_data_buffer_size);
 		get_buffer(me, render_data_buffer);
 		int size = 0;
+
 		// ships
 		for (int i = 0; i < 4; i++) {
 			if (!ships[i]) continue;
@@ -2086,15 +2087,15 @@ void get_render_data_forever(void* ptr) {
 		// asteroids
 		size = deserialize_int(&num_asteroids, render_data_buffer, size);
 		for (int i = 0; i < num_asteroids; i++) {
-			asteroids[i] = new Asteroid(0, 0, 0, 0, r);
+			if (!asteroids[i]) asteroids[i] = new Asteroid(r);
 			size = asteroids[i]->deserialize(render_data_buffer, size);
 		}
 
 		// items
-		//size = deserialize_int(&num_items, render_data_buffer, size);
-		//for (int i = 0; i < num_items; i++) {
-		//	items[i] = new Item(0, 0, shield, r);
-		//	size = items[i]->deserialize(render_data_buffer, size);
-		//}
+		size = deserialize_int(&num_items, render_data_buffer, size);
+		for (int i = 0; i < num_items; i++) {
+			if (!items[i]) items[i] = new Item(r);
+			size = items[i]->deserialize(render_data_buffer, size);
+		}
 	}
 }

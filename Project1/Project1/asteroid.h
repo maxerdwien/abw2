@@ -16,8 +16,13 @@ public:
 
 	int radius = 10000 * 100;
 
+	int tex_number;
+
+	Asteroid(Renderer* rend);
 	Asteroid(int x, int y, int x_v, int y_v, Renderer* rend);
 	~Asteroid();
+
+	void get_resources();
 
 	void render();
 	void update();

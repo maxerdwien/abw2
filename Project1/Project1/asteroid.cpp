@@ -6,6 +6,10 @@
 #include "renderer.h"
 #include "asteroid.h"
 
+Asteroid::Asteroid(Renderer* rend) {
+	r = rend;
+}
+
 Asteroid::Asteroid(int x, int y, int x_v, int y_v, Renderer* rend) {
 	x_pos = x;
 	y_pos = y;
@@ -17,7 +21,16 @@ Asteroid::Asteroid(int x, int y, int x_v, int y_v, Renderer* rend) {
 
 	r = rend;
 
-	int tex_number = rand() % 3;
+	tex_number = rand() % 3;
+
+	get_resources();
+}
+
+Asteroid::~Asteroid() {
+	SDL_DestroyTexture(tex);
+}
+
+void Asteroid::get_resources() {
 	if (tex_number == 0) {
 		tex = r->LoadTexture("..\\Project1\\assets\\asteroid1.png");
 	} else if (tex_number == 1) {
@@ -25,10 +38,6 @@ Asteroid::Asteroid(int x, int y, int x_v, int y_v, Renderer* rend) {
 	} else {
 		tex = r->LoadTexture("..\\Project1\\assets\\asteroid3.png");
 	}
-}
-
-Asteroid::~Asteroid() {
-	SDL_DestroyTexture(tex);
 }
 
 void Asteroid::render() {
@@ -54,6 +63,8 @@ int Asteroid::serialize(char* buf, int i) {
 
 	i = serialize_double(angle, buf, i);
 
+	i = serialize_int(tex_number, buf, i);
+
 	return i;
 }
 
@@ -62,6 +73,10 @@ int Asteroid::deserialize(char* buf, int i) {
 	i = deserialize_int(&y_pos, buf, i);
 
 	i = deserialize_double(&angle, buf, i);
+
+	i = deserialize_int(&tex_number, buf, i);
+
+	get_resources();
 
 	return i;
 }

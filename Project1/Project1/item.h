@@ -29,7 +29,10 @@ public:
 
 	item_type type;
 
+	Item(Renderer* rend);
 	Item(int x, int y, item_type t, Renderer* rend);
+
+	void get_resources();
 
 	void render();
 

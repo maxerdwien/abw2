@@ -5,6 +5,10 @@
 
 #include "item.h"
 
+Item::Item(Renderer* rend) {
+	r = rend;
+}
+
 Item::Item(int x, int y, item_type t, Renderer* rend) {
 	x_pos = x;
 	y_pos = y;
@@ -13,6 +17,10 @@ Item::Item(int x, int y, item_type t, Renderer* rend) {
 
 	r = rend;
 
+	get_resources();
+}
+
+void Item::get_resources() {
 	switch (type) {
 	case shield:
 		tex = r->LoadTexture("..\\Project1\\assets\\powerUpTeal.png");
@@ -40,6 +48,7 @@ Item::Item(int x, int y, item_type t, Renderer* rend) {
 		break;
 	}
 }
+
 
 void Item::render() {
 	if (picked_up) {
@@ -69,6 +78,8 @@ int Item::deserialize(char* buf, int i) {
 
 	i = deserialize_bool(&picked_up, buf, i);
 	i = deserialize_int(&alpha, buf, i);
+
+	get_resources();
 
 	return i;
 }

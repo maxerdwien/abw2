@@ -5,11 +5,4 @@ c:\users\max_000\desktop\abw2\project1\project1\main.cpp(851): warning C4244: '=
 c:\users\max_000\desktop\abw2\project1\project1\main.cpp(852): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
   asteroid.cpp
   Generating Code...
-  Skipping... (no relevant changes detected)
-  weapon.cpp
-  spaceship.cpp
-  polar.cpp
-  grizzly.cpp
-  flamethrower.cpp
-  black.cpp
   Project1.vcxproj -> C:\Users\max_000\Desktop\abw2\Project1\Debug\acsf.exe
