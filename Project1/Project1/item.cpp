@@ -21,6 +21,8 @@ Item::Item(int x, int y, item_type t, Renderer* rend) {
 }
 
 void Item::get_resources() {
+	if (tex) return;
+
 	switch (type) {
 	case shield:
 		tex = r->LoadTexture("..\\Project1\\assets\\powerUpTeal.png");

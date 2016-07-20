@@ -31,6 +31,8 @@ Asteroid::~Asteroid() {
 }
 
 void Asteroid::get_resources() {
+	if (tex) return;
+
 	if (tex_number == 0) {
 		tex = r->LoadTexture("..\\Project1\\assets\\asteroid1.png");
 	} else if (tex_number == 1) {

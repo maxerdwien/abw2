@@ -3,7 +3,7 @@
 class Asteroid {
 private:
 	class Renderer* r;
-	SDL_Texture* tex;
+	SDL_Texture* tex = NULL;
 
 	double angle;
 	double degrees_per_frame;

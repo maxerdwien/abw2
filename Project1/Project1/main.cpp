@@ -321,7 +321,7 @@ int main(int, char**) {
 
 	memset(render_data_buffer, 0, render_data_buffer_size);
 
-	online_status os = online_status::local;
+	online_status os = online_status::host;
 	if (os == online_status::host) {
 
 		me = get_local_socket();

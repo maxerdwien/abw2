@@ -14,7 +14,7 @@ enum item_type : int {
 class Item {
 private:
 	Renderer* r;
-	SDL_Texture* tex;
+	SDL_Texture* tex = NULL;
 	std::string text;
 
 public:
