@@ -89,7 +89,8 @@ const int DEAD_ZONE = 5000;
 const int render_data_buffer_size = 4096;
 char render_data_buffer[render_data_buffer_size];
 
-const int input_data_buffer_size = 4096;
+// todo: add warnings when approaching this buffer size
+const int input_data_buffer_size = 256;
 char input_data_buffer[input_data_buffer_size];
 
 SOCKET them;
@@ -113,8 +114,8 @@ void render_game(int game_end_cooldown, int game_end_delay, int game_start_coold
 SOCKET connect_to_ip(PCSTR ip_address);
 SOCKET get_local_socket();
 
-void send_buffer(SOCKET them, char* buf);
-void get_buffer(SOCKET me, char* buf);
+void send_buffer(SOCKET them, char* buf, int size);
+void get_buffer(SOCKET me, char* buf, int size);
 
 void get_input_data_forever(void* ptr);
 void get_render_data_forever(void* ptr);
@@ -319,7 +320,14 @@ int main(int, char**) {
 		printf("wsa startup error, %d\n", WSAGetLastError());
 	}
 
-	memset(render_data_buffer, 0, render_data_buffer_size);
+	const int handshake_buffer_size = 128;
+	char handshake_buffer[handshake_buffer_size];
+
+	// todo: memset all buffers?
+	//memset(render_data_buffer, 0, render_data_buffer_size);
+	memset(handshake_buffer, 0, handshake_buffer_size);
+
+
 
 	online_status os = online_status::host;
 	if (os == online_status::host) {
@@ -333,13 +341,13 @@ int main(int, char**) {
 
 		SOCKADDR_STORAGE from;
 		int fromlen = sizeof(from);
-		int message_len = recvfrom(me, render_data_buffer, render_data_buffer_size, 0, (LPSOCKADDR)&from, &fromlen);
+		int message_len = recvfrom(me, handshake_buffer, handshake_buffer_size, 0, (LPSOCKADDR)&from, &fromlen);
 		if (message_len == SOCKET_ERROR) {
 			printf("recvfrom failed, %d", WSAGetLastError());
 		}
 
 		printf("recieved %d bytes\n", message_len);
-		printf("%s\n", render_data_buffer);
+		printf("%s\n", handshake_buffer);
 
 		char hostname[NI_MAXHOST];
 		// todo: worry about return value
@@ -351,21 +359,21 @@ int main(int, char**) {
 		them = connect_to_ip(hostname);
 
 		char message[render_data_buffer_size] = "hello world yourself";
-		send_buffer(them, message);
+		send_buffer(them, message, handshake_buffer_size);
 
 	} else if (os == online_status::client) {
 		them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee");
 		
-		char message[render_data_buffer_size] = "hello world";
+		char message[handshake_buffer_size] = "hello world";
 
-		send_buffer(them, message);
+		send_buffer(them, message, handshake_buffer_size);
 
-		memset(render_data_buffer, 0, sizeof(render_data_buffer));
+		memset(handshake_buffer, 0, sizeof(handshake_buffer));
 
 		me = get_local_socket();
 
-		get_buffer(me, render_data_buffer);
-		printf("%s\n", render_data_buffer);
+		get_buffer(me, handshake_buffer, handshake_buffer_size);
+		printf("%s\n", handshake_buffer);
 
 	}
 
@@ -1277,14 +1285,14 @@ int main(int, char**) {
 					size = items[i]->serialize(render_data_buffer, size);
 				}
 
-				send_buffer(them, render_data_buffer);
+				send_buffer(them, render_data_buffer, render_data_buffer_size);
 			}
 			else if (os == online_status::client) {
 				memset(input_data_buffer, 0, input_data_buffer_size);
 				
 				controllers[1].serialize(input_data_buffer, 0);
 
-				send_buffer(them, input_data_buffer);
+				send_buffer(them, input_data_buffer, input_data_buffer_size);
 			}
 			else if (os == online_status::local) {
 				// just serialize and deserialize for testing
@@ -2044,14 +2052,14 @@ SOCKET get_local_socket() {
 	return s;
 }
 
-void send_buffer(SOCKET them, char* buf) {
-	int ret_val = send(them, buf, render_data_buffer_size, 0);
+void send_buffer(SOCKET them, char* buf, int size) {
+	int ret_val = send(them, buf, size, 0);
 	if (ret_val == 0) {
 		printf("failed to send\n");
 	}
 }
-void get_buffer(SOCKET me, char* buf) {
-	int amount_read = recv(me, buf, render_data_buffer_size, 0);
+void get_buffer(SOCKET me, char* buf, int size) {
+	int amount_read = recv(me, buf, size, 0);
 	if (amount_read == SOCKET_ERROR) {
 		printf("holy fucking shit\n");
 	}
@@ -2060,7 +2068,7 @@ void get_buffer(SOCKET me, char* buf) {
 void get_input_data_forever(void* ptr) {
 	while (1) {
 		memset(input_data_buffer, 0, input_data_buffer_size);
-		get_buffer(me, input_data_buffer);
+		get_buffer(me, input_data_buffer, input_data_buffer_size);
 		int size = 0;
 		for (int i = 0; i < 4; i++) {
 			if (controllers[i].status != client) continue;
@@ -2068,14 +2076,14 @@ void get_input_data_forever(void* ptr) {
 			//printf("deserializing controller %d\n", i);
 		}
 
-		//printf("recieved %d bytes: %s\n", size, input_data_buffer);
+		printf("recieved %d bytes\n", size);
 	}
 }
 
 void get_render_data_forever(void* ptr) {
 	while (1) {
 		memset(render_data_buffer, 0, render_data_buffer_size);
-		get_buffer(me, render_data_buffer);
+		get_buffer(me, render_data_buffer, render_data_buffer_size);
 		int size = 0;
 
 		// ships
@@ -2097,5 +2105,7 @@ void get_render_data_forever(void* ptr) {
 			if (!items[i]) items[i] = new Item(r);
 			size = items[i]->deserialize(render_data_buffer, size);
 		}
+
+		printf("recieved %d bytes\n", size);
 	}
 }
