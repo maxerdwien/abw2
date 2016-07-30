@@ -398,6 +398,7 @@ void Grizzly::render_projectiles_2() {
 	for (int j = 0; j < num_missiles; j++) {
 		if (!missiles[j]->exploded) {
 			double angle = r->atan2_degrees(missiles[j]->x_vel, missiles[j]->y_vel);
+			//double angle = r->atan2_degrees(missiles[j]->x_accel, missiles[j]->y_accel);
 			SDL_Texture* tex;
 			if (item_times[bullet_bounce] > 0) {
 				tex = bounce_missile_tex;

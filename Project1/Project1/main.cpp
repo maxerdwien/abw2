@@ -150,7 +150,7 @@ int main(int, char**) {
 
 	game_state current_state = main_menu;
 	if (DEBUG_MODE) {
-		current_state = character_select;
+		current_state = main_menu;
 	}
 
 	// init SDL
@@ -281,6 +281,9 @@ int main(int, char**) {
 
 	Mix_VolumeMusic(MIX_MAX_VOLUME / 6);
 
+	const int min_analog_to_dpad_angle = 26000;
+
+
 	// stage stuff
 	int asteroid_spawn_cooldown = 1;
 
@@ -307,6 +310,17 @@ int main(int, char**) {
 	int frame_time[frame_counter_size + 1];
 	int frame_counter = 0;
 
+	enum class main_menu_option : int {
+		local,
+		client,
+		host,
+		exit,
+
+		MAX
+	};
+
+	main_menu_option main_menu_selection = main_menu_option::local;
+
 	
 	if (is_fullscreen) {
 		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
@@ -329,53 +343,7 @@ int main(int, char**) {
 
 
 
-	online_status os = online_status::host;
-	if (os == online_status::host) {
-
-		me = get_local_socket();
-
-		char name[80];
-		if (gethostname(name, sizeof(name)) == SOCKET_ERROR) {
-			printf("problemo");
-		}
-
-		SOCKADDR_STORAGE from;
-		int fromlen = sizeof(from);
-		int message_len = recvfrom(me, handshake_buffer, handshake_buffer_size, 0, (LPSOCKADDR)&from, &fromlen);
-		if (message_len == SOCKET_ERROR) {
-			printf("recvfrom failed, %d", WSAGetLastError());
-		}
-
-		printf("recieved %d bytes\n", message_len);
-		printf("%s\n", handshake_buffer);
-
-		char hostname[NI_MAXHOST];
-		// todo: worry about return value
-		int ret_val = getnameinfo((LPSOCKADDR)&from, fromlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST);
-		if (ret_val != 0) {
-			printf("could not get name info\n");
-		}
-
-		them = connect_to_ip(hostname);
-
-		char message[render_data_buffer_size] = "hello world yourself";
-		send_buffer(them, message, handshake_buffer_size);
-
-	} else if (os == online_status::client) {
-		them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee");
-		
-		char message[handshake_buffer_size] = "hello world";
-
-		send_buffer(them, message, handshake_buffer_size);
-
-		memset(handshake_buffer, 0, sizeof(handshake_buffer));
-
-		me = get_local_socket();
-
-		get_buffer(me, handshake_buffer, handshake_buffer_size);
-		printf("%s\n", handshake_buffer);
-
-	}
+	online_status os = online_status::local;
 
 	// game loop
 	while (!quit) {
@@ -398,17 +366,107 @@ int main(int, char**) {
 			while (SDL_PollEvent(&e)) {
 				if (read_global_input(&e)) continue;
 				switch (e.type) {
-				case SDL_CONTROLLERBUTTONDOWN:
+				case SDL_CONTROLLERBUTTONDOWN: {
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
-						current_state = character_select;
 						Mix_PlayChannel(-1, beep, 0);
 
-					} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_B) {
-						quit = true;
-						Mix_PlayChannel(-1, deselect, 0);
+						switch (main_menu_selection) {
+						case main_menu_option::local:
+							os = online_status::local;
+							break;
+						case main_menu_option::exit:
+							quit = true;
+							break;
+						case main_menu_option::host: {
+							os = online_status::host;
+							me = get_local_socket();
+
+							char name[80];
+							if (gethostname(name, sizeof(name)) == SOCKET_ERROR) {
+								printf("problemo");
+							}
+
+							SOCKADDR_STORAGE from;
+							int fromlen = sizeof(from);
+							int message_len = recvfrom(me, handshake_buffer, handshake_buffer_size, 0, (LPSOCKADDR)&from, &fromlen);
+							if (message_len == SOCKET_ERROR) {
+								printf("recvfrom failed, %d", WSAGetLastError());
+							}
+
+							printf("recieved %d bytes\n", message_len);
+							printf("%s\n", handshake_buffer);
+
+							char hostname[NI_MAXHOST];
+							// todo: worry about return value
+							int ret_val = getnameinfo((LPSOCKADDR)&from, fromlen, hostname, sizeof(hostname), NULL, 0, NI_NUMERICHOST);
+							if (ret_val != 0) {
+								printf("could not get name info\n");
+							}
+
+							them = connect_to_ip(hostname);
+
+							char message[render_data_buffer_size] = "hello world yourself";
+							send_buffer(them, message, handshake_buffer_size);
+							break;
+						}
+						case main_menu_option::client: {
+							os = online_status::client;
+							them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee");
+
+							char message[handshake_buffer_size] = "hello world";
+
+							send_buffer(them, message, handshake_buffer_size);
+
+							memset(handshake_buffer, 0, sizeof(handshake_buffer));
+
+							me = get_local_socket();
+
+							get_buffer(me, handshake_buffer, handshake_buffer_size);
+							printf("%s\n", handshake_buffer);
+							break;
+						}
+						}
+						current_state = character_select;
 
 					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP) {
+						Mix_PlayChannel(-1, beep, 0);
+						int new_selection = (int)main_menu_selection - 1;
+						if (new_selection < 0) new_selection += (int)main_menu_option::MAX;
+						main_menu_selection = (main_menu_option)new_selection;
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN) {
+						Mix_PlayChannel(-1, beep, 0);
+						int new_selection = (int)main_menu_selection + 1;
+						if (new_selection == (int)main_menu_option::MAX) new_selection = 0;
+						main_menu_selection = (main_menu_option)new_selection;
+					}
 					break;
+				}
+				case SDL_CONTROLLERAXISMOTION: {
+					int controller_index = lookup_controller(e.caxis.which);
+					if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY) {
+
+						if (e.caxis.value > min_analog_to_dpad_angle && !analog_stick_moved[controller_index]) {
+							analog_stick_moved[controller_index] = true;
+							Mix_PlayChannel(-1, beep, 0);
+							int new_selection = (int)main_menu_selection + 1;
+							if (new_selection == (int)main_menu_option::MAX) new_selection = 0;
+							main_menu_selection = (main_menu_option)new_selection;
+						}
+						else if (e.caxis.value < -min_analog_to_dpad_angle && !analog_stick_moved[controller_index]) {
+							analog_stick_moved[controller_index] = true;
+							Mix_PlayChannel(-1, beep, 0);
+							int new_selection = (int)main_menu_selection - 1;
+							if (new_selection < 0) new_selection += (int)main_menu_option::MAX;
+							main_menu_selection = (main_menu_option)new_selection;
+						}
+						else if (e.caxis.value < min_analog_to_dpad_angle && e.caxis.value > -min_analog_to_dpad_angle) {
+							analog_stick_moved[controller_index] = false;
+						}
+					}
+					break;
+				}
 				}
 			}
 
@@ -417,11 +475,12 @@ int main(int, char**) {
 
 			// render title name and prompt to move forward
 			{
-				r->render_text(WIDTH_UNITS / 2,  2 * HEIGHT_UNITS / 5, "Alaskan Cosmobear Spacefighting", true, false, false, large_f, 255, 255);
+				r->render_text(WIDTH_UNITS / 2, 2 * HEIGHT_UNITS / 10, "alaskan cosmobear spacefighting", true, false, false, large_f, 255, 255);
 
-				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 2, "Press the A button to start.", true, false, false, medium_f, 255, 255);
-
-				r->render_text(WIDTH_UNITS / 2, 10 * HEIGHT_UNITS / 17, "Press the B button to quit.", true, false, false, medium_f, 255, 255);
+				r->render_text(WIDTH_UNITS / 2, 4 * HEIGHT_UNITS / 10, "start local game", true, false, main_menu_selection == main_menu_option::local, medium_f, 255, 255);
+				r->render_text(WIDTH_UNITS / 2, 5 * HEIGHT_UNITS / 10, "look for online game", true, false, main_menu_selection == main_menu_option::client, medium_f, 255, 255);
+				r->render_text(WIDTH_UNITS / 2, 6 * HEIGHT_UNITS / 10, "host online game", true, false, main_menu_selection == main_menu_option::host, medium_f, 255, 255);
+				r->render_text(WIDTH_UNITS / 2, 7 * HEIGHT_UNITS / 10, "exit", true, false, main_menu_selection == main_menu_option::exit, medium_f, 255, 255);
 			}
 
 			SDL_RenderPresent(renderer);
@@ -553,9 +612,8 @@ int main(int, char**) {
 				case SDL_CONTROLLERAXISMOTION:
 					controller_index = lookup_controller(e.caxis.which);
 					if (e.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX) {
-						int min_angle = 26000;
 
-						if (e.caxis.value > min_angle && !analog_stick_moved[controller_index]) {
+						if (e.caxis.value > min_analog_to_dpad_angle && !analog_stick_moved[controller_index]) {
 							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
 							Mix_PlayChannel(-1, beep, 0);
@@ -570,7 +628,7 @@ int main(int, char**) {
 								selections[controller_index] = black;
 								break;
 							}
-						} else if (e.caxis.value < -min_angle && !analog_stick_moved[controller_index]) {
+						} else if (e.caxis.value < -min_analog_to_dpad_angle && !analog_stick_moved[controller_index]) {
 							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
 							Mix_PlayChannel(-1, beep, 0);
@@ -585,7 +643,7 @@ int main(int, char**) {
 								selections[controller_index] = grizzly;
 								break;
 							}
-						} else if (e.caxis.value < min_angle && e.caxis.value > -min_angle) {
+						} else if (e.caxis.value < min_analog_to_dpad_angle && e.caxis.value > -min_analog_to_dpad_angle) {
 							analog_stick_moved[controller_index] = false;
 						}
 					}
@@ -780,23 +838,6 @@ int main(int, char**) {
 				goto end_of_update;
 			}
 			if (os == online_status::local) {
-				
-				controllers[0].serialize(input_data_buffer, 0);
-				controllers[1].deserialize(input_data_buffer, 0);
-
-				/*
-				int size = 0;
-				for (int i = 0; i < 4; i++) {
-					if (controllers[i].status == empty) continue;
-					size = controllers[i].serialize(input_data_buffer, size);
-				}
-
-				size = 0;
-				for (int i = 0; i < 4; i++) {
-					if (controllers[i].status == empty) continue;
-					size = controllers[i].deserialize(input_data_buffer, size);
-				}
-				*/
 			}
 
 			// ai moves
@@ -1296,6 +1337,7 @@ int main(int, char**) {
 			}
 			else if (os == online_status::local) {
 				// just serialize and deserialize for testing
+				/*
 				int size = 0;
 				for (int i = 0; i < 4; i++) {
 					if (!ships[i]) continue;
@@ -1307,6 +1349,7 @@ int main(int, char**) {
 					if (!ships[i]) continue;
 					size = ships[i]->deserialize(render_data_buffer, size);
 				}
+				*/
 			}
 
 			render_game(game_end_cooldown, game_end_delay, game_start_cooldown,
