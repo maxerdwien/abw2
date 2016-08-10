@@ -734,6 +734,7 @@ int main(int, char**) {
 			}
 			game_end_cooldown = game_end_delay;
 
+			// todo: don't start new threads for every game
 			// start threads to listen for online input
 			if (os == online_status::host) {
 				_beginthread(get_input_data_forever, 0, 0);
