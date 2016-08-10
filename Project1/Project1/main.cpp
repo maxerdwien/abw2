@@ -299,7 +299,8 @@ int main(int, char**) {
 	int winner;
 	
 
-	int item_spawn_cooldown = 60 * 30;
+	int item_spawn_cooldown = 60 * 17;
+	if (DEBUG_MODE) item_spawn_cooldown = 2;
 
 	int stock_count = 4;
 
@@ -411,7 +412,8 @@ int main(int, char**) {
 						}
 						case main_menu_option::client: {
 							os = online_status::client;
-							them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee");
+							//them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee"); // hermione's ip address
+							them = connect_to_ip("2601:282:a03:9e30:49a2:8b4c:9b3b:96a9"); // greg's ip address
 
 							char message[handshake_buffer_size] = "hello world";
 
@@ -935,6 +937,7 @@ int main(int, char**) {
 				item_spawn_cooldown--;
 				if (item_spawn_cooldown == 0) {
 					item_spawn_cooldown = (20 * 60) + (rand() % (10 * 60));
+					if (DEBUG_MODE) item_spawn_cooldown = 10 * 60;
 					int x_pos = 10000 * (rand() % ((WIDTH_UNITS - STATUS_BAR_WIDTH) / 10000)) + STATUS_BAR_WIDTH;
 					int y_pos = 10000 * (rand() % (HEIGHT_UNITS / 10000));
 					int type = rand() % NUM_ITEM_TYPES;
@@ -1056,9 +1059,17 @@ int main(int, char**) {
 						}
 					}
 
-					if (ship->item_times[item_type::small_pwrup] > 0) {
+					if (ship->item_times[item_type::small_pwrup] > 60) {
 						ship->radius = ship->normal_radius / 2;
 						ship->gun_length = ship->normal_gun_length / 2;
+					} else if (ship->item_times[item_type::small_pwrup] > 0) {
+						if (ship->item_times[item_type::small_pwrup] % 15 < 7) {
+							ship->radius = ship->normal_radius;
+							ship->gun_length = ship->normal_gun_length;
+						} else {
+							ship->radius = ship->normal_radius / 2;
+							ship->gun_length = ship->normal_gun_length / 2;
+						}
 					} else {
 						ship->radius = ship->normal_radius;
 						ship->gun_length = ship->normal_gun_length;
@@ -1081,7 +1092,7 @@ int main(int, char**) {
 							ship->do_speed_boost = false;
 						}
 						if (ship->item_times[speed_up] > 0) {
-							accel_mag *= 2;
+							accel_mag *= 1.5;
 						}
 
 						if (ship->move_dir_x != 0 || ship->move_dir_y != 0) {
@@ -1130,9 +1141,8 @@ int main(int, char**) {
 						}
 
 						// handle collisions between ships
-						for (int j = 0; j < 4; j++) {
+						for (int j = i+1; j < 4; j++) {
 							if (!ships[j]) continue;
-							if (i == j) continue;
 							if (ships[j]->lives == 0) continue;
 							double dist = sqrt(pow(ship->x_pos - ships[j]->x_pos, 2) + pow(ship->y_pos - ships[j]->y_pos, 2));
 							if (dist == 0) dist = 1;
@@ -1140,8 +1150,10 @@ int main(int, char**) {
 								double total_force = 140000000000000000.0 / pow(dist, 2);
 								double x_force = (ship->x_pos - ships[j]->x_pos) * total_force / dist;
 								ship->x_vel += (int)(x_force / ship->weight);
+								ships[j]->x_vel -= (int)(x_force / ship->weight);
 								double y_force = (ship->y_pos - ships[j]->y_pos) * total_force / dist;
 								ship->y_vel += (int)(y_force / ship->weight);
+								ships[j]->y_vel -= (int)(y_force / ship->weight);
 							}
 						}
 					}
@@ -2063,7 +2075,6 @@ SOCKET connect_to_ip(PCSTR ip_address) {
 }
 
 SOCKET get_local_socket() {
-
 	const char* port = "7534";
 
 	ADDRINFO hints;

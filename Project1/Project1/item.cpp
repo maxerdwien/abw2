@@ -56,7 +56,12 @@ void Item::render() {
 	if (picked_up) {
 		r->render_text(x_pos, y_pos, text, true, true, false, small_f, 255, alpha);
 	} else {
-		r->render_texture(tex, x_pos, y_pos, 0, 2);
+		if (r->render_normal) {
+			r->render_texture(tex, x_pos, y_pos, 0, 2);
+		}
+		if (r->render_debug) {
+			r->render_texture_abs_size(r->hitbox_tex, x_pos, y_pos, 0, radius);
+		}
 	}
 }
 

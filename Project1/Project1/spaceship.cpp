@@ -15,7 +15,7 @@ Ship::~Ship() {
 
 void Ship::render() {
 	double scale = 1;
-	if (item_times[small_pwrup] > 0) {
+	if (radius != normal_radius) {
 		scale = 0.5;
 	}
 	double angle = r->atan2_degrees(face_dir_x, face_dir_y);
@@ -82,11 +82,22 @@ void Ship::render() {
 		r->render_line(x_pos + gun_len*cos(angle), y_pos + gun_len*sin(angle), gun_dir_x, gun_dir_y);
 	}
 
-	if (item_times[shield] > 0) {
+	if (item_times[shield] > 60) {
 		r->render_texture(shield_tex, x_pos, y_pos, angle, 4 * scale);
 	}
-	if (item_times[bounce] > 0) {
+	else if (item_times[shield] > 0) {
+		if (item_times[item_type::small_pwrup] % 15 >= 7) {
+			r->render_texture(shield_tex, x_pos, y_pos, angle, 4 * scale);
+		}
+	}
+
+	if (item_times[bounce] > 60) {
 		r->render_texture(bounce_tex, x_pos, y_pos, angle, 4 * scale);
+	}
+	else if (item_times[bounce] > 0) {
+		if (item_times[item_type::bounce] % 15 >= 7) {
+			r->render_texture(bounce_tex, x_pos, y_pos, angle, 4 * scale);
+		}
 	}
 }
 
