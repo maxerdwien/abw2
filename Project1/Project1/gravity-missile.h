@@ -24,7 +24,7 @@ public:
 
 	bool exploded = false;
 
-	int radius = 5 * 10000;
+	int radius = 15 * 10000;
 
 	double vortex_angle = 0;
 

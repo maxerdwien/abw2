@@ -487,10 +487,18 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				}
 
 				double ship_dist = sqrt(pow(target_ship->x_pos - x_pos, 2) + pow(target_ship->y_pos - y_pos, 2));
+
+				int damage_amount = 0;
+				if (laser_damage_cooldown == 0) {
+					laser_damage_cooldown = laser_damage_delay;
+					damage_amount = 1;
+				} else {
+					laser_damage_cooldown--;
+				}
 				
-				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 30+(int)(ship_dist/1000000), 1, haptics[i]);
+				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 30+(int)(ship_dist/1000000), damage_amount, haptics[i]);
 				if (hit) {
-					damage_done += 1;
+					damage_done += damage_amount;
 					target_ship->last_hit = id;
 					sparks[num_sparks] = new Spark(target_ship->x_pos, target_ship->y_pos);
 					num_sparks++;

@@ -48,6 +48,7 @@ public:
 	void render_line_thick(int x_start, int y_start, int x_dir, int y_dir);
 
 	void render_solid_bg();
+	void render_background_image(SDL_Texture* texture);
 
 	void render_cross_bars(int width);
 

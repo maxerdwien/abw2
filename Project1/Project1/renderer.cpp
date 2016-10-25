@@ -87,6 +87,26 @@ void Renderer::render_texture_abs_size(SDL_Texture* texture, int x, int y, doubl
 	RenderCopyEx(texture, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
 }
 
+void Renderer::render_background_image(SDL_Texture* texture) {
+	SDL_Rect s;
+	s.x = 0;
+	s.y = 0;
+	s.w = WINDOW_WIDTH;
+	s.h = WINDOW_HEIGHT;
+
+	RenderCopyEx(texture, NULL, &s, 0, NULL, SDL_FLIP_NONE);
+}
+
+void Renderer::render_solid_bg() {
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_Rect s;
+	s.x = 0;
+	s.y = 0;
+	s.w = WINDOW_WIDTH;
+	s.h = WINDOW_HEIGHT;
+	SDL_RenderFillRect(renderer, &s);
+}
+
 int Renderer::RenderCopyEx(SDL_Texture* texture, const SDL_Rect* srcrect, const SDL_Rect* dstrect, const double angle, const SDL_Point* center, const SDL_RendererFlip flip) {
 	return SDL_RenderCopyEx(renderer, texture, srcrect, dstrect, angle, center, flip);
 }
@@ -209,15 +229,7 @@ void Renderer::render_line_thick(int x_start, int y_start, int x_dir, int y_dir)
 }
 
 
-void Renderer::render_solid_bg() {
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_Rect s;
-	s.x = 0;
-	s.y = 0;
-	s.w = WINDOW_WIDTH;
-	s.h = WINDOW_HEIGHT;
-	SDL_RenderFillRect(renderer, &s);
-}
+
 
 
 

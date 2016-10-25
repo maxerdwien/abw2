@@ -1,7 +1,7 @@
 #pragma once
 
 // in radians per frame
-const double polar_gun_turn_speed = M_PI / 30;
+const double polar_gun_turn_speed = M_PI / 40;
 
 
 class Polar : public Ship {
@@ -36,6 +36,8 @@ private:
 	int missile_cooldown = 0;
 
 	bool laser_active = false;
+	const int laser_damage_delay = 2;
+	int laser_damage_cooldown = 0;
 
 	int laser_start_x;
 	int laser_start_y;
@@ -46,8 +48,6 @@ private:
 	int num_sparks = 0;
 
 public:
-	
-
 	Polar(int identifier, int a1, int a2, int x, int y, Renderer* rend);
 	~Polar();
 

@@ -88,6 +88,8 @@
     <ClCompile Include="serializer.cpp" />
     <ClCompile Include="spaceship.cpp" />
     <ClCompile Include="spark.cpp" />
+    <ClCompile Include="stage_marker.cpp" />
+    <ClCompile Include="stage_select_marker.cpp" />
     <ClCompile Include="weapon.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +108,8 @@
     <ClInclude Include="serializer.h" />
     <ClInclude Include="spaceship.h" />
     <ClInclude Include="spark.h" />
+    <ClInclude Include="stage_marker.h" />
+    <ClInclude Include="stage_select_marker.h" />
     <ClInclude Include="weapon.h" />
   </ItemGroup>
   <ItemGroup>

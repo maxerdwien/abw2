@@ -23,6 +23,9 @@
 
 #include "asteroid.h"
 
+#include "stage_select_marker.h"
+#include "stage_marker.h"
+
 #include "renderer.h"
 
 SDL_Renderer* renderer;
@@ -68,10 +71,12 @@ enum ship_type {
 	polar = 2,
 };
 
-enum stage {
+enum class stage {
 	anchorage, // normal
 	fairbanks, // asteroid in middle
 	juneau, // random asteroids
+
+	MAX
 };
 
 enum team_mode {
@@ -81,7 +86,7 @@ enum team_mode {
 
 team_mode selected_team_mode = free_for_all;
 
-stage selected_stage = anchorage;
+stage selected_stage = stage::anchorage;
 
 const double CONTROLLER_MAX_ANGLE = M_PI / 6;
 const int DEAD_ZONE = 5000;
@@ -259,6 +264,8 @@ int main(int, char**) {
 	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
+	SDL_Texture* alaska = r->LoadTexture("..\\Project1\\assets\\alaska.png");
+
 	
 	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\confirm.wav");
 	Mix_Chunk* deselect = Mix_LoadWAV("..\\Project1\\assets\\sounds\\deselect.wav");
@@ -343,6 +350,13 @@ int main(int, char**) {
 	memset(handshake_buffer, 0, handshake_buffer_size);
 
 
+	// stage select marker
+	Stage_Select_Marker* ssm = new Stage_Select_Marker(r);
+
+	Stage_Marker* stage_markers[(int)stage::MAX];
+	stage_markers[(int)stage::anchorage] = new Stage_Marker(r, 6872830, 4379670, "anchorage");
+	stage_markers[(int)stage::fairbanks] = new Stage_Marker(r, 7474640, 3144430, "fairbanks");
+	stage_markers[(int)stage::juneau] = new Stage_Marker(r, 11169940, 5735230, "juneau");
 
 	online_status os = online_status::local;
 
@@ -368,7 +382,7 @@ int main(int, char**) {
 				if (read_global_input(&e)) continue;
 				switch (e.type) {
 				case SDL_CONTROLLERBUTTONDOWN: {
-					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A || e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						Mix_PlayChannel(-1, beep, 0);
 
 						switch (main_menu_selection) {
@@ -412,8 +426,8 @@ int main(int, char**) {
 						}
 						case main_menu_option::client: {
 							os = online_status::client;
-							//them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee"); // hermione's ip address
-							them = connect_to_ip("2601:282:a03:9e30:49a2:8b4c:9b3b:96a9"); // greg's ip address
+							them = connect_to_ip("2601:282:a03:9e30:7812:e4af:d650:e3ee"); // hermione's ip address
+							//them = connect_to_ip("2601:282:a03:9e30:49a2:8b4c:9b3b:96a9"); // greg's ip address
 
 							char message[handshake_buffer_size] = "hello world";
 
@@ -517,6 +531,8 @@ int main(int, char**) {
 
 						if (DEBUG_MODE) all_ready = true;
 						if (all_ready) {
+							ssm->x_pos = WIDTH_UNITS/2;
+							ssm->y_pos = HEIGHT_UNITS/2;
 							current_state = stage_select;
 						}
 					}
@@ -532,20 +548,22 @@ int main(int, char**) {
 						do_items = !do_items;
 						Mix_PlayChannel(-1, beep, 0);
 					}
+					/*
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
 						switch (selected_stage) {
-						case anchorage:
-							selected_stage = fairbanks;
+						case stage::anchorage:
+							selected_stage = stage::fairbanks;
 							break;
-						case fairbanks:
-							selected_stage = juneau;
+						case stage::fairbanks:
+							selected_stage = stage::juneau;
 							break;
-						case juneau:
-							selected_stage = anchorage;
+						case stage::juneau:
+							selected_stage = stage::anchorage;
 							break;
 						}
 						Mix_PlayChannel(-1, beep, 0);
 					}
+					*/
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 						if (ready[controller_index]) break;
 						Mix_PlayChannel(-1, beep, 0);
@@ -663,16 +681,18 @@ int main(int, char**) {
 				r->render_text(0, 0, " Items: OFF (Y) ", false, false, true, small_f, 255, 255);
 			}
 
+			/*
 			// render stage select
-			if (selected_stage == anchorage) {
+			if (selected_stage == stage::anchorage) {
 				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Anchorage (X) ", false, false, true, small_f, 255, 255);
 			}
-			else  if (selected_stage == fairbanks) {
+			else  if (selected_stage == stage::fairbanks) {
 				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Fairbanks (X) ", false, false, true, small_f, 255, 255);
 			}
-			else if (selected_stage == juneau) {
+			else if (selected_stage == stage::juneau) {
 				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Juneau (X) ", false, false, true, small_f, 255, 255);
 			}
+			*/
 
 			// render team mode
 			if (selected_team_mode == free_for_all) {
@@ -723,7 +743,61 @@ int main(int, char**) {
 		}
 		// start of stage select state
 		else if (current_state == stage_select) {
-			current_state = init_game;
+			read_input();
+
+			int total_x_motion = 0;
+			int total_y_motion = 0;
+
+			for (int i = 0; i < 4; i++) {
+				Input_State is = controllers[i];
+				if (is.status == empty) continue;
+
+				if ((is.a.changed && is.a.state) || (is.start.changed && is.start.state)) {
+					Mix_PlayChannel(-1, beep, 0);
+					current_state = init_game;
+				}
+
+				if (is.b.changed && is.b.state) {
+					Mix_PlayChannel(-1, beep, 0);
+					current_state = character_select;
+				}
+
+				if (is.y.changed) {
+					printf("%d %d\n", ssm->x_pos, ssm->y_pos);
+				}
+
+				total_x_motion += is.l_stick_x;
+				total_y_motion += is.l_stick_y;
+			}
+
+			ssm->x_pos += total_x_motion * 10;
+			ssm->y_pos += total_y_motion * 10;
+
+			for (int i = 0; i < (int)stage::MAX; i++) {
+				double dist = sqrt(pow(stage_markers[i]->x_pos - ssm->x_pos, 2) + pow(stage_markers[i]->y_pos - ssm->y_pos, 2));
+
+				if (dist <= stage_markers[i]->selection_radius) {
+					stage_markers[i]->selected = true;
+					selected_stage = (stage)i;
+				} else {
+					stage_markers[i]->selected = false;
+				}
+			}
+
+
+			r->render_solid_bg();
+			r->render_background_image(alaska);
+
+			
+			ssm->render();
+
+			for (int i = 0; i < (int)stage::MAX; i++) {
+				stage_markers[i]->render();
+			}
+			
+
+			SDL_RenderPresent(renderer);
+			
 		}
 		else if (current_state == init_game) {
 			// begin start game timer
@@ -756,7 +830,7 @@ int main(int, char**) {
 			}
 			num_asteroids = 0;
 
-			if (selected_stage == fairbanks) {
+			if (selected_stage == stage::fairbanks) {
 				asteroids[num_asteroids] = new Asteroid((WIDTH_UNITS - STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, 0, 0, r);
 				num_asteroids = 1;
 			}
@@ -948,7 +1022,7 @@ int main(int, char**) {
 			}
 
 			// spawn asteroids
-			if (selected_stage == juneau) {
+			if (selected_stage == stage::juneau) {
 				asteroid_spawn_cooldown--;
 				if (asteroid_spawn_cooldown <= 0) {
 					asteroid_spawn_cooldown = 10 * 60;
@@ -2122,7 +2196,7 @@ void get_buffer(SOCKET me, char* buf, int size) {
 
 void get_input_data_forever(void* ptr) {
 	while (1) {
-		memset(input_data_buffer, 0, input_data_buffer_size);
+		//memset(input_data_buffer, 0, input_data_buffer_size);
 		get_buffer(me, input_data_buffer, input_data_buffer_size);
 		int size = 0;
 		for (int i = 0; i < 4; i++) {
@@ -2137,7 +2211,7 @@ void get_input_data_forever(void* ptr) {
 
 void get_render_data_forever(void* ptr) {
 	while (1) {
-		memset(render_data_buffer, 0, render_data_buffer_size);
+		//memset(render_data_buffer, 0, render_data_buffer_size);
 		get_buffer(me, render_data_buffer, render_data_buffer_size);
 		int size = 0;
 
