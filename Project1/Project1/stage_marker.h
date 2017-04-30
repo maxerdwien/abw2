@@ -15,6 +15,7 @@ public:
 	bool selected;
 
 	int selection_radius;
+	int attraction_radius;
 
 	Stage_Marker(Renderer* rend, int x, int y, std::string n);
 

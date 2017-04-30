@@ -49,7 +49,6 @@ void Asteroid::render() {
 	if (r->render_debug) {
 		r->render_texture_abs_size(r->hitbox_tex, x_pos, y_pos, 0, radius);
 	}
-	
 }
 
 void Asteroid::update() {

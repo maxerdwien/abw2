@@ -6,11 +6,11 @@
 Spark::Spark() {}
 
 Spark::Spark(int x, int y) {
-	x_1 = x;
-	y_1 = y;
+	x_1 = x + 10 * 10000 * ((double)rand() / RAND_MAX - 0.5);
+	y_1 = y + 10 * 10000 * ((double)rand() / RAND_MAX - 0.5);
 
-	x_2 = x + 15 * 10000 * ((double)rand() / RAND_MAX - 0.5);
-	y_2 = y + 15 * 10000 * ((double)rand() / RAND_MAX - 0.5);
+	x_2 = x_1 + 15 * 10000 * ((double)rand() / RAND_MAX - 0.5);
+	y_2 = y_1 + 15 * 10000 * ((double)rand() / RAND_MAX - 0.5);
 
 	vel = 10 * 10000 * (double)rand() / RAND_MAX;
 

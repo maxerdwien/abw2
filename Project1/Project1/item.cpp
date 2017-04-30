@@ -60,7 +60,7 @@ void Item::render() {
 			r->render_texture(tex, x_pos, y_pos, 0, 2);
 		}
 		if (r->render_debug) {
-			r->render_texture_abs_size(r->hitbox_tex, x_pos, y_pos, 0, radius);
+			r->render_texture_abs_size(r->activation_hitbox_tex, x_pos, y_pos, 0, radius);
 		}
 	}
 }

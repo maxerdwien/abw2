@@ -12,7 +12,8 @@ Stage_Marker::Stage_Marker(Renderer* rend, int x, int y, std::string n) {
 
 	selected = false;
 
-	selection_radius = 10000 * 70;
+	selection_radius = 10000 * 60;
+	attraction_radius = 10000 * 90;
 
 	name = n;
 

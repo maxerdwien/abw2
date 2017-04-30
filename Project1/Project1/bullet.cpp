@@ -22,16 +22,37 @@ Bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int 
 	return bull;
 }
 
-Bullet** spawn_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, int damage, int base_knockback, int knockback_scaling) {
-	double spread_angle = 3.14159 * 0.1;
+Bullet* spawn_bullet(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int damage, int base_knockback, int knockback_scaling) {
+	double theta = atan2(gun_dir_y, gun_dir_x);
 
+	int x_vel = (int)(velocity*cos(theta));
+	int y_vel = (int)(velocity*sin(theta));
+	return init_bullet(x_pos, y_pos, x_vel, y_vel, damage, base_knockback, knockback_scaling);
+}
+
+Bullet** spawn_spread_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, double spread_angle, int damage, int base_knockback, int knockback_scaling) {
 	Bullet** new_bullets = (Bullet**)malloc(sizeof(Bullet*) * spread);
 
+	double straight_theta = atan2(gun_dir_y, gun_dir_x);
 	if (spread % 2 == 0) {
+		for (int i = 0; i < spread; i++) {
+			double theta;
+			if (i % 2 == 0) {
+				theta = straight_theta + ((i / 2)*spread_angle + spread_angle/2);
+			} else {
+				theta = straight_theta - ((i / 2)*spread_angle + spread_angle/2);
+			}
 
+			int x_vel = (int)(velocity*cos(theta));
+			int y_vel = (int)(velocity*sin(theta));
+
+			if (x_vel != 0 || y_vel != 0) {
+				new_bullets[i] = init_bullet(x_pos, y_pos, x_vel, y_vel, damage, base_knockback, knockback_scaling);
+			} else {
+				throw;
+			}
+		}
 	} else {
-		double straight_theta = atan2(gun_dir_y, gun_dir_x);
-
 		for (int i = 0; i < spread; i++) {
 			double theta;
 			if (i % 2 == 0) {
@@ -45,6 +66,8 @@ Bullet** spawn_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int v
 
 			if (x_vel != 0 || y_vel != 0) {
 				new_bullets[i] = init_bullet(x_pos, y_pos, x_vel, y_vel, damage, base_knockback, knockback_scaling);
+			} else {
+				throw;
 			}
 		}
 	}

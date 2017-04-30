@@ -133,34 +133,25 @@ void Black::fire_1() {
 	if (burst_shot_current != 0 && burst_cooldown_2 > 0) {
 		burst_cooldown_2--;
 	}
-	if (do_fire_1 && stamina > 0 && burst_cooldown_1 <= 0) {
+	if ((do_fire_1 && stamina > 0 && burst_cooldown_1 <= 0) || (burst_cooldown_2 <= 0)) {
 		int MUZZLE_VEL = 90000;
-		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		Bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
-		for (int i = 0; i < spread; i++) {
-			bullets[num_bullets] = new_bullets[i];
-			num_bullets++;
-		}
-		free(new_bullets);
-		burst_cooldown_1 += burst_delay_1;
-		burst_shot_current++;
-		stamina -= 320;
+		Bullet* new_bullet = spawn_bullet(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, 3, 150, 30);
+
+		bullets[num_bullets] = new_bullet;
+		num_bullets++;
 		Mix_PlayChannel(-1, bullet_sfx, 0);
+
+		burst_shot_current++;
+
+	}
+
+	if (do_fire_1 && stamina > 0 && burst_cooldown_1 <= 0) {
+		burst_cooldown_1 += burst_delay_1;
+		stamina -= 320;
 	}
 	if (burst_cooldown_2 <= 0) {
-		int MUZZLE_VEL = 90000;
-		int spread = 1;
-		double angle = atan2(gun_dir_y, gun_dir_x);
-		Bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos + (int)(gun_length*cos(angle)), y_pos + (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, 3, 150, 30);
-		for (int i = 0; i < spread; i++) {
-			bullets[num_bullets] = new_bullets[i];
-			num_bullets++;
-		}
-		free(new_bullets);
 		burst_cooldown_2 += burst_delay_2;
-		burst_shot_current++;
-		Mix_PlayChannel(-1, bullet_sfx, 0);
 		if (burst_shot_current == burst_shot_number) {
 			burst_shot_current = 0;
 		}
@@ -283,19 +274,19 @@ void Black::fire_2() {
 	} else {
 		Mix_HaltChannel(charging_channel);
 	}
-	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 10) {
+	if ((!do_fire_2 || stamina <= 0) && charge_shot_charge > 0) {
 		int MUZZLE_VEL = charge_shot_charge*500;
 		if (MUZZLE_VEL > 150000) MUZZLE_VEL = 150000;
-		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		Bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, spread, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
-		for (int i = 0; i < spread; i++) {
-			new_bullets[i]->radius = 10000 * charge_shot_charge / 4;
-			if (new_bullets[i]->radius > 10000 * 100) new_bullets[i]->radius = 10000 * 100;
-			bullets[num_bullets] = new_bullets[i];
-			num_bullets++;
-		}
-		free(new_bullets);
+		Bullet* new_bullet = spawn_bullet(gun_dir_x, gun_dir_y, x_pos+ (int)(gun_length*cos(angle)), y_pos+ (int)(gun_length*sin(angle)), MUZZLE_VEL, charge_shot_charge/4, charge_shot_charge, charge_shot_charge/2);
+
+		new_bullet->radius = 10000 * charge_shot_charge / 4;
+		if (new_bullet->radius > 10000 * 100) new_bullet->radius = 10000 * 100;
+		if (new_bullet->radius < 10000 * 5) new_bullet->radius = 10000 * 5;
+		printf("%d\n", new_bullet->radius);
+		bullets[num_bullets] = new_bullet;
+		num_bullets++;
+
 		charge_shot_charge = 0;
 		Mix_PlayChannel(-1, bullet_sfx, 0);
 		if (stamina <= 0) {

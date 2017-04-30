@@ -69,6 +69,12 @@
     <ClCompile Include="stage_marker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="panda.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="squiggle_segment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="spaceship.h">
@@ -123,6 +129,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="stage_marker.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="panda.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="squiggle_segment.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

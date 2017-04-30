@@ -16,8 +16,6 @@ class Ship {
 		SDL_Texture* thrust_medium_tex;
 		SDL_Texture* thrust_high_tex;
 
-		
-
 	public:
 		// units of one ten thousandth of a pixel
 		int x_pos = 0;
@@ -104,7 +102,8 @@ class Ship {
 
 		virtual ~Ship();
 
-		virtual void update() = 0;
+		virtual void update() = 0; // todo: rename?
+		//virtual void update_from_input
 		virtual void die() = 0;
 		void render();
 

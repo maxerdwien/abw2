@@ -72,6 +72,22 @@ void Renderer::render_texture_edge_spin(SDL_Texture* texture, int x, int y, doub
 	RenderCopyEx(texture, NULL, &rect, angle, &p, SDL_FLIP_NONE);
 }
 
+void Renderer::render_squiggle_rectangle(SDL_Texture* texture, int x, int y, double angle, int x_size, int y_size) {
+	x *= ratio / 10000;
+	y *= ratio / 10000;
+	x_size *= ratio / 10000;
+	y_size *= ratio / 10000;
+
+	SDL_Rect rect;
+	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+	rect.w = x_size;
+	rect.h = y_size;
+	rect.x = x - rect.w / 2;
+	rect.y = y - rect.h / 2;
+
+	RenderCopyEx(texture, NULL, &rect, angle, NULL, SDL_FLIP_NONE);
+}
+
 void Renderer::render_texture_abs_size(SDL_Texture* texture, int x, int y, double angle, int radius) {
 	x *= ratio / 10000;
 	y *= ratio / 10000;

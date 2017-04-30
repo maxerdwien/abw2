@@ -25,4 +25,6 @@ public:
 Bullet* init_bullet(int x_pos, int y_pos, int x_vel, int y_vel, int damage, int base_knockback, int knockback_scaling);
 
 // todo: simplify this function (for missiles too)
-Bullet** spawn_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, int damage, int base_knockback, int knockback_scaling);
+Bullet* spawn_bullet(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int damage, int base_knockback, int knockback_scaling);
+
+Bullet** spawn_spread_bullets(int gun_dir_x, int gun_dir_y, int x_pos, int y_pos, int velocity, int spread, double spread_angle, int damage, int base_knockback, int knockback_scaling);

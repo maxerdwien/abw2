@@ -7,8 +7,9 @@
 #include "asteroid.h"
 #include "spaceship.h"
 #include "spark.h"
+#include "squiggle_segment.h"
 #include "gravity-missile.h"
-#include "polar.h"
+#include "panda.h"
 #include "renderer.h"
 
 #include "item.h"
@@ -16,7 +17,7 @@
 #include "bullet.h"
 
 
-Polar::Polar(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
+Panda::Panda(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	id = identifier;
 
 	ally1 = a1;
@@ -38,7 +39,7 @@ Polar::Polar(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	normal_radius = radius;
 	weight = 130;
 
-	laser_channel = 24 + 2*id;
+	laser_channel = 24 + 2 * id;
 
 	r = rend;
 
@@ -82,11 +83,12 @@ Polar::Polar(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 
 	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 
-	bounce_missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileOrange.png");
 	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
 
-	vortex_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\blackhole.png");
-	SDL_SetTextureAlphaMod(vortex_tex, 100);
+	squiggle_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\squiggle_segment_red.png");
+	squiggle_circle_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\squiggle_circle_red.png");
+	squiggle_rect_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\squiggle_rectangle_red.png");
+	//SDL_SetTextureAlphaMod(vortex_tex, 100);
 
 	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
@@ -103,13 +105,13 @@ Polar::Polar(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	blackhole_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\blackhole.wav");
 }
 
-Polar::~Polar() {
+Panda::~Panda() {
 	SDL_DestroyTexture(ship_tex);
 	SDL_DestroyTexture(bullet_tex);
 	SDL_DestroyTexture(ship_invincible_tex);
 	SDL_DestroyTexture(cannon_tex);
 	SDL_DestroyTexture(missile_tex);
-	SDL_DestroyTexture(vortex_tex);
+	SDL_DestroyTexture(squiggle_tex);
 	SDL_DestroyTexture(bounce_missile_tex);
 	SDL_DestroyTexture(bounce_bullet_tex);
 	SDL_DestroyTexture(shield_tex);
@@ -135,62 +137,50 @@ Polar::~Polar() {
 	}
 }
 
-void Polar::update() {
-	double angle = atan2(gun_dir_y, gun_dir_x);
-	double desired_angle = atan2(desired_gun_dir_y, desired_gun_dir_x);
-	double new_angle = angle;
-
-	double angle_diff = desired_angle - angle;
-
-	if (abs(angle_diff) > abs(desired_angle - angle - 2*M_PI)) {
-		angle_diff = desired_angle - angle - 2*M_PI;
-	}
-	if (abs(angle_diff) > abs(desired_angle - angle + 2*M_PI)) {
-		angle_diff = desired_angle - angle + 2*M_PI;
-	}
-
-	if (abs(angle_diff) <= polar_gun_turn_speed) {
-		new_angle = desired_angle;
-	}
-	else if (angle_diff > 0) {
-		new_angle += polar_gun_turn_speed;
-	}
-	else if (angle_diff < 0) {
-		new_angle -= polar_gun_turn_speed;
-	}
-
-	gun_dir_x = (int)(10000 * cos(new_angle));
-	gun_dir_y = (int)(10000 * sin(new_angle));
+void Panda::update() {
+	gun_dir_x = desired_gun_dir_x;
+	gun_dir_y = desired_gun_dir_y;
 }
 
-void Polar::die() {
+void Panda::die() {
 	Mix_HaltChannel(laser_channel);
 }
 
-void Polar::fire_1() {
+void Panda::fire_1() {
 	// handle spread fire spawns
 	if (spread_cooldown > 0) {
 		spread_cooldown--;
 	}
-	if (do_fire_1 && stamina > 0 && spread_cooldown <= 0) {
 
-		int MUZZLE_VEL = 40000;
-		int spread = 7;
+	// todo: how do i want to handle stamina for this attack?
+	if (do_fire_1 && stamina > 0 && spread_cooldown <= 0) {
+		// takes stamina to begin charging, but not to continue charging
+		if (frames_charging_spread == 0) {
+			stamina -= 50;
+		}
+		frames_charging_spread++;
+	}
+
+	if (!do_fire_1 && frames_charging_spread > 0) {
+		double spread_angle = (M_PI / 2) - atan(frames_charging_spread / 5.0);
+		int MUZZLE_VEL = 80000;
+		int spread = 8;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		Bullet** new_bullets = spawn_spread_bullets(gun_dir_x, gun_dir_y, (int)(x_pos + gun_length*cos(angle)), (int)(y_pos + gun_length*sin(angle)), MUZZLE_VEL, spread, M_PI * 0.1, 5, 10, 100);
+		Bullet** new_bullets = spawn_spread_bullets(gun_dir_x, gun_dir_y, (int)(x_pos + gun_length*cos(angle)), (int)(y_pos + gun_length*sin(angle)), MUZZLE_VEL, spread, spread_angle, 5, 10, 100);
 		for (int i = 0; i < spread; i++) {
 			bullets[num_bullets] = new_bullets[i];
 			num_bullets++;
 		}
 		free(new_bullets);
 		spread_cooldown += spread_delay;
-		stamina -= 250;
-
+		stamina -= 300;
 		Mix_PlayChannel(-1, bullet_sfx, 0);
+
+		frames_charging_spread = 0;
 	}
 }
 
-void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
+void Panda::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	for (int j = 0; j < num_bullets; j++) {
 		Bullet* bullet = bullets[j];
 
@@ -263,7 +253,7 @@ void Polar::update_projectiles_1(int min_x, int max_x, int min_y, int max_y, Shi
 	}
 }
 
-void Polar::render_projectiles_1() {
+void Panda::render_projectiles_1() {
 	for (int j = 0; j < num_bullets; j++) {
 		double angle = r->atan2_degrees(bullets[j]->x_vel, bullets[j]->y_vel);
 		SDL_Texture* tex;
@@ -281,176 +271,138 @@ void Polar::render_projectiles_1() {
 	}
 }
 
-void Polar::fire_2() {
-	if (missile_cooldown > 0) {
-		missile_cooldown--;
-	}
-
-	if (!do_fire_2 && missile_click_used) {
-		for (int i = 0; i < num_g_missiles; i++) {
-			if (!g_missiles[i]->exploded) {
-				g_missiles[i]->exploded = true;
-				// todo: maybe it keeps moving a little bit?
-				g_missiles[i]->x_vel = 0;
-				g_missiles[i]->y_vel = 0;
-				Mix_PlayChannel(-1, blackhole_sfx, 0);
-				missile_click_used = false;
-			}
-		}
-	}
-
-	if (do_fire_2 && !missile_click_used && stamina > 0 && missile_cooldown <= 0) {
+void Panda::fire_2() {
+	if (do_fire_2) {
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		int velocity = 100000;
-		int x_vel = (int)(cos(angle) * velocity);
-		int y_vel = (int)(sin(angle) * velocity);
-		g_missiles[num_g_missiles] = new Gravity_Missile(x_pos + (int)(gun_length*cos(angle)), (int)(y_pos+gun_length*sin(angle)), x_vel, y_vel);
-		num_g_missiles++;
-		missile_cooldown += missile_delay;
-		stamina -= 600;
-		Mix_PlayChannel(-1, missile_launch_sfx, 0);
-		missile_click_used = true;
-	}
-}
 
-void Polar::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
-	for (int i = 0; i < num_g_missiles; i++) {
-		Gravity_Missile* m = g_missiles[i];
+		if (squiggle_state == squiggle_state::inactive) {
+			max_accel = 0;
+			// todo: temporary
+			//x_vel = 0;
+			//y_vel = 0;
 
-		// expand missile radius
-		if (m->exploded) {
-			// rotate vortex
-			m->vortex_angle += vortex_turn_rate;
-			if (m->vortex_angle > 360) m->vortex_angle -= 360;
+			squiggle_state = squiggle_state::shooting;
+			
 
-			m->radius += G_MISSILE_RADIUS_PER_FRAME;
-			if (m->radius > G_MISSILE_MAX_RADIUS) {
-				num_g_missiles--;
-				delete g_missiles[i];
-				g_missiles[i] = g_missiles[num_g_missiles];
-				i--;
-				continue;
-			}
-		} else {
-			// check for collisions with asteroids
-			for (int k = 0; k < num_asteroids; k++) {
-				Asteroid* a = asteroids[k];
-				double dist = sqrt(pow(a->x_pos - m->x_pos, 2) + pow(a->y_pos - m->y_pos, 2));
-				if (dist <= (m->radius + a->radius)) {
-					// todo: make bullets bounce if they have the powerup
-					m->exploded = true;
-					m->x_vel = 0;
-					m->y_vel = 0;
-					Mix_PlayChannel(-1, blackhole_sfx, 0);
-					missile_click_used = false;
-					continue;
-				}
-			}
+			//squiggle_x = (int)(x_pos + gun_length*cos(angle));
+			//squiggle_y = (int)(y_pos + gun_length*sin(angle));
+			squiggle_x = x_pos;
+			squiggle_y = y_pos;
+
+			
 		}
 		
-
-		m->x_pos += m->x_vel;
-		m->y_pos += m->y_vel;
-
-		// check for missile going out of bounds
-		if (m->x_pos < min_x || m->x_pos > max_x || m->y_pos < min_y || m->y_pos > max_y) {
-			if (item_times[bullet_bounce] > 0) {
-				if (m->x_pos < min_x && m->x_vel < 0) {
-					m->x_vel *= -1;
-				} else if (m->x_pos > max_x && m->x_vel > 0) {
-					m->x_vel *= -1;
-				} else if (m->y_pos < min_y && m->y_vel < 0) {
-					m->y_vel *= -1;
-				} else if (m->y_pos > max_y && m->y_vel > 0) {
-					m->y_vel *= -1;
-				}
-			} else {
-				missile_click_used = false;
-				num_g_missiles--;
-				delete g_missiles[i];
-				g_missiles[i] = g_missiles[num_g_missiles];
-				i--;
-				continue;
-			}
-			
-		}
-
-		// increment damage counter
-		m->damage_counter = (m->damage_counter + 1) % 3;
-
-		// check for collisions with enemies
-		for (int k = 0; k < 4; k++) {
-			if (!ships[k]) continue;
-			if (ships[k]->lives == 0) continue;
-			double dist = sqrt(pow(m->x_pos - ships[k]->x_pos, 2) + pow(m->y_pos - ships[k]->y_pos, 2));
-			if (!m->exploded) {
-				if (ships[k]->id == id) continue;
-				if (ships[k]->id == ally1) continue;
-				if (ships[k]->id == ally2) continue;
-				if (dist <= (ships[k]->radius + m->radius)) {
-					m->exploded = true;
-					m->x_vel = 0;
-					m->y_vel = 0;
-					Mix_PlayChannel(-1, blackhole_sfx, 0);
-					missile_click_used = false;
-				}
-			} else {
-				if (dist <= (ships[k]->radius + m->radius)) {
-					if (m->damage_counter % 3 == 0) {
-						bool hit = ships[k]->take_knockback(ships[k]->x_pos - m->x_pos, ships[k]->y_pos - m->y_pos, m->base_knockback, m->knockback_scaling, m->damage, haptics[k]);
-						if (hit) {
-							damage_done += m->damage;
-							ships[k]->last_hit = id;
-						}
-					}
-				}
-
-				// do gravity effect
-				if (ships[k]->invincibility_cooldown == 0) {
-					double force = 10000000000000000.0 / pow(dist, 2);
-					if (force > 70000) force = 70000;
-					double angle = atan2(m->y_pos - ships[k]->y_pos, m->x_pos - ships[k]->x_pos);
-					ships[k]->x_vel += (int)(force * cos(angle));
-					ships[k]->y_vel += (int)(force * sin(angle));
-				}
-			}
+		squiggle_angle = angle;
+	} else {
+		if (squiggle_state == squiggle_state::shooting) {
+			squiggle_state = squiggle_state::growing;
+			max_accel = 5500;
 		}
 	}
 }
 
-void Polar::render_projectiles_2() {
-	for (int j = 0; j < num_g_missiles; j++) {
-		if (!g_missiles[j]->exploded) {
-			double angle = r->atan2_degrees(g_missiles[j]->x_vel, g_missiles[j]->y_vel);
-			SDL_Texture* tex;
-			if (item_times[bullet_bounce] > 0) {
-				tex = bounce_missile_tex;
-			} else {
-				tex = missile_tex;
+void Panda::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
+	if (squiggle_state == squiggle_state::shooting) {
+		if (stamina > 0) {
+			if (!num_squiggle_segments) {
+				squiggle_segments[num_squiggle_segments] = new Squiggle_Segment(squiggle_x, squiggle_y); // todo: leak
+				num_squiggle_segments++;
 			}
-			if (r->render_normal) {
-				r->render_texture(tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, angle, 3);
+			// make new squiggle segments
+			double angle = atan2(gun_dir_y, gun_dir_x);
+
+			// todo: leak
+			for (int i = 0; i < squiggle_segs_per_frame; i++) {
+				squiggle_x += squiggle_dist_per_frame * cos(angle) / squiggle_segs_per_frame;
+				squiggle_y += squiggle_dist_per_frame * sin(angle) / squiggle_segs_per_frame;
+
+				squiggle_segments[num_squiggle_segments] = new Squiggle_Segment(squiggle_x, squiggle_y);
+				num_squiggle_segments++;
 			}
-			if (r->render_debug) {
-				r->render_texture_abs_size(r->activation_hitbox_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, 0, g_missiles[j]->radius);
-			}
-			
+
+			stamina -= 25;
 		} else {
-			if (r->render_normal) {
-				r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle, g_missiles[j]->radius);
-				r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle, g_missiles[j]->radius);
-				r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, g_missiles[j]->vortex_angle + 45, g_missiles[j]->radius);
-				r->render_texture_abs_size(vortex_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, -g_missiles[j]->vortex_angle + 45, g_missiles[j]->radius);
-			}
-			if (r->render_debug) {
-				r->render_texture_abs_size(r->hitbox_tex, g_missiles[j]->x_pos, g_missiles[j]->y_pos, 0, g_missiles[j]->radius);
-			}
+			squiggle_state == squiggle_state::growing;
+		}
+	} else if (squiggle_state == squiggle_state::growing) {
+		// change size
+		if (squiggle_width < max_squiggle_width) {
+			squiggle_width += squiggle_width_per_frame;
+		} else {
+			squiggle_state = squiggle_state::shrinking;
+		}
+	} else if (squiggle_state == squiggle_state::shrinking) {
+		squiggle_width -= squiggle_shrinkage_rate;
+
+		if (squiggle_width <= 0) {
+			squiggle_state = squiggle_state::inactive;
+		}
+	}
+	else if (squiggle_state == squiggle_state::inactive) {
+		for (int i = 0; i < num_squiggle_segments; i++) {
+			delete squiggle_segments[i];
+		}
+		num_squiggle_segments = 0;
+
+		squiggle_width = normal_squiggle_width;
+	}
+
+	
+
+	// pull squiggle
+	if (num_squiggle_segments) {
+		Squiggle_Segment* seg = squiggle_segments[0];
+		int delta_x = x_pos - seg->x;
+		int delta_y = y_pos - seg->y;
+
+		seg->x += delta_x;
+		seg->y += delta_y;
+
+
+		for (int i = 0; i < num_squiggle_segments - 1; i++) {
+			Squiggle_Segment* seg_a = squiggle_segments[i];
+			Squiggle_Segment* seg_b = squiggle_segments[i+1];
+
+			double angle = atan2(seg_b->y - seg_a->y, seg_b->x - seg_a->x);
 			
+			seg_b->x = seg_a->x + (int)(squiggle_dist_per_frame*cos(angle) / squiggle_segs_per_frame);
+			seg_b->y = seg_a->y + (int)(squiggle_dist_per_frame*sin(angle) / squiggle_segs_per_frame);
+
+			// check for collisions
+			if (squiggle_state == squiggle_state::growing || squiggle_state == squiggle_state::shrinking) {
+				for (int j = 0; j < 4; j++) {
+					if (!ships[j]) continue;
+					if (j == id) continue;
+					// circles
+					// todo: check first circle?
+					double dist_squared = pow(seg_b->x - ships[j]->x_pos, 2) + pow(seg_b->y - ships[j]->y_pos, 2);
+					double radii_squared = pow(ships[j]->radius + squiggle_width/2, 2);
+					if (dist_squared < radii_squared) {
+						ships[j]->take_knockback(1000*sin(angle), 1000*cos(angle), 10, 10, 10, haptics[j]);
+					}
+					// todo: rectangles?
+				}
+			}
 		}
 	}
 }
 
-void Polar::fire_3() {
+void Panda::render_projectiles_2() {
+	for (int i = 0; i < num_squiggle_segments; i++) {
+		Squiggle_Segment* seg_a = squiggle_segments[i];
+		r->render_texture_abs_size(squiggle_circle_tex, seg_a->x, seg_a->y, 0, squiggle_width/2);
+
+		if (i != num_squiggle_segments - 1) {
+			Squiggle_Segment* seg_b = squiggle_segments[i + 1];
+			//r->render_line_w_end(seg_a->x, seg_a->y, seg_b->x, seg_b->y);
+			//double angle = atan2(seg_b->y - seg_a->y, seg_b->x - seg_a->x);
+			double angle = r->atan2_degrees(seg_b->x - seg_a->x, seg_b->y - seg_a->y);
+			r->render_squiggle_rectangle(squiggle_rect_tex, (seg_a->x + seg_b->x) / 2, (seg_a->y + seg_b->y) / 2, angle, squiggle_width, squiggle_dist_per_frame / squiggle_segs_per_frame);
+		}
+	}
+}
+
+void Panda::fire_3() {
 	if (do_fire_3 && stamina > 0) {
 		laser_active = true;
 		stamina -= 16;
@@ -460,14 +412,14 @@ void Polar::fire_3() {
 	}
 }
 
-void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
+void Panda::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]) {
 	if (laser_active) {
 		// update laser position
 		double angle = atan2(gun_dir_y, gun_dir_x);
 		laser_start_x = (int)(x_pos + gun_length * cos(angle));
 		laser_start_y = (int)(y_pos + gun_length * sin(angle));
-		laser_end_x = laser_start_x + 10000*gun_dir_x;
-		laser_end_y = laser_start_y + 10000*gun_dir_y;
+		laser_end_x = laser_start_x + 10000 * gun_dir_x;
+		laser_end_y = laser_start_y + 10000 * gun_dir_y;
 
 		for (int i = 0; i < 4; i++) {
 			if (!ships[i]) continue;
@@ -496,8 +448,8 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 				} else {
 					laser_damage_cooldown--;
 				}
-				
-				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 30+(int)(ship_dist/1000000), damage_amount, haptics[i]);
+
+				bool hit = target_ship->take_knockback(laser_end_x - laser_start_x, laser_end_y - laser_start_y, 0, 30 + (int)(ship_dist / 1000000), damage_amount, haptics[i]);
 				if (hit) {
 					damage_done += damage_amount;
 					target_ship->last_hit = id;
@@ -507,9 +459,6 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 			}
 		}
 
-		// recoil. from a laser. I guess that makes sense.
-		take_knockback(laser_start_x - laser_end_x, laser_start_y - laser_end_y, 5, 10, 0, haptics[id]);
-		
 	}
 
 	// update sparks
@@ -524,14 +473,14 @@ void Polar::update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Shi
 		s->remaining_life--;
 		if (s->remaining_life == 0) {
 			delete sparks[i];
-			sparks[i] = sparks[num_sparks-1];
+			sparks[i] = sparks[num_sparks - 1];
 			num_sparks--;
 			i--;
 		}
 	}
 }
 
-void Polar::render_projectiles_3() {
+void Panda::render_projectiles_3() {
 	if (laser_active) {
 		r->SetRenderDrawColor(128, 0, 0, SDL_ALPHA_OPAQUE);
 		r->render_line_thick(laser_start_x, laser_start_y, gun_dir_x, gun_dir_y);
@@ -552,7 +501,7 @@ void Polar::render_projectiles_3() {
 	}
 }
 
-double Polar::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_0) {
+double Panda::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_0) {
 	double n_1_a = (x_2 - x_1);
 	double n_1_b = (y_1 - y_0);
 	double n_1 = n_1_a * n_1_b;
@@ -566,7 +515,7 @@ double Polar::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_
 	return dist;
 }
 
-int Polar::serialize(char* buf, int i) {
+int Panda::serialize(char* buf, int i) {
 	i = serialize_ship(buf, i);
 
 	i = serialize_int(num_bullets, buf, i);
@@ -594,7 +543,7 @@ int Polar::serialize(char* buf, int i) {
 	return i;
 }
 
-int Polar::deserialize(char*buf, int i) {
+int Panda::deserialize(char*buf, int i) {
 	i = deserialize_ship(buf, i);
 
 	i = deserialize_int(&num_bullets, buf, i);

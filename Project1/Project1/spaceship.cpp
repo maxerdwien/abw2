@@ -126,7 +126,15 @@ bool Ship::take_knockback(int dir_x, int dir_y, int base_knockback, int knockbac
 	if (haptic_amount > 1) {
 		haptic_amount = 1;
 	}
-	SDL_HapticRumblePlay(haptic, haptic_amount, 160);
+
+	Uint32 haptic_time = 50 + (int)(total_knockback * 1.3);
+	if (haptic_time > 250) {
+		haptic_time = 250;
+	}
+
+	//printf("%f\t%d\n", haptic_amount, haptic_time);
+
+	SDL_HapticRumblePlay(haptic, haptic_amount, haptic_time);
 
 	return true;
 }

@@ -18,6 +18,7 @@
 #include "grizzly.h"
 #include "black.h"
 #include "polar.h"
+#include "panda.h"
 
 #include "item.h"
 
@@ -65,10 +66,13 @@ Mix_Music* music;
 bool read_global_input(SDL_Event* e);
 void read_input();
 
-enum ship_type {
+enum class ship_type {
 	black = 0,
 	grizzly = 1,
 	polar = 2,
+	panda = 3,
+
+	MAX,
 };
 
 enum class stage {
@@ -76,7 +80,7 @@ enum class stage {
 	fairbanks, // asteroid in middle
 	juneau, // random asteroids
 
-	MAX
+	MAX,
 };
 
 enum team_mode {
@@ -125,6 +129,8 @@ void get_buffer(SOCKET me, char* buf, int size);
 void get_input_data_forever(void* ptr);
 void get_render_data_forever(void* ptr);
 
+ship_type increment_ship_selection(ship_type st, int amount);
+
 int main(int, char**) {
 
 	enum class online_status {
@@ -155,7 +161,7 @@ int main(int, char**) {
 
 	game_state current_state = main_menu;
 	if (DEBUG_MODE) {
-		current_state = main_menu;
+		current_state = character_select;
 	}
 
 	// init SDL
@@ -226,6 +232,9 @@ int main(int, char**) {
 		return 1;
 	}
 
+	//SDL_Texture* rend_tex = malloc(sizeof(class SDL_Texture));
+	//SDL_SetRenderTarget(renderer, rend_tex);
+
 	const int game_start_delay = 4 * 60 + 3;
 	int game_start_cooldown;
 
@@ -239,28 +248,35 @@ int main(int, char**) {
 	// load textures
 	SDL_Texture* bg = r->LoadTexture("..\\Project1\\assets\\background.png");
 
-	SDL_Texture* ship_textures[3][6];
-	ship_textures[black][red] = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
-	ship_textures[black][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-	ship_textures[black][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
-	ship_textures[black][green] = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
-	ship_textures[black][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\black-teal.png");
-	ship_textures[black][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\black-magenta.png");
+	SDL_Texture* ship_textures[(int)ship_type::MAX][6];
+	ship_textures[(int)ship_type::black][red] = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
+	ship_textures[(int)ship_type::black][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
+	ship_textures[(int)ship_type::black][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
+	ship_textures[(int)ship_type::black][green] = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
+	ship_textures[(int)ship_type::black][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\black-teal.png");
+	ship_textures[(int)ship_type::black][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\black-magenta.png");
 
-	ship_textures[grizzly][red] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
-	ship_textures[grizzly][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
-	ship_textures[grizzly][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
-	ship_textures[grizzly][green] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
-	ship_textures[grizzly][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-teal.png");
-	ship_textures[grizzly][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-magenta.png");
+	ship_textures[(int)ship_type::grizzly][red] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
+	ship_textures[(int)ship_type::grizzly][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
+	ship_textures[(int)ship_type::grizzly][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
+	ship_textures[(int)ship_type::grizzly][green] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
+	ship_textures[(int)ship_type::grizzly][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-teal.png");
+	ship_textures[(int)ship_type::grizzly][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-magenta.png");
 
-	ship_textures[polar][red] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
-	ship_textures[polar][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
-	ship_textures[polar][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
-	ship_textures[polar][green] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
-	ship_textures[polar][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
-	ship_textures[polar][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
-	
+	ship_textures[(int)ship_type::polar][red] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
+	ship_textures[(int)ship_type::polar][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+	ship_textures[(int)ship_type::polar][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
+	ship_textures[(int)ship_type::polar][green] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
+	ship_textures[(int)ship_type::polar][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
+	ship_textures[(int)ship_type::polar][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
+
+	ship_textures[(int)ship_type::panda][red] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
+	ship_textures[(int)ship_type::panda][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+	ship_textures[(int)ship_type::panda][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
+	ship_textures[(int)ship_type::panda][green] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
+	ship_textures[(int)ship_type::panda][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
+	ship_textures[(int)ship_type::panda][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
+
 	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
@@ -294,7 +310,8 @@ int main(int, char**) {
 	// stage stuff
 	int asteroid_spawn_cooldown = 1;
 
-	ship_type selections[4] = { grizzly, grizzly, grizzly, grizzly };
+	//ship_type selections[4] = { ship_type::grizzly, ship_type::grizzly, ship_type::grizzly, ship_type::grizzly };
+	ship_type selections[4] = { ship_type::panda, ship_type::grizzly, ship_type::grizzly, ship_type::grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
 	bool ready[4] = { false, false, false, false };
 
@@ -354,9 +371,9 @@ int main(int, char**) {
 	Stage_Select_Marker* ssm = new Stage_Select_Marker(r);
 
 	Stage_Marker* stage_markers[(int)stage::MAX];
-	stage_markers[(int)stage::anchorage] = new Stage_Marker(r, 6872830, 4379670, "anchorage");
-	stage_markers[(int)stage::fairbanks] = new Stage_Marker(r, 7474640, 3144430, "fairbanks");
-	stage_markers[(int)stage::juneau] = new Stage_Marker(r, 11169940, 5735230, "juneau");
+	stage_markers[(int)stage::anchorage] = new Stage_Marker(r, 6872830, 4379670, " anchorage ");
+	stage_markers[(int)stage::fairbanks] = new Stage_Marker(r, 7474640, 3144430, " fairbanks ");
+	stage_markers[(int)stage::juneau] = new Stage_Marker(r, 11169940, 5735230, " juneau ");
 
 	online_status os = online_status::local;
 
@@ -567,32 +584,44 @@ int main(int, char**) {
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 						if (ready[controller_index]) break;
 						Mix_PlayChannel(-1, beep, 0);
+						selections[controller_index] = increment_ship_selection(selections[controller_index], 1);
+						/*
 						switch (selections[controller_index]) {
-						case black:
-							selections[controller_index] = grizzly;
+						case ship_type::black:
+							selections[controller_index] = ship_type::grizzly;
 							break;
-						case grizzly:
-							selections[controller_index] = polar;
+						case ship_type::grizzly:
+							selections[controller_index] = ship_type::polar;
 							break;
-						case polar:
-							selections[controller_index] = black;
+						case ship_type::polar:
+							selections[controller_index] = ship_type::panda;
+							break;
+						case ship_type::panda:
+							selections[controller_index] = ship_type::black;
 							break;
 						}
+						*/
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
 						if (ready[controller_index]) break;
 						Mix_PlayChannel(-1, beep, 0);
+						selections[controller_index] = increment_ship_selection(selections[controller_index], -1);
+						/*
 						switch (selections[controller_index]) {
-						case black:
-							selections[controller_index] = polar;
+						case ship_type::black:
+							selections[controller_index] = ship_type::panda;
 							break;
-						case grizzly:
-							selections[controller_index] = black;
+						case ship_type::grizzly:
+							selections[controller_index] = ship_type::black;
 							break;
-						case polar:
-							selections[controller_index] = grizzly;
+						case ship_type::polar:
+							selections[controller_index] = ship_type::grizzly;
+							break;
+						case ship_type::panda:
+							selections[controller_index] = ship_type::polar;
 							break;
 						}
+						*/
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 						//if (ready[controller_index]) break;
@@ -637,6 +666,8 @@ int main(int, char**) {
 							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
 							Mix_PlayChannel(-1, beep, 0);
+							selections[controller_index] = increment_ship_selection(selections[controller_index], 1);
+							/*
 							switch (selections[controller_index]) {
 							case black:
 								selections[controller_index] = grizzly;
@@ -648,10 +679,13 @@ int main(int, char**) {
 								selections[controller_index] = black;
 								break;
 							}
+							*/
 						} else if (e.caxis.value < -min_analog_to_dpad_angle && !analog_stick_moved[controller_index]) {
 							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
 							Mix_PlayChannel(-1, beep, 0);
+							selections[controller_index] = increment_ship_selection(selections[controller_index], -1);
+							/*
 							switch (selections[controller_index]) {
 							case black:
 								selections[controller_index] = polar;
@@ -663,6 +697,7 @@ int main(int, char**) {
 								selections[controller_index] = grizzly;
 								break;
 							}
+							*/
 						} else if (e.caxis.value < min_analog_to_dpad_angle && e.caxis.value > -min_analog_to_dpad_angle) {
 							analog_stick_moved[controller_index] = false;
 						}
@@ -711,19 +746,19 @@ int main(int, char**) {
 			// render ships selections
 			{
 				color c = red;
-				render_character_selector(0, 0, ship_textures[selections[0]][c], selections[0], right_arrow, left_arrow, ready[0], controllers[0].status);
+				render_character_selector(0, 0, ship_textures[(int)selections[0]][c], selections[0], right_arrow, left_arrow, ready[0], controllers[0].status);
 
 				if (selected_team_mode == two_vs_two) c = magenta;
 				else c = blue;
-				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, 0, ship_textures[selections[1]][c], selections[1], right_arrow, left_arrow, ready[1], controllers[1].status);
+				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, 0, ship_textures[(int)selections[1]][c], selections[1], right_arrow, left_arrow, ready[1], controllers[1].status);
 
 				if (selected_team_mode == two_vs_two) c = blue;
 				else c = yellow;
-				render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[selections[2]][c], selections[2], right_arrow, left_arrow, ready[2], controllers[2].status);
+				render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[(int)selections[2]][c], selections[2], right_arrow, left_arrow, ready[2], controllers[2].status);
 
 				if (selected_team_mode == two_vs_two) c = teal;
 				else c = green;
-				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[selections[3]][c], selections[3], right_arrow, left_arrow, ready[3], controllers[3].status);
+				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[(int)selections[3]][c], selections[3], right_arrow, left_arrow, ready[3], controllers[3].status);
 
 			}
 
@@ -748,6 +783,19 @@ int main(int, char**) {
 			int total_x_motion = 0;
 			int total_y_motion = 0;
 
+			bool real_players_exist = false;
+			for (int i = 0; i < 4; i++) {
+				Input_State is = controllers[i];
+				if (is.status == human) {
+					real_players_exist = true;
+				}
+			}
+
+			if (!real_players_exist) {
+				current_state = init_game;
+				selected_stage = stage::anchorage;
+			}
+
 			for (int i = 0; i < 4; i++) {
 				Input_State is = controllers[i];
 				if (is.status == empty) continue;
@@ -766,8 +814,11 @@ int main(int, char**) {
 					printf("%d %d\n", ssm->x_pos, ssm->y_pos);
 				}
 
-				total_x_motion += is.l_stick_x;
-				total_y_motion += is.l_stick_y;
+				double left_stick_mag = sqrt(pow(is.l_stick_x, 2) + pow(is.l_stick_y, 2));
+				if (left_stick_mag > DEAD_ZONE) {
+					total_x_motion += is.l_stick_x;
+					total_y_motion += is.l_stick_y;
+				}
 			}
 
 			ssm->x_pos += total_x_motion * 10;
@@ -776,6 +827,27 @@ int main(int, char**) {
 			for (int i = 0; i < (int)stage::MAX; i++) {
 				double dist = sqrt(pow(stage_markers[i]->x_pos - ssm->x_pos, 2) + pow(stage_markers[i]->y_pos - ssm->y_pos, 2));
 
+				const int attraction_speed = 1000;
+
+				if (dist <= stage_markers[i]->attraction_radius) {
+					double force = 5000000000000000.0 / pow(dist, 2);
+					if (force > 60000) force = 60000;
+					if (force < 20000) force = 20000;
+					double angle = atan2(stage_markers[i]->y_pos - ssm->y_pos, stage_markers[i]->x_pos - ssm->x_pos);
+
+					int delta_x = (int)(force * cos(angle));
+					int delta_y = (int)(force * sin(angle));
+					if (dist < sqrt(pow(delta_x, 2) + pow(delta_y, 2))) {
+						ssm->x_pos = stage_markers[i]->x_pos;
+						ssm->y_pos = stage_markers[i]->y_pos;
+					} else {
+						ssm->x_pos += delta_x;
+						ssm->y_pos += delta_y;
+					}
+				}
+
+				// multiple stage markers may have overlapping selection radii.
+				// in this case, the last stage marker in the list will be selected.
 				if (dist <= stage_markers[i]->selection_radius) {
 					stage_markers[i]->selected = true;
 					selected_stage = (stage)i;
@@ -849,6 +921,9 @@ int main(int, char**) {
 				3 * HEIGHT_UNITS / 4
 			};
 
+			const int gun_dirs_x[4] = { 1, -1, 0, 0 };
+			const int gun_dirs_y[4] = { 0, 0, 1, -1 };
+
 			if (os == online_status::host) {
 				controllers[0].status = client;
 			} else if (os == online_status::client) {
@@ -881,16 +956,24 @@ int main(int, char**) {
 				}
 
 				switch (selections[i]) {
-				case black:
+				case ship_type::black:
 					ships[i] = new Black(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
-				case grizzly:
+				case ship_type::grizzly:
 					ships[i] = new Grizzly(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
-				case polar:
+				case ship_type::polar:
 					ships[i] = new Polar(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
+				case ship_type::panda:
+					ships[i] = new Panda(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
+					break;
+				default:
+					throw;
 				}
+
+				ships[i]->gun_dir_x = gun_dirs_x[i];
+				ships[i]->gun_dir_y = gun_dirs_y[i];
 			}
 
 
@@ -921,8 +1004,30 @@ int main(int, char**) {
 			for (int i = 0; i < 4; i++) {
 				if (controllers[i].status == ai) {
 					Input_State a = controllers[i];
-					a.lb.state = true;
-					a.lb.changed = true;
+
+					bool lead_target = false;
+
+					switch (selections[i]) {
+					case ship_type::black:
+						if (!a.lb.state)  a.lb.changed = true;
+						a.lb.state = true;
+						break;
+					case ship_type::grizzly:
+						if (!a.rb.state)  a.rb.changed = true;
+						a.rb.state = true;
+						lead_target = true;
+						break;
+					case ship_type::polar:
+						if (!a.lb.state)  a.lb.changed = true;
+						a.lb.state = true;
+						break;
+					case ship_type::panda:
+						if (!a.lb.state)  a.lb.changed = true;
+						a.lb.state = true;
+						break;
+					default:
+						throw;
+					}
 
 					int goal_x = (WIDTH_UNITS - BARSIZE) / 2 + BARSIZE;
 					int goal_y = HEIGHT_UNITS / 2;
@@ -946,36 +1051,31 @@ int main(int, char**) {
 						}
 					}
 
-					// aim straight at them
 					if (target_ship != -1) {
-						a.r_stick_x = ships[target_ship]->x_pos - me->x_pos;
-						a.r_stick_y = ships[target_ship]->y_pos - me->y_pos;
-					}
-
-					if (target_ship != -1) {
-						double enemy_speed = sqrt(pow(ships[target_ship]->x_vel, 2) + pow(ships[target_ship]->y_vel, 2));
-						double bullet_speed = 70000;
-
-						double straight_angle = atan2(ships[target_ship]->y_pos - me->y_pos, ships[target_ship]->x_pos - me->x_pos);
-
-						double beta = atan2(ships[target_ship]->y_vel, ships[target_ship]->x_vel) - straight_angle;
-						if (beta < 0) beta += 2 * M_PI;
-
-						double stuff = (enemy_speed * sin(beta)) / bullet_speed;
-						if (stuff > 1) stuff = 1;
-						if (stuff < -1) stuff = -1;
-						double alpha = asin(stuff);
-
-						//std::cout << "beta: " << beta << "\talpha: " << alpha << "\tstuff: " << (enemy_speed * sin(beta)) / bullet_speed << std::endl;
-
-						double aim_angle = straight_angle;
-						bool lead_target = false;
 						if (lead_target) {
-							aim_angle += alpha;
-						}
+							double enemy_speed = sqrt(pow(ships[target_ship]->x_vel, 2) + pow(ships[target_ship]->y_vel, 2));
+							double bullet_speed = 70000;
 
-						a.r_stick_x = 100000 * cos(aim_angle);
-						a.r_stick_y = 100000 * sin(aim_angle);
+							double straight_angle = atan2(ships[target_ship]->y_pos - me->y_pos, ships[target_ship]->x_pos - me->x_pos);
+
+							double beta = atan2(ships[target_ship]->y_vel, ships[target_ship]->x_vel) - straight_angle;
+							if (beta < 0) beta += 2 * M_PI;
+
+							double stuff = (enemy_speed * sin(beta)) / bullet_speed;
+							if (stuff > 1) stuff = 1;
+							if (stuff < -1) stuff = -1;
+							double alpha = asin(stuff);
+
+							//std::cout << "beta: " << beta << "\talpha: " << alpha << "\tstuff: " << (enemy_speed * sin(beta)) / bullet_speed << std::endl;
+
+							double aim_angle = straight_angle + alpha;
+
+							a.r_stick_x = 100000 * cos(aim_angle);
+							a.r_stick_y = 100000 * sin(aim_angle);
+						} else {
+							a.r_stick_x = ships[target_ship]->x_pos - me->x_pos;
+							a.r_stick_y = ships[target_ship]->y_pos - me->y_pos;
+						}
 					}
 					controllers[i] = a;
 				}
@@ -1067,13 +1167,15 @@ int main(int, char**) {
 					delete asteroids[i];
 					num_asteroids--;
 					asteroids[i] = asteroids[num_asteroids];
+
+					// subtract from the respawn cooldown. this keeps the spawn rate a little more consistent,
+					// because if an asteroid goes off-screen quickly a new one comes in faster.
 					asteroid_spawn_cooldown -= 5 * 60;
 				}
 			}
 
 			// update ships
 			for (int i = 0; i < 4; i++) {
-				//if (!ships[i]) continue;
 				if (controllers[i].status == empty) continue;
 
 				Ship* ship = ships[i];
@@ -1261,7 +1363,7 @@ int main(int, char**) {
 						Asteroid* a = asteroids[j];
 						double dist = sqrt(pow(ship->x_pos - a->x_pos, 2) + pow(ship->y_pos - a->y_pos, 2));
 						if (dist < (ship->radius + a->radius)) {
-							ship->take_knockback(ship->x_pos - a->x_pos, ship->y_pos - a->y_pos, 100, 20, 28, haptics[j]);
+							ship->take_knockback(ship->x_pos - a->x_pos, ship->y_pos - a->y_pos, 100, 20, 28, haptics[i]);
 						}
 					}
 
@@ -1270,8 +1372,9 @@ int main(int, char**) {
 					ship->y_pos += ship->y_vel;
 
 					// handle death
-					if (ship->x_pos < (STATUS_BAR_WIDTH - ship->radius) || ship->x_pos >(WIDTH_UNITS + ship->radius)
-						|| ship->y_pos < (0 - ship->radius) || ship->y_pos >(HEIGHT_UNITS + ship->radius)) {
+					int screen_edge_wiggle_room = ship->radius * 1.5;
+					if (ship->x_pos < (STATUS_BAR_WIDTH - screen_edge_wiggle_room) || ship->x_pos >(WIDTH_UNITS + screen_edge_wiggle_room)
+						|| ship->y_pos < (0 - screen_edge_wiggle_room) || ship->y_pos >(HEIGHT_UNITS + screen_edge_wiggle_room)) {
 						if (ship->item_times[bounce] > 0 || ship->invincibility_cooldown > 0) {
 							if (ship->x_pos < STATUS_BAR_WIDTH && ship->x_vel < 0) {
 								ship->x_vel *= -1;
@@ -1333,8 +1436,6 @@ int main(int, char**) {
 				ship->update_projectiles_1(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 				ship->update_projectiles_3(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
 				ship->update_projectiles_2(STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS, ships, asteroids, num_asteroids, haptics);
-
-
 
 			} // end of update ships
 
@@ -1494,6 +1595,9 @@ int main(int, char**) {
 							ships, items, num_items, asteroids, num_asteroids);
 
 					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
+						xp_mode = !xp_mode;
+					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 						LRA[controller_index].l = true;
 					}
@@ -1545,10 +1649,6 @@ int main(int, char**) {
 
 		} //end pause state
 
-		// stage select state
-		else if (current_state == stage_select) {
-			current_state = in_game;
-		}
 		// start of options state
 		else if (current_state == options) {
 
@@ -1590,25 +1690,25 @@ int main(int, char**) {
 
 				int start_height = HEIGHT_UNITS / 4;
 				if (ships[0] != NULL) {
-					render_results(WIDTH_UNITS / 8, start_height, ship_textures[selections[0]][red], ships[0]);
+					render_results(WIDTH_UNITS / 8, start_height, ship_textures[(int)selections[0]][red], ships[0]);
 				} 
 				if (ships[1] != NULL) {
 					color c;
 					if (selected_team_mode == two_vs_two) c = magenta;
 					else c = blue;
-					render_results(3 * WIDTH_UNITS / 8, start_height, ship_textures[selections[1]][c], ships[1]);
+					render_results(3 * WIDTH_UNITS / 8, start_height, ship_textures[(int)selections[1]][c], ships[1]);
 				}
 				if (ships[2] != NULL) {
 					color c;
 					if (selected_team_mode == two_vs_two) c = blue;
 					else c = yellow;
-					render_results(5 * WIDTH_UNITS / 8, start_height, ship_textures[selections[2]][c], ships[2]);
+					render_results(5 * WIDTH_UNITS / 8, start_height, ship_textures[(int)selections[2]][c], ships[2]);
 				}
 				if (ships[3] != NULL) {
 					color c;
 					if (selected_team_mode == two_vs_two) c = teal;
 					else c = green;
-					render_results(7 * WIDTH_UNITS / 8, start_height, ship_textures[selections[3]][c], ships[3]);
+					render_results(7 * WIDTH_UNITS / 8, start_height, ship_textures[(int)selections[3]][c], ships[3]);
 				}
 				r->render_text(WIDTH_UNITS / 2, 4 * HEIGHT_UNITS / 5, "Press the A button to continue.", true, false, false, medium_f, 255, 255);
 			}
@@ -1958,20 +2058,25 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	std::string wep1;
 	std::string wep2;
 	std::string wep3;
-	if (shipType == 0) {
+	if (shipType == ship_type::black) {
 		name = "BLACK";
 		wep1 = "RB: Burst Shot";
 		wep2 = "RT: Charge Shot";
 		wep3 = "LB: Flamethrower";
-	} else if (shipType == 1) {
+	} else if (shipType == ship_type::grizzly) {
 		name = "GRIZZLY";
 		wep1 = "RB: Bullets";
 		wep2 = "RT: Missiles";
 		wep3 = "LB: Mines";
-	} else {
+	} else if (shipType == ship_type::polar) {
 		name = "POLAR";
 		wep1 = "RB: Shotgun";
 		wep2 = "RT: Gravity Missiles";
+		wep3 = "LB: Laser";
+	} else if (shipType == ship_type::panda) {
+		name = "PANDA";
+		wep1 = "RB: Charge Shotgun";
+		wep2 = "RT: Squiggle";
 		wep3 = "LB: Laser";
 	}
 
@@ -2237,4 +2342,16 @@ void get_render_data_forever(void* ptr) {
 
 		printf("recieved %d bytes\n", size);
 	}
+}
+
+ship_type increment_ship_selection(ship_type st, int amount) {
+	int new_selection = (int)st + amount;
+
+	while (new_selection < 0) {
+		new_selection += (int)ship_type::MAX;
+	}
+
+	new_selection %= (int)ship_type::MAX;
+
+	return (ship_type)new_selection;
 }

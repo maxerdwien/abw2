@@ -152,14 +152,12 @@ void Grizzly::fire_1() {
 	}
 	if (do_fire_1 && stamina > 0 && cannon_cooldown <= 0) {
 		int MUZZLE_VEL = 100000;
-		int spread = 1;
 		double angle = atan2(gun_dir_y, gun_dir_x);
-		Bullet** new_bullets = spawn_bullets(gun_dir_x, gun_dir_y, (int)(x_pos+gun_length*cos(angle)), (int)(y_pos+gun_length*sin(angle)), MUZZLE_VEL, spread, 5, 10, 400);
-		for (int i = 0; i < spread; i++) {
-			bullets[num_bullets] = new_bullets[i];
-			num_bullets++;
-		}
-		free(new_bullets);
+		Bullet* new_bullet = spawn_bullet(gun_dir_x, gun_dir_y, (int)(x_pos+gun_length*cos(angle)), (int)(y_pos+gun_length*sin(angle)), MUZZLE_VEL, 5, 10, 400);
+
+		bullets[num_bullets] = new_bullet;
+		num_bullets++;
+
 		cannon_cooldown += cannon_delay;
 		stamina -= 80;
 		Mix_PlayChannel(-1, bullet_sfx, 0);

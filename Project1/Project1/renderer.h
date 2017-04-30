@@ -33,6 +33,7 @@ public:
 
 	void render_texture(SDL_Texture* texture, int x, int y, double angle, double scaling);
 	void render_texture_abs_size(SDL_Texture* texture, int x, int y, double angle, int radius);
+	void render_squiggle_rectangle(SDL_Texture* texture, int x, int y, double angle, int x_size, int y_size);
 	void render_texture_edge_spin(SDL_Texture* texture, int x, int y, double angle, double scaling);
 
 	double atan2_degrees(int x_vel, int y_vel);
