@@ -276,7 +276,7 @@ void Panda::fire_2() {
 		double angle = atan2(gun_dir_y, gun_dir_x);
 
 		if (squiggle_state == squiggle_state::inactive) {
-			max_accel = 0;
+			//max_accel = 0;
 			// todo: temporary
 			//x_vel = 0;
 			//y_vel = 0;

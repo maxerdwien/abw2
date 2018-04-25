@@ -49,7 +49,7 @@ bool dpad_down[4] = { false, false, false, false };
 
 Renderer* r;
 
-const bool DEBUG_MODE = true;
+const bool DEBUG_MODE = false;
 
 bool quit = false;
 bool is_fullscreen = !DEBUG_MODE;
