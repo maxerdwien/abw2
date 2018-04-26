@@ -49,12 +49,12 @@ bool dpad_down[4] = { false, false, false, false };
 
 Renderer* r;
 
-const bool DEBUG_MODE = false;
+const bool DEBUG_MODE = true;
 
 bool quit = false;
 bool is_fullscreen = !DEBUG_MODE;
 bool xp_mode = false;
-bool muted = DEBUG_MODE;
+bool muted = true;
 
 int controller_mappings[4] = { -1, -1, -1, -1 };
 Input_State controllers[4];
@@ -131,6 +131,8 @@ void get_render_data_forever(void* ptr);
 
 ship_type increment_ship_selection(ship_type st, int amount);
 
+void toggle_mute();
+
 int main(int, char**) {
 
 	enum class online_status {
@@ -165,7 +167,7 @@ int main(int, char**) {
 	}
 
 	// init SDL
-	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) != 0) {
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cout << "SDL_Init error: " << SDL_GetError() << std::endl;
 		return 1;
 	}
@@ -324,7 +326,7 @@ int main(int, char**) {
 	
 
 	int item_spawn_cooldown = 60 * 17;
-	if (DEBUG_MODE) item_spawn_cooldown = 2;
+	//if (DEBUG_MODE) item_spawn_cooldown = 2;
 
 	int stock_count = 4;
 
@@ -371,11 +373,31 @@ int main(int, char**) {
 	Stage_Select_Marker* ssm = new Stage_Select_Marker(r);
 
 	Stage_Marker* stage_markers[(int)stage::MAX];
-	stage_markers[(int)stage::anchorage] = new Stage_Marker(r, 6872830, 4379670, " anchorage ");
-	stage_markers[(int)stage::fairbanks] = new Stage_Marker(r, 7474640, 3144430, " fairbanks ");
-	stage_markers[(int)stage::juneau] = new Stage_Marker(r, 11169940, 5735230, " juneau ");
+	stage_markers[(int)stage::anchorage] = new Stage_Marker(r, 6872830, 4379670, " anchorage ", " plain ");
+	stage_markers[(int)stage::fairbanks] = new Stage_Marker(r, 7474640, 3144430, " fairbanks ", " central asteroid ");
+	stage_markers[(int)stage::juneau] = new Stage_Marker(r, 11169940, 5735230, " juneau ", " random asteroids ");
 
 	online_status os = online_status::local;
+
+	/*int x = SDL_NumJoysticks();
+
+	SDL_Joystick* js = SDL_JoystickOpen(0);
+	SDL_JoystickGUID guid = SDL_JoystickGetGUID(js);
+
+	char guid_str[1024];
+	SDL_JoystickGetGUIDString(guid, guid_str, sizeof(guid_str));
+	const char* name = SDL_JoystickName(js);
+
+	int num_axes = SDL_JoystickNumAxes(js);
+	int num_buttons = SDL_JoystickNumButtons(js);
+	int num_hats = SDL_JoystickNumHats(js);
+	int num_balls = SDL_JoystickNumBalls(js);
+
+	printf("%s \"%s\" axes:%d buttons:%d hats:%d balls:%d\n",
+		guid_str, name,
+		num_axes, num_buttons, num_hats, num_balls);
+
+	SDL_GameControllerAddMappingsFromFile("..\\Project1\max-sdl-controller-mappings.txt");*/
 
 	// game loop
 	while (!quit) {
@@ -548,8 +570,8 @@ int main(int, char**) {
 
 						if (DEBUG_MODE) all_ready = true;
 						if (all_ready) {
-							ssm->x_pos = WIDTH_UNITS/2;
-							ssm->y_pos = HEIGHT_UNITS/2;
+							ssm->x_pos = stage_markers[(int)stage::anchorage]->x_pos;
+							ssm->y_pos = stage_markers[(int)stage::anchorage]->y_pos;
 							current_state = stage_select;
 						}
 					}
@@ -565,63 +587,15 @@ int main(int, char**) {
 						do_items = !do_items;
 						Mix_PlayChannel(-1, beep, 0);
 					}
-					/*
-					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
-						switch (selected_stage) {
-						case stage::anchorage:
-							selected_stage = stage::fairbanks;
-							break;
-						case stage::fairbanks:
-							selected_stage = stage::juneau;
-							break;
-						case stage::juneau:
-							selected_stage = stage::anchorage;
-							break;
-						}
-						Mix_PlayChannel(-1, beep, 0);
-					}
-					*/
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT) {
 						if (ready[controller_index]) break;
 						Mix_PlayChannel(-1, beep, 0);
 						selections[controller_index] = increment_ship_selection(selections[controller_index], 1);
-						/*
-						switch (selections[controller_index]) {
-						case ship_type::black:
-							selections[controller_index] = ship_type::grizzly;
-							break;
-						case ship_type::grizzly:
-							selections[controller_index] = ship_type::polar;
-							break;
-						case ship_type::polar:
-							selections[controller_index] = ship_type::panda;
-							break;
-						case ship_type::panda:
-							selections[controller_index] = ship_type::black;
-							break;
-						}
-						*/
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT) {
 						if (ready[controller_index]) break;
 						Mix_PlayChannel(-1, beep, 0);
 						selections[controller_index] = increment_ship_selection(selections[controller_index], -1);
-						/*
-						switch (selections[controller_index]) {
-						case ship_type::black:
-							selections[controller_index] = ship_type::panda;
-							break;
-						case ship_type::grizzly:
-							selections[controller_index] = ship_type::black;
-							break;
-						case ship_type::polar:
-							selections[controller_index] = ship_type::grizzly;
-							break;
-						case ship_type::panda:
-							selections[controller_index] = ship_type::polar;
-							break;
-						}
-						*/
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 						//if (ready[controller_index]) break;
@@ -667,37 +641,11 @@ int main(int, char**) {
 							analog_stick_moved[controller_index] = true;
 							Mix_PlayChannel(-1, beep, 0);
 							selections[controller_index] = increment_ship_selection(selections[controller_index], 1);
-							/*
-							switch (selections[controller_index]) {
-							case black:
-								selections[controller_index] = grizzly;
-								break;
-							case grizzly:
-								selections[controller_index] = polar;
-								break;
-							case polar:
-								selections[controller_index] = black;
-								break;
-							}
-							*/
 						} else if (e.caxis.value < -min_analog_to_dpad_angle && !analog_stick_moved[controller_index]) {
 							if (ready[controller_index]) break;
 							analog_stick_moved[controller_index] = true;
 							Mix_PlayChannel(-1, beep, 0);
 							selections[controller_index] = increment_ship_selection(selections[controller_index], -1);
-							/*
-							switch (selections[controller_index]) {
-							case black:
-								selections[controller_index] = polar;
-								break;
-							case grizzly:
-								selections[controller_index] = black;
-								break;
-							case polar:
-								selections[controller_index] = grizzly;
-								break;
-							}
-							*/
 						} else if (e.caxis.value < min_analog_to_dpad_angle && e.caxis.value > -min_analog_to_dpad_angle) {
 							analog_stick_moved[controller_index] = false;
 						}
@@ -706,7 +654,7 @@ int main(int, char**) {
 				}
 			}
 
-			// render basic black background
+			// render black background
 			r->render_solid_bg();
 
 			// render item toggle
@@ -715,19 +663,6 @@ int main(int, char**) {
 			} else {
 				r->render_text(0, 0, " Items: OFF (Y) ", false, false, true, small_f, 255, 255);
 			}
-
-			/*
-			// render stage select
-			if (selected_stage == stage::anchorage) {
-				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Anchorage (X) ", false, false, true, small_f, 255, 255);
-			}
-			else  if (selected_stage == stage::fairbanks) {
-				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Fairbanks (X) ", false, false, true, small_f, 255, 255);
-			}
-			else if (selected_stage == stage::juneau) {
-				r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Stage: Juneau (X) ", false, false, true, small_f, 255, 255);
-			}
-			*/
 
 			// render team mode
 			if (selected_team_mode == free_for_all) {
@@ -1112,7 +1047,7 @@ int main(int, char**) {
 				item_spawn_cooldown--;
 				if (item_spawn_cooldown == 0) {
 					item_spawn_cooldown = (20 * 60) + (rand() % (10 * 60));
-					if (DEBUG_MODE) item_spawn_cooldown = 10 * 60;
+					//if (DEBUG_MODE) item_spawn_cooldown = 10 * 60;
 					int x_pos = 10000 * (rand() % ((WIDTH_UNITS - STATUS_BAR_WIDTH) / 10000)) + STATUS_BAR_WIDTH;
 					int y_pos = 10000 * (rand() % (HEIGHT_UNITS / 10000));
 					int type = rand() % NUM_ITEM_TYPES;
@@ -1410,9 +1345,9 @@ int main(int, char**) {
 								ship->lives = 0;
 							}
 
-							if (!DEBUG_MODE) {
+							//if (!DEBUG_MODE) {
 								ship->invincibility_cooldown += ship->respawn_invincibility_delay;
-							}
+							//}
 
 							ship->x_pos = ship->respawn_x;
 							ship->y_pos = ship->respawn_y;
@@ -1557,46 +1492,38 @@ int main(int, char**) {
 					controller_index = lookup_controller(e.cbutton.which);
 					if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 						if (LRA[controller_index].a == true && LRA[controller_index].l == true && LRA[controller_index].r == true) {
-							// reset buttons
-							for (int i = 0; i < 4; i++) {
-								LRA[i].a = false;
-								LRA[i].l = false;
-								LRA[i].r = false;
-							}
 							winner = -1;
 							current_state = results;
 						}	
 						else {
-							// reset buttons
-							for (int i = 0; i < 4; i++) {
-								LRA[i].a = false;
-								LRA[i].l = false;
-								LRA[i].r = false;
-							}
 							current_state = in_game;
+						}
+
+						// reset buttons
+						for (int i = 0; i < 4; i++) {
+							LRA[i].a = false;
+							LRA[i].l = false;
+							LRA[i].r = false;
 						}
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
 						LRA[controller_index].a = true;
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
+						xp_mode = !xp_mode;
+					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
 						if (r->render_normal && !r->render_debug) {
 							r->render_debug = true;
-						}
-						else if (r->render_normal && r->render_debug) {
+						} else if (r->render_normal && r->render_debug) {
 							r->render_normal = false;
-						}
-						else {
+						} else {
 							r->render_normal = true;
 							r->render_debug = false;
 						}
 						render_game(game_end_cooldown, game_end_delay, game_start_cooldown,
 							countdown_tick, selected_ship, bg,
 							ships, items, num_items, asteroids, num_asteroids);
-
-					}
-					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
-						xp_mode = !xp_mode;
 					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER) {
 						LRA[controller_index].l = true;
@@ -1642,6 +1569,12 @@ int main(int, char**) {
 			// render word "paused"
 			SDL_SetRenderDrawColor(renderer, 128, 128, 128, SDL_ALPHA_OPAQUE);
 			r->render_text((WIDTH_UNITS-STATUS_BAR_WIDTH) / 2 + STATUS_BAR_WIDTH, HEIGHT_UNITS / 2, " Paused ", true, true, true, medium_f, 255, 255);
+
+			// render control instructions
+			r->render_text(STATUS_BAR_WIDTH, 0, "L + R + A + START to reset", false, false, true, medium_f, 255, 255);
+			r->render_text(STATUS_BAR_WIDTH, r->get_text_height(medium_f), "Y to toggle hitboxes", false, false, true, medium_f, 255, 255);
+			r->render_text(STATUS_BAR_WIDTH, 2 * r->get_text_height(medium_f), "X to toggle XP mode", false, false, true, medium_f, 255, 255);
+			r->render_text(STATUS_BAR_WIDTH, 3 * r->get_text_height(medium_f), "B to toggle sound", false, false, true, medium_f, 255, 255);
 
 
 			SDL_RenderPresent(renderer);
@@ -1755,15 +1688,7 @@ bool read_global_input(SDL_Event* e) {
 			}
 			event_eaten = true;
 		} else if (k == SDLK_m) {
-			muted = !muted;
-			if (muted) {
-				Mix_HaltMusic();
-				Mix_AllocateChannels(0);
-			} else {
-				Mix_PlayMusic(music, -1);
-				// the last 8 channels are reserved for continuous sfx
-				Mix_AllocateChannels(32);
-			}
+			toggle_mute();
 			
 			event_eaten = true;
 		} else if (k == SDLK_q) {
@@ -1781,6 +1706,8 @@ bool read_global_input(SDL_Event* e) {
 			//dpad_down[]
 			//xp_mode = !xp_mode;
 			//event_eaten = true;
+		} else if (e->cbutton.button == SDL_CONTROLLER_BUTTON_B) {
+			toggle_mute();
 		}
 		break;
 	case SDL_CONTROLLERDEVICEADDED:
@@ -2354,4 +2281,16 @@ ship_type increment_ship_selection(ship_type st, int amount) {
 	new_selection %= (int)ship_type::MAX;
 
 	return (ship_type)new_selection;
+}
+
+void toggle_mute() {
+	muted = !muted;
+	if (muted) {
+		Mix_HaltMusic();
+		Mix_AllocateChannels(0);
+	} else {
+		Mix_PlayMusic(music, -1);
+		// the last 8 channels are reserved for continuous sfx
+		Mix_AllocateChannels(32);
+	}
 }

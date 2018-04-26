@@ -155,8 +155,8 @@ void Renderer::render_text(int x, int y, const std::string& s, bool center_x, bo
 		font = caladea;
 	}
 
-	SDL_Color White = { 255, green_and_blue, green_and_blue };
-	SDL_Surface* surface = TTF_RenderText_Blended(font, s.c_str(), White);
+	SDL_Color color = { 255, green_and_blue, green_and_blue };
+	SDL_Surface* surface = TTF_RenderText_Blended(font, s.c_str(), color);
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_Rect rect;
 	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
@@ -180,6 +180,36 @@ void Renderer::render_text(int x, int y, const std::string& s, bool center_x, bo
 	SDL_RenderCopy(renderer, texture, NULL, &rect);
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);
+}
+
+// super duper incomplete
+int Renderer::get_text_height(font_size size) {
+	// select font
+	TTF_Font* font;
+	switch (size) {
+	case small_f:
+		font = caladea_small;
+		break;
+	case medium_f:
+		font = caladea;
+		break;
+	case large_f:
+		font = caladea_large;
+		break;
+	default:
+		font = caladea;
+	}
+	
+	SDL_Color color = { 255, 255, 255 };
+	
+	SDL_Surface* surface = TTF_RenderText_Blended(font, "a", color);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect rect;
+	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+	
+	return rect.h / (ratio / 10000);
+
+	//return 10000 * 36 * ratio;
 }
 
 void Renderer::render_line_w_end(int x_start, int y_start, int x_end, int y_end) {

@@ -37,14 +37,6 @@ private:
 	//int mod;
 	double total_spread_angle; // todo: remove?
 
-	// todo: you can only have one gravity missile
-	class Gravity_Missile* g_missiles[10];
-	int num_g_missiles = 0;
-
-	bool missile_click_used = false;
-
-	const int missile_delay = 160;
-	int missile_cooldown = 0;
 
 	bool laser_active = false;
 	const int laser_damage_delay = 2;
@@ -75,6 +67,8 @@ private:
 	const int squiggle_width_per_frame = 15000;
 	const int squiggle_shrinkage_rate = 8000;
 	int squiggle_width = normal_squiggle_width;
+
+	int squiggle_ship_hits_cooldown[4];
 
 public:
 	Panda(int identifier, int a1, int a2, int x, int y, Renderer* rend);

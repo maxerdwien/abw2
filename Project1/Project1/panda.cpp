@@ -43,6 +43,12 @@ Panda::Panda(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 
 	r = rend;
 
+
+	squiggle_ship_hits_cooldown[0] = 0;
+	squiggle_ship_hits_cooldown[1] = 0;
+	squiggle_ship_hits_cooldown[2] = 0;
+	squiggle_ship_hits_cooldown[3] = 0;
+
 	if (id == 0) {
 		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
@@ -130,10 +136,6 @@ Panda::~Panda() {
 	}
 	for (int i = 0; i < num_sparks; i++) {
 		delete sparks[i];
-	}
-
-	for (int i = 0; i < num_g_missiles; i++) {
-		delete g_missiles[i];
 	}
 }
 
@@ -276,20 +278,10 @@ void Panda::fire_2() {
 		double angle = atan2(gun_dir_y, gun_dir_x);
 
 		if (squiggle_state == squiggle_state::inactive) {
-			//max_accel = 0;
-			// todo: temporary
-			//x_vel = 0;
-			//y_vel = 0;
-
 			squiggle_state = squiggle_state::shooting;
 			
-
-			//squiggle_x = (int)(x_pos + gun_length*cos(angle));
-			//squiggle_y = (int)(y_pos + gun_length*sin(angle));
-			squiggle_x = x_pos;
-			squiggle_y = y_pos;
-
-			
+			squiggle_x = (int)(x_pos + gun_length*cos(angle));
+			squiggle_y = (int)(y_pos + gun_length*sin(angle));
 		}
 		
 		squiggle_angle = angle;
@@ -305,13 +297,12 @@ void Panda::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 	if (squiggle_state == squiggle_state::shooting) {
 		if (stamina > 0) {
 			if (!num_squiggle_segments) {
-				squiggle_segments[num_squiggle_segments] = new Squiggle_Segment(squiggle_x, squiggle_y); // todo: leak
+				squiggle_segments[num_squiggle_segments] = new Squiggle_Segment(squiggle_x, squiggle_y);
 				num_squiggle_segments++;
 			}
 			// make new squiggle segments
 			double angle = atan2(gun_dir_y, gun_dir_x);
 
-			// todo: leak
 			for (int i = 0; i < squiggle_segs_per_frame; i++) {
 				squiggle_x += squiggle_dist_per_frame * cos(angle) / squiggle_segs_per_frame;
 				squiggle_y += squiggle_dist_per_frame * sin(angle) / squiggle_segs_per_frame;
@@ -322,7 +313,7 @@ void Panda::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 			stamina -= 25;
 		} else {
-			squiggle_state == squiggle_state::growing;
+			squiggle_state = squiggle_state::growing;
 		}
 	} else if (squiggle_state == squiggle_state::growing) {
 		// change size
@@ -336,9 +327,12 @@ void Panda::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 		if (squiggle_width <= 0) {
 			squiggle_state = squiggle_state::inactive;
+			for (int i = 0; i < 4; i++) {
+				squiggle_ship_hits_cooldown[i] = 0;
+			}
 		}
 	}
-	else if (squiggle_state == squiggle_state::inactive) {
+	if (squiggle_state == squiggle_state::inactive) {
 		for (int i = 0; i < num_squiggle_segments; i++) {
 			delete squiggle_segments[i];
 		}
@@ -346,14 +340,14 @@ void Panda::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 
 		squiggle_width = normal_squiggle_width;
 	}
-
 	
 
 	// pull squiggle
 	if (num_squiggle_segments) {
 		Squiggle_Segment* seg = squiggle_segments[0];
-		int delta_x = x_pos - seg->x;
-		int delta_y = y_pos - seg->y;
+		double angle = atan2(gun_dir_y, gun_dir_x);
+		int delta_x = (int)(x_pos + gun_length*cos(angle)) - seg->x;
+		int delta_y = (int)(y_pos + gun_length*sin(angle)) - seg->y;
 
 		seg->x += delta_x;
 		seg->y += delta_y;
@@ -378,7 +372,12 @@ void Panda::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 					double dist_squared = pow(seg_b->x - ships[j]->x_pos, 2) + pow(seg_b->y - ships[j]->y_pos, 2);
 					double radii_squared = pow(ships[j]->radius + squiggle_width/2, 2);
 					if (dist_squared < radii_squared) {
-						ships[j]->take_knockback(1000*sin(angle), 1000*cos(angle), 10, 10, 10, haptics[j]);
+						ships[j]->take_knockback(1000 * sin(angle), 1000 * cos(angle), 0, 0, 2, haptics[j]);
+
+						if (!squiggle_ship_hits_cooldown[j]) {
+							ships[j]->take_knockback(1000 * sin(angle), 1000 * cos(angle), 100, 100, 0, haptics[j]);
+							squiggle_ship_hits_cooldown[j] = 1;
+						}
 					}
 					// todo: rectangles?
 				}
@@ -394,8 +393,6 @@ void Panda::render_projectiles_2() {
 
 		if (i != num_squiggle_segments - 1) {
 			Squiggle_Segment* seg_b = squiggle_segments[i + 1];
-			//r->render_line_w_end(seg_a->x, seg_a->y, seg_b->x, seg_b->y);
-			//double angle = atan2(seg_b->y - seg_a->y, seg_b->x - seg_a->x);
 			double angle = r->atan2_degrees(seg_b->x - seg_a->x, seg_b->y - seg_a->y);
 			r->render_squiggle_rectangle(squiggle_rect_tex, (seg_a->x + seg_b->x) / 2, (seg_a->y + seg_b->y) / 2, angle, squiggle_width, squiggle_dist_per_frame / squiggle_segs_per_frame);
 		}
@@ -516,60 +513,9 @@ double Panda::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_
 }
 
 int Panda::serialize(char* buf, int i) {
-	i = serialize_ship(buf, i);
-
-	i = serialize_int(num_bullets, buf, i);
-	for (int j = 0; j < num_bullets; j++) {
-		i = bullets[j]->serialize(buf, i);
-	}
-
-	i = serialize_int(num_g_missiles, buf, i);
-	for (int j = 0; j < num_g_missiles; j++) {
-		i = g_missiles[j]->serialize(buf, i);
-	}
-
-	i = serialize_bool(laser_active, buf, i);
-
-	i = serialize_int(laser_start_x, buf, i);
-	i = serialize_int(laser_start_y, buf, i);
-	i = serialize_int(laser_end_x, buf, i);
-	i = serialize_int(laser_end_y, buf, i);
-
-	i = serialize_int(num_sparks, buf, i);
-	for (int j = 0; j < num_sparks; j++) {
-		i = sparks[j]->serialize(buf, i);
-	}
-
-	return i;
+	return 0;
 }
 
 int Panda::deserialize(char*buf, int i) {
-	i = deserialize_ship(buf, i);
-
-	i = deserialize_int(&num_bullets, buf, i);
-	for (int j = 0; j < num_bullets; j++) {
-		bullets[j] = new Bullet();
-		i = bullets[j]->deserialize(buf, i);
-	}
-
-	i = deserialize_int(&num_g_missiles, buf, i);
-	for (int j = 0; j < num_g_missiles; j++) {
-		g_missiles[j] = new Gravity_Missile();
-		i = g_missiles[j]->deserialize(buf, i);
-	}
-
-	i = deserialize_bool(&laser_active, buf, i);
-
-	i = deserialize_int(&laser_start_x, buf, i);
-	i = deserialize_int(&laser_start_y, buf, i);
-	i = deserialize_int(&laser_end_x, buf, i);
-	i = deserialize_int(&laser_end_y, buf, i);
-
-	i = deserialize_int(&num_sparks, buf, i);
-	for (int j = 0; j < num_sparks; j++) {
-		sparks[j] = new Spark();
-		i = sparks[j]->deserialize(buf, i);
-	}
-
-	return i;
+	return 0;
 }

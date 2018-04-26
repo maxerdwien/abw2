@@ -43,6 +43,7 @@ public:
 	SDL_Texture* LoadTexture(const char* file);
 
 	void render_text(int x, int y, const std::string& s, bool center_x, bool center_y, bool highlight, font_size font_size, int green_and_blue, int alpha);
+	int get_text_height(font_size size);
 
 	void render_line(int x_start, int y_start, int x_dir, int y_dir);
 	void render_line_w_end(int x_start, int y_start, int x_end, int y_end);
