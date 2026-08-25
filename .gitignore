@@ -9,3 +9,12 @@
 *.opendb
 *.db
 *.sdf
+*.res
+*.recipe
+*.pch
+*.ipch
+*.iobj
+*.ipdb
+*.aps
+*.user
+.vs/
