@@ -45,6 +45,7 @@ public:
 
 	player_status status = empty;
 	SDL_GameController* controller = NULL;
+	bool is_gamecube = false;
 	
 	int serialize(char* buf, int i);
 	int deserialize(char* buf, int i);

@@ -50,48 +50,47 @@ Panda::Panda(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	squiggle_ship_hits_cooldown[3] = 0;
 
 	if (id == 0) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
+		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\panda-red.png");
 		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
 		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileRed.png");
 	} else if (id == 1) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\panda-blue.png");
 			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
 			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\panda-magenta.png");
 			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletMagenta.png");
 			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileMagenta.png");
 		}
 	} else if (id == 2) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\panda-yellow.png");
 			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
 			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileYellow.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\panda-blue.png");
 			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
 			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
 		}
 	} else {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\panda-green.png");
 			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
 			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileGreen.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
+			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\panda-teal.png");
 			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletTeal.png");
 			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileTeal.png");
 		}
 	}
 
-	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-white.png");
+	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\panda-white.png");
 
 	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
 
 	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
 
-	squiggle_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\squiggle_segment_red.png");
 	squiggle_circle_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\squiggle_circle_red.png");
 	squiggle_rect_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\squiggle_rectangle_red.png");
 	//SDL_SetTextureAlphaMod(vortex_tex, 100);
@@ -117,7 +116,8 @@ Panda::~Panda() {
 	SDL_DestroyTexture(ship_invincible_tex);
 	SDL_DestroyTexture(cannon_tex);
 	SDL_DestroyTexture(missile_tex);
-	SDL_DestroyTexture(squiggle_tex);
+	SDL_DestroyTexture(squiggle_circle_tex);
+	SDL_DestroyTexture(squiggle_rect_tex);
 	SDL_DestroyTexture(bounce_missile_tex);
 	SDL_DestroyTexture(bounce_bullet_tex);
 	SDL_DestroyTexture(shield_tex);
@@ -372,10 +372,10 @@ void Panda::update_projectiles_2(int min_x, int max_x, int min_y, int max_y, Shi
 					double dist_squared = pow(seg_b->x - ships[j]->x_pos, 2) + pow(seg_b->y - ships[j]->y_pos, 2);
 					double radii_squared = pow(ships[j]->radius + squiggle_width/2, 2);
 					if (dist_squared < radii_squared) {
-						ships[j]->take_knockback(1000 * sin(angle), 1000 * cos(angle), 0, 0, 2, haptics[j]);
+						ships[j]->take_knockback(1000 * sin(angle), 1000 * cos(angle), 0, 0, 1, haptics[j]);
 
 						if (!squiggle_ship_hits_cooldown[j]) {
-							ships[j]->take_knockback(1000 * sin(angle), 1000 * cos(angle), 100, 100, 0, haptics[j]);
+							ships[j]->take_knockback(1000 * sin(angle), 1000 * cos(angle), 100, 100, 1, haptics[j]);
 							squiggle_ship_hits_cooldown[j] = 1;
 						}
 					}

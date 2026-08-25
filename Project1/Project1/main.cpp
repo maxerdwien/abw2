@@ -66,6 +66,9 @@ Mix_Music* music;
 bool read_global_input(SDL_Event* e);
 void read_input();
 
+void log_joystick_devices(const char* when);
+void log_controller_diagnostics();
+
 enum class ship_type {
 	black = 0,
 	grizzly = 1,
@@ -167,10 +170,14 @@ int main(int, char**) {
 	}
 
 	// init SDL
+	// enable SDL's HIDAPI driver so the official nintendo gamecube usb adapter (WUP-028) is picked up
+	SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE, "1");
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		std::cout << "SDL_Init error: " << SDL_GetError() << std::endl;
 		return 1;
 	}
+
+	log_controller_diagnostics();
 
 	// init sound
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
@@ -219,14 +226,14 @@ int main(int, char**) {
 		WINDOW_HEIGHT = 720;
 	}
 
-	window = SDL_CreateWindow("alaskan cosmobear spacefighting", 675, 100, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("alaskan cosmobear spacefighting", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (!window) {
 		std::cout << "SDL_CreateWindow error: " << SDL_GetError() << std::endl;
 		SDL_Quit();
 		return 1;
 	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	if (!renderer) {
 		SDL_DestroyWindow(window);
 		std::cout << "SDL_CreateRenderer error: " << SDL_GetError() << std::endl;
@@ -272,12 +279,12 @@ int main(int, char**) {
 	ship_textures[(int)ship_type::polar][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
 	ship_textures[(int)ship_type::polar][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
 
-	ship_textures[(int)ship_type::panda][red] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
-	ship_textures[(int)ship_type::panda][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
-	ship_textures[(int)ship_type::panda][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
-	ship_textures[(int)ship_type::panda][green] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
-	ship_textures[(int)ship_type::panda][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
-	ship_textures[(int)ship_type::panda][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
+	ship_textures[(int)ship_type::panda][red] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-red.png");
+	ship_textures[(int)ship_type::panda][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-blue.png");
+	ship_textures[(int)ship_type::panda][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-yellow.png");
+	ship_textures[(int)ship_type::panda][green] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-green.png");
+	ship_textures[(int)ship_type::panda][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-teal.png");
+	ship_textures[(int)ship_type::panda][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-magenta.png");
 
 	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
@@ -330,12 +337,16 @@ int main(int, char**) {
 
 	int stock_count = 4;
 
-	Uint32 last_frame_start_time = SDL_GetTicks();
-	Uint32 frame_start_time = SDL_GetTicks();
+	// game logic is tuned for 60 fps, so cap the frame rate there instead of vsync
+	const double target_frame_ms = 1000.0 / 60.0;
+	double next_frame_time = SDL_GetTicks();
 
-	const int frame_counter_size = 60;
-	int frame_time[frame_counter_size + 1];
-	int frame_counter = 0;
+	// fps counter: one bucket per second, title shows the average of the last 5
+	const int fps_bucket_count = 5;
+	int fps_frame_buckets[fps_bucket_count] = {};
+	Uint32 fps_ms_buckets[fps_bucket_count] = {};
+	int fps_bucket_index = 0;
+	Uint32 fps_bucket_start = SDL_GetTicks();
 
 	enum class main_menu_option : int {
 		local,
@@ -401,18 +412,34 @@ int main(int, char**) {
 
 	// game loop
 	while (!quit) {
-		last_frame_start_time = frame_start_time;
-		frame_start_time = SDL_GetTicks();
-		frame_time[frame_counter] = frame_start_time - last_frame_start_time;
-		frame_counter++;
-		if (frame_counter > frame_counter_size) {
-			frame_counter = 0;
-			int total_time = 0;
-			for (int i = 0; i < frame_counter_size; i++) {
-				total_time += frame_time[i];
+		next_frame_time += target_frame_ms;
+		Uint32 frame_now = SDL_GetTicks();
+		if (frame_now < next_frame_time) {
+			SDL_Delay((Uint32)(next_frame_time - frame_now));
+		} else if (frame_now - next_frame_time > 100.0) {
+			// running way behind; skip ahead instead of fast-forwarding to catch up
+			next_frame_time = frame_now;
+		}
+
+		if (DEBUG_MODE) {
+			fps_frame_buckets[fps_bucket_index]++;
+			Uint32 now = SDL_GetTicks();
+			Uint32 elapsed = now - fps_bucket_start;
+			if (elapsed >= 1000) {
+				fps_ms_buckets[fps_bucket_index] = elapsed;
+				int total_frames = 0;
+				Uint32 total_ms = 0;
+				for (int i = 0; i < fps_bucket_count; i++) {
+					total_frames += fps_frame_buckets[i];
+					total_ms += fps_ms_buckets[i];
+				}
+				char title[80];
+				snprintf(title, sizeof(title), "alaskan cosmobear spacefighting - %.1f fps", total_frames * 1000.0 / total_ms);
+				SDL_SetWindowTitle(window, title);
+				fps_bucket_index = (fps_bucket_index + 1) % fps_bucket_count;
+				fps_frame_buckets[fps_bucket_index] = 0;
+				fps_bucket_start = now;
 			}
-			double total_seconds = (double)total_time * 60.0 / 1000;
-			//std::cout << total_seconds << " fps" << std::endl;
 		}
 
 		// start of main menu state
@@ -1659,6 +1686,72 @@ int main(int, char**) {
 }
 
 
+void log_joystick_devices(const char* when) {
+	int n = SDL_NumJoysticks();
+	printf("[gc-debug] (%s) SDL sees %d joystick(s)\n", when, n);
+	for (int i = 0; i < n; i++) {
+		char guid_str[64];
+		SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(i), guid_str, sizeof(guid_str));
+		const char* name = SDL_JoystickNameForIndex(i);
+		printf("[gc-debug]   #%d \"%s\" guid=%s vendor=0x%04X product=0x%04X is_gamecontroller=%s\n",
+			i,
+			name ? name : "(null)",
+			guid_str,
+			SDL_JoystickGetDeviceVendor(i),
+			SDL_JoystickGetDeviceProduct(i),
+			SDL_IsGameController(i) ? "yes" : "no");
+	}
+}
+
+void log_controller_diagnostics() {
+	SDL_version compiled;
+	SDL_version linked;
+	SDL_VERSION(&compiled);
+	SDL_GetVersion(&linked);
+	printf("[gc-debug] SDL compiled against %d.%d.%d, running %d.%d.%d\n",
+		compiled.major, compiled.minor, compiled.patch,
+		linked.major, linked.minor, linked.patch);
+
+	char dll_path[MAX_PATH] = "(not loaded?)";
+	HMODULE sdl_dll = GetModuleHandleA("SDL2.dll");
+	if (sdl_dll) GetModuleFileNameA(sdl_dll, dll_path, sizeof(dll_path));
+	printf("[gc-debug] SDL2.dll loaded from: %s\n", dll_path);
+
+	const char* h_hidapi = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI);
+	const char* h_gamecube = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE);
+	printf("[gc-debug] hints: JOYSTICK_HIDAPI=%s JOYSTICK_HIDAPI_GAMECUBE=%s\n",
+		h_hidapi ? h_hidapi : "(unset, defaults on)",
+		h_gamecube ? h_gamecube : "(unset)");
+
+	// raw HID view: is the adapter visible to hidapi at all?
+	bool adapter_seen = false;
+	SDL_hid_device_info* devs = SDL_hid_enumerate(0, 0);
+	if (!devs) {
+		printf("[gc-debug] SDL_hid_enumerate returned no HID devices at all\n");
+	}
+	for (SDL_hid_device_info* d = devs; d; d = d->next) {
+		printf("[gc-debug] hid device vendor=0x%04X product=0x%04X usage_page=0x%04X usage=0x%04X product_string=\"%ls\" path=%s\n",
+			d->vendor_id, d->product_id, d->usage_page, d->usage,
+			d->product_string ? d->product_string : L"(null)",
+			d->path ? d->path : "(null)");
+		if (d->vendor_id == 0x057E && d->product_id == 0x0337) adapter_seen = true;
+	}
+	SDL_hid_free_enumeration(devs);
+
+	if (adapter_seen) {
+		printf("[gc-debug] gamecube adapter (057E:0337) IS visible to hidapi\n");
+		printf("[gc-debug]   if no joystick appears below, make sure a controller is plugged into one of the\n");
+		printf("[gc-debug]   adapter's ports; only populated ports show up as joysticks\n");
+	} else {
+		printf("[gc-debug] gamecube adapter (057E:0337) NOT visible to hidapi\n");
+		printf("[gc-debug]   - is the adapter's black USB plug connected? (black = data, gray = power/rumble only)\n");
+		printf("[gc-debug]   - if it was ever used with dolphin via zadig, a WinUSB driver is bound to it and hides\n");
+		printf("[gc-debug]     it from SDL: device manager -> WUP-028 -> uninstall device (check 'delete driver'), replug\n");
+	}
+
+	log_joystick_devices("startup");
+}
+
 bool read_global_input(SDL_Event* e) {
 	bool event_eaten = false;
 	
@@ -1710,24 +1803,73 @@ bool read_global_input(SDL_Event* e) {
 			toggle_mute();
 		}
 		break;
+	case SDL_JOYDEVICEADDED:
+	{
+		const char* name = SDL_JoystickNameForIndex(e->jdevice.which);
+		printf("[gc-debug] SDL_JOYDEVICEADDED device_index=%d name=\"%s\" vendor=0x%04X product=0x%04X is_gamecontroller=%s\n",
+			e->jdevice.which,
+			name ? name : "(null)",
+			SDL_JoystickGetDeviceVendor(e->jdevice.which),
+			SDL_JoystickGetDeviceProduct(e->jdevice.which),
+			SDL_IsGameController(e->jdevice.which) ? "yes" : "no");
+		// not eaten; SDL_CONTROLLERDEVICEADDED arrives separately if it's a recognized game controller
+		break;
+	}
+	case SDL_JOYDEVICEREMOVED:
+		printf("[gc-debug] SDL_JOYDEVICEREMOVED instance_id=%d\n", e->jdevice.which);
+		break;
+	case SDL_CONTROLLERDEVICEREMAPPED:
+		printf("[gc-debug] SDL_CONTROLLERDEVICEREMAPPED instance_id=%d\n", e->cdevice.which);
+		break;
 	case SDL_CONTROLLERDEVICEADDED:
 	{
+		printf("[gc-debug] SDL_CONTROLLERDEVICEADDED device_index=%d\n", e->cdevice.which);
 		SDL_GameController* temp = SDL_GameControllerOpen(e->cdevice.which);
 		if (!temp) {
-			std::cout << "could not connect controller" << std::endl;
+			std::cout << "could not connect controller: " << SDL_GetError() << std::endl;
 		}
+		printf("[gc-debug] opened \"%s\" vendor=0x%04X product=0x%04X\n",
+			temp ? SDL_GameControllerName(temp) : "(open failed)",
+			SDL_GameControllerGetVendor(temp),
+			SDL_GameControllerGetProduct(temp));
+
+		// official nintendo gamecube usb adapter (WUP-028)
+		bool is_gamecube = SDL_GameControllerGetVendor(temp) == 0x057E && SDL_GameControllerGetProduct(temp) == 0x0337;
+		printf("[gc-debug] is_gamecube=%s\n", is_gamecube ? "yes" : "no");
+		if (is_gamecube) {
+			// SDL's built-in gamecube mapping leaves the digital L full-press unbound (joystick
+			// button 11), so bind it to left shoulder to give the pad an LB equivalent
+			char* mapping = SDL_GameControllerMapping(temp);
+			printf("[gc-debug] current mapping: %s\n", mapping ? mapping : "(none)");
+			if (mapping && !SDL_strstr(mapping, "leftshoulder:")) {
+				std::string extended = mapping;
+				if (extended.back() != ',') extended += ',';
+				extended += "leftshoulder:b11,";
+				int add_result = SDL_GameControllerAddMapping(extended.c_str());
+				printf("[gc-debug] added leftshoulder:b11 mapping, result=%d (1=new, 0=updated, -1=error %s)\n",
+					add_result, add_result == -1 ? SDL_GetError() : "");
+			}
+			SDL_free(mapping);
+		}
+
 		SDL_Joystick* joy = SDL_GameControllerGetJoystick(temp);
 		int instanceID = SDL_JoystickInstanceID(joy);
 		// find first empty slot
+		bool found_slot = false;
 		for (int i = 0; i < 4; i++) {
 			if (controller_mappings[i] == -1) {
+				found_slot = true;
 				controller_mappings[i] = instanceID;
 				controllers[i].controller = temp;
 				controllers[i].status = human;
+				controllers[i].is_gamecube = is_gamecube;
 
 				haptics[i] = SDL_HapticOpen(e->cdevice.which);
 				if (SDL_HapticRumbleInit(haptics[i]) != 0) {
 					std::cout << "could not init haptic device" << std::endl;
+					// the gamecube adapter has no haptic device, but SDL can rumble it directly
+					// (requires the adapter's gray power plug to also be connected)
+					SDL_GameControllerRumble(temp, 0xC000, 0xC000, 500);
 				}
 				SDL_HapticRumblePlay(haptics[i], 1.0f, 500);
 				if (!haptics[i]) {
@@ -1736,6 +1878,9 @@ bool read_global_input(SDL_Event* e) {
 				std::cout << "connecting new controller " << instanceID << " in slot " << i << std::endl;
 				break;
 			}
+		}
+		if (!found_slot) {
+			printf("[gc-debug] no free slot for controller instance_id=%d; all 4 slots occupied\n", instanceID);
 		}
 		event_eaten = true;
 		break;
@@ -1749,6 +1894,7 @@ bool read_global_input(SDL_Event* e) {
 		controller_mappings[slot] = -1;
 		SDL_GameControllerClose(controllers[slot].controller);
 		controllers[slot].status = empty;
+		controllers[slot].is_gamecube = false;
 		SDL_HapticClose(haptics[slot]);
 		haptics[slot] = NULL;
 		event_eaten = true;
@@ -1808,9 +1954,18 @@ void read_input() {
 			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
 				controllers[controller_index].x.state = true;
 				controllers[controller_index].x.changed = true;
+				// gamecube pads have no stick clicks; X and Y stand in for L3 (speed boost)
+				if (controllers[controller_index].is_gamecube) {
+					controllers[controller_index].l3.state = true;
+					controllers[controller_index].l3.changed = true;
+				}
 			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
 				controllers[controller_index].y.state = true;
 				controllers[controller_index].y.changed = true;
+				if (controllers[controller_index].is_gamecube) {
+					controllers[controller_index].l3.state = true;
+					controllers[controller_index].l3.changed = true;
+				}
 			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 				controllers[controller_index].start.state = true;
 				controllers[controller_index].start.changed = true;
@@ -1858,9 +2013,17 @@ void read_input() {
 			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
 				controllers[controller_index].x.state = false;
 				controllers[controller_index].x.changed = true;
+				if (controllers[controller_index].is_gamecube) {
+					controllers[controller_index].l3.state = false;
+					controllers[controller_index].l3.changed = true;
+				}
 			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_Y) {
 				controllers[controller_index].y.state = false;
 				controllers[controller_index].y.changed = true;
+				if (controllers[controller_index].is_gamecube) {
+					controllers[controller_index].l3.state = false;
+					controllers[controller_index].l3.changed = true;
+				}
 			} else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
 				controllers[controller_index].start.state = false;
 				controllers[controller_index].start.changed = true;
@@ -1915,9 +2078,18 @@ void read_input() {
 				if (e.caxis.value >= min_activation) {
 					controllers[controller_index].lt.state = true;
 					controllers[controller_index].lt.changed = true;
+					// gamecube pads have no left shoulder button; the L trigger acts as LB (fire 3)
+					if (controllers[controller_index].is_gamecube) {
+						controllers[controller_index].lb.state = true;
+						controllers[controller_index].lb.changed = true;
+					}
 				} else if (e.caxis.value <= min_deactivation) {
 					controllers[controller_index].lt.state = false;
 					controllers[controller_index].lt.changed = true;
+					if (controllers[controller_index].is_gamecube) {
+						controllers[controller_index].lb.state = false;
+						controllers[controller_index].lb.changed = true;
+					}
 				}
 			}
 			

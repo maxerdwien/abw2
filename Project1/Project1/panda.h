@@ -13,7 +13,6 @@ class Panda : public Ship {
 private:
 	SDL_Texture* bullet_tex;
 	SDL_Texture* missile_tex;
-	SDL_Texture* squiggle_tex;
 	SDL_Texture* squiggle_circle_tex;
 	SDL_Texture* squiggle_rect_tex;
 
