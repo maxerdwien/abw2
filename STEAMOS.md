@@ -54,6 +54,18 @@ somewhere else, move the whole `abw2` folder.
 
 To delete the build output: `./Project1/build-steamos.sh clean`.
 
+### Installing a copy outside the repo
+
+```sh
+./Project1/build-steamos.sh install
+```
+
+This builds the game, then copies it to `~/Games/acsf` (pass a different folder as a
+second argument if you like). The executable is `~/Games/acsf/ACSF/acsf`. When an
+older version is replaced, it's kept as `ACSF/acsf.previous`. The installed copy
+doesn't depend on the repo, so you can keep working in the repo without affecting
+the version in Steam.
+
 ## 4. Try it in Desktop Mode
 
 ```sh
@@ -67,10 +79,15 @@ It starts fullscreen. Press **Esc** to drop to a window, or **Q** to quit.
 1. Open Steam in Desktop Mode.
 2. **Games** → **Add a Non-Steam Game to My Library…** → **Browse…**
 3. Change the file-type filter to **All Files**, select
-   `~/abw2/Project1/linux/acsf`, and click **Add Selected Programs**.
+   `~/Games/acsf/ACSF/acsf` (or `~/abw2/Project1/linux/acsf` if you skipped the
+   install step), and click **Add Selected Programs**.
 4. Optional: in the game's **Properties**, rename the shortcut (for example to
    "Alaskan Cosmobear Spacefighting").
-5. Return to Game Mode using the **Return to Gaming Mode** icon on the desktop. The
+5. Run `./Project1/build-steamos.sh install` again. It finds the new shortcut and
+   gives it library artwork (capsule, banner, hero image and logo) generated from
+   the game's own sprites. Steam shows the artwork after it restarts, for example
+   when you switch back to Game Mode.
+6. Return to Game Mode using the **Return to Gaming Mode** icon on the desktop. The
    game appears under **Library → Non-Steam**.
 
 Steam Input presents the Deck's built-in controls as a standard gamepad, so the
@@ -94,10 +111,11 @@ also work, as does a GameCube controller adapter (WUP-028).
 ```sh
 cd ~/abw2
 git pull
-./Project1/build-steamos.sh
+./Project1/build-steamos.sh install
 ```
 
-The Steam shortcut keeps working because the binary stays at the same path.
+This updates the installed game and its Steam artwork in place, so the Steam
+shortcut keeps working.
 
 ## Troubleshooting
 
