@@ -1,0 +1,23 @@
+# The Kodiak's signature play: harpoon a target in, then roar it away.
+ship 0 kodiak 400 360
+ship 1 grizzly 850 360
+
+aim 0 1 0
+fire2 0 1
+run 1
+fire2 0 0
+run 26                        # flight time to the target
+expect 1 damage_taken == 4    # impaled
+run 50                        # reeled in
+expect_dist 0 1 < 250
+print 1
+
+fire3 0 1                     # start winding up while they're close
+run 46
+fire3 0 0
+run 2
+shot kodiak_combo_roar.png
+run 10
+expect 1 vx > 4               # sent flying back the way they came
+expect 1 damage_taken >= 11   # 4 harpoon + 7 roar
+print 1

@@ -19,6 +19,7 @@
 #include "black.h"
 #include "polar.h"
 #include "panda.h"
+#include "kodiak.h"
 
 #include "item.h"
 
@@ -26,6 +27,7 @@
 
 #include "stage_select_marker.h"
 #include "stage_marker.h"
+#include "wind.h"
 
 #include "renderer.h"
 
@@ -74,6 +76,7 @@ enum class ship_type {
 	grizzly = 1,
 	polar = 2,
 	panda = 3,
+	kodiak = 4,
 
 	MAX,
 };
@@ -82,6 +85,8 @@ enum class stage {
 	anchorage, // normal
 	fairbanks, // asteroid in middle
 	juneau, // random asteroids
+	nome, // wind gusts
+	utqiagvik, // drifting ice floes
 
 	MAX,
 };
@@ -115,6 +120,9 @@ int num_items = 0;
 
 Asteroid* asteroids[100];
 int num_asteroids = 0;
+
+// wind gusts (nome stage)
+Wind* wind = NULL;
 
 int lookup_controller(int instanceID);
 void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps);
@@ -286,6 +294,13 @@ int main(int, char**) {
 	ship_textures[(int)ship_type::panda][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-teal.png");
 	ship_textures[(int)ship_type::panda][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-magenta.png");
 
+	ship_textures[(int)ship_type::kodiak][red] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-red.png");
+	ship_textures[(int)ship_type::kodiak][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-blue.png");
+	ship_textures[(int)ship_type::kodiak][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-yellow.png");
+	ship_textures[(int)ship_type::kodiak][green] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-green.png");
+	ship_textures[(int)ship_type::kodiak][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-teal.png");
+	ship_textures[(int)ship_type::kodiak][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-magenta.png");
+
 	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
 	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
 
@@ -298,6 +313,8 @@ int main(int, char**) {
 	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\item.wav");
 	Mix_Chunk* death_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\death.wav");
 	Mix_Chunk* countdown_tick = Mix_LoadWAV("..\\Project1\\assets\\sounds\\countdown.wav");
+
+	wind = new Wind(r, STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS);
 
 
 	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
@@ -320,7 +337,7 @@ int main(int, char**) {
 	int asteroid_spawn_cooldown = 1;
 
 	//ship_type selections[4] = { ship_type::grizzly, ship_type::grizzly, ship_type::grizzly, ship_type::grizzly };
-	ship_type selections[4] = { ship_type::panda, ship_type::grizzly, ship_type::grizzly, ship_type::grizzly };
+	ship_type selections[4] = { ship_type::kodiak, ship_type::grizzly, ship_type::grizzly, ship_type::grizzly };
 	bool analog_stick_moved[4] = { false, false, false, false };
 	bool ready[4] = { false, false, false, false };
 
@@ -387,6 +404,8 @@ int main(int, char**) {
 	stage_markers[(int)stage::anchorage] = new Stage_Marker(r, 6872830, 4379670, " anchorage ", " plain ");
 	stage_markers[(int)stage::fairbanks] = new Stage_Marker(r, 7474640, 3144430, " fairbanks ", " central asteroid ");
 	stage_markers[(int)stage::juneau] = new Stage_Marker(r, 11169940, 5735230, " juneau ", " random asteroids ");
+	stage_markers[(int)stage::nome] = new Stage_Marker(r, 3200000, 3500000, " nome ", " wind gusts ");
+	stage_markers[(int)stage::utqiagvik] = new Stage_Marker(r, 5850000, 220000, " utqiagvik ", " drifting ice ");
 
 	online_status os = online_status::local;
 
@@ -869,6 +888,22 @@ int main(int, char**) {
 				num_asteroids = 1;
 			}
 
+			if (selected_stage == stage::utqiagvik) {
+				// four slow ice floes, one per quadrant, that bounce around the arena for the whole match
+				const int floe_speed = 10000 * 3 / 2;
+				const int floe_radius = 10000 * 80;
+				for (int i = 0; i < 4; i++) {
+					int x = (WIDTH_UNITS - STATUS_BAR_WIDTH) * (i % 2 == 0 ? 1 : 3) / 4 + STATUS_BAR_WIDTH;
+					int y = HEIGHT_UNITS * (i < 2 ? 1 : 3) / 4;
+					double angle = (rand() * M_PI * 2) / RAND_MAX;
+					asteroids[num_asteroids] = new Asteroid(x, y, (int)(floe_speed * cos(angle)), (int)(floe_speed * sin(angle)), r);
+					asteroids[num_asteroids]->radius = floe_radius;
+					num_asteroids++;
+				}
+			}
+
+			wind->reset();
+
 			// init ships
 			const int spawn_locations_x[4] = {
 				(WIDTH_UNITS - STATUS_BAR_WIDTH) / 4 + STATUS_BAR_WIDTH ,
@@ -930,6 +965,9 @@ int main(int, char**) {
 				case ship_type::panda:
 					ships[i] = new Panda(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
 					break;
+				case ship_type::kodiak:
+					ships[i] = new Kodiak(i, ally1, ally2, spawn_locations_x[i], spawn_locations_y[i], r);
+					break;
 				default:
 					throw;
 				}
@@ -986,6 +1024,11 @@ int main(int, char**) {
 					case ship_type::panda:
 						if (!a.lb.state)  a.lb.changed = true;
 						a.lb.state = true;
+						break;
+					case ship_type::kodiak:
+						if (!a.rb.state)  a.rb.changed = true;
+						a.rb.state = true;
+						lead_target = true;
 						break;
 					default:
 						throw;
@@ -1120,10 +1163,23 @@ int main(int, char**) {
 				}
 			}
 
+			// wind gusts
+			if (selected_stage == stage::nome && game_start_cooldown == 0 && game_end_cooldown == game_end_delay) {
+				wind->update();
+			}
+
 			// update asteroids
 			for (int i = 0; i < num_asteroids; i++) {
 				Asteroid* a = asteroids[i];
 				a->update();
+				if (selected_stage == stage::utqiagvik) {
+					// ice floes bounce off the arena edges instead of drifting away
+					if (a->x_pos - a->radius < STATUS_BAR_WIDTH && a->x_vel < 0) a->x_vel = -a->x_vel;
+					if (a->x_pos + a->radius > WIDTH_UNITS && a->x_vel > 0) a->x_vel = -a->x_vel;
+					if (a->y_pos - a->radius < 0 && a->y_vel < 0) a->y_vel = -a->y_vel;
+					if (a->y_pos + a->radius > HEIGHT_UNITS && a->y_vel > 0) a->y_vel = -a->y_vel;
+					continue;
+				}
 				if (a->x_pos < STATUS_BAR_WIDTH - ASTEROID_SPAWN_DIST || a->x_pos > WIDTH_UNITS + ASTEROID_SPAWN_DIST ||
 					a->y_pos < -ASTEROID_SPAWN_DIST || a->y_pos > HEIGHT_UNITS + ASTEROID_SPAWN_DIST) {
 					delete asteroids[i];
@@ -1244,6 +1300,8 @@ int main(int, char**) {
 
 						ship->x_vel += ship->x_accel;
 						ship->y_vel += ship->y_accel;
+
+						wind->push(ship);
 
 						// friction
 						int iterations_per_frame = 40;
@@ -1475,6 +1533,9 @@ int main(int, char**) {
 				for (int i = 0; i < num_items; i++) {
 					size = items[i]->serialize(render_data_buffer, size);
 				}
+
+				// wind
+				size = wind->serialize(render_data_buffer, size);
 
 				send_buffer(them, render_data_buffer, render_data_buffer_size);
 			}
@@ -2177,6 +2238,11 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 		wep1 = "RB: Charge Shotgun";
 		wep2 = "RT: Squiggle";
 		wep3 = "LB: Laser";
+		} else if (shipType == ship_type::kodiak) {
+		name = "KODIAK";
+		wep1 = "RB: Sawblades";
+		wep2 = "RT: Harpoon";
+		wep3 = "LB: Roar";
 	}
 
 	if (ps == ai) {
@@ -2242,6 +2308,8 @@ void render_game(int game_end_cooldown, int game_end_delay, int game_start_coold
 	for (int i = 0; i < num_asteroids; i++) {
 		asteroids[i]->render();
 	}
+
+	wind->render();
 
 	// render UI elements
 	{
@@ -2438,6 +2506,9 @@ void get_render_data_forever(void* ptr) {
 			if (!items[i]) items[i] = new Item(r);
 			size = items[i]->deserialize(render_data_buffer, size);
 		}
+
+		// wind
+		size = wind->deserialize(render_data_buffer, size);
 
 		printf("recieved %d bytes\n", size);
 	}

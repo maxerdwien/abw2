@@ -320,6 +320,10 @@ void Renderer::render_rect(int x, int y, int w, int h) {
 	SDL_RenderFillRect(renderer, &r);
 }
 
+int Renderer::SetRenderDrawBlendMode(SDL_BlendMode mode) {
+	return SDL_SetRenderDrawBlendMode(renderer, mode);
+}
+
 int Renderer::SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
 	return SDL_SetRenderDrawColor(renderer, r, g, b, a);
 }

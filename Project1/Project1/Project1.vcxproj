@@ -80,12 +80,14 @@
     <ClCompile Include="grizzly.cpp" />
     <ClCompile Include="input-state.cpp" />
     <ClCompile Include="item.cpp" />
+    <ClCompile Include="kodiak.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="missile.cpp" />
     <ClCompile Include="panda.cpp" />
     <ClCompile Include="polar.cpp" />
     <ClCompile Include="renderer.cpp" />
+    <ClCompile Include="sawblade.cpp" />
     <ClCompile Include="serializer.cpp" />
     <ClCompile Include="spaceship.cpp" />
     <ClCompile Include="spark.cpp" />
@@ -93,6 +95,7 @@
     <ClCompile Include="stage_marker.cpp" />
     <ClCompile Include="stage_select_marker.cpp" />
     <ClCompile Include="weapon.cpp" />
+    <ClCompile Include="wind.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asteroid.h" />
@@ -103,16 +106,19 @@
     <ClInclude Include="grizzly.h" />
     <ClInclude Include="input-state.h" />
     <ClInclude Include="item.h" />
+    <ClInclude Include="kodiak.h" />
     <ClInclude Include="missile.h" />
     <ClInclude Include="panda.h" />
     <ClInclude Include="polar.h" />
     <ClInclude Include="renderer.h" />
+    <ClInclude Include="sawblade.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="serializer.h" />
     <ClInclude Include="spaceship.h" />
     <ClInclude Include="spark.h" />
     <ClInclude Include="squiggle_segment.h" />
     <ClInclude Include="stage_marker.h" />
+    <ClInclude Include="wind.h" />
     <ClInclude Include="stage_select_marker.h" />
     <ClInclude Include="weapon.h" />
   </ItemGroup>

@@ -39,6 +39,7 @@ public:
 	double atan2_degrees(int x_vel, int y_vel);
 	int RenderCopyEx(SDL_Texture* texture, const SDL_Rect* srcrect, const SDL_Rect* dstrect, const double angle, const SDL_Point* center, const SDL_RendererFlip flip);
 	int SetRenderDrawColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+	int SetRenderDrawBlendMode(SDL_BlendMode mode);
 
 	SDL_Texture* LoadTexture(const char* file);
 

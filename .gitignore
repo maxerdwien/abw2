@@ -19,3 +19,5 @@
 *.user
 .vs/
 /Project1/Project1/Debug
+/Project1/Harness/Debug
+/Project1/Harness/Release

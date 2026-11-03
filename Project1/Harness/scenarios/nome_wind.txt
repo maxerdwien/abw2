@@ -1,0 +1,34 @@
+# Nome stage wind. Peak gust strength is 4000 velocity units per frame.
+# With the ship's quadratic friction that gives an idle grizzly a terminal drift of ~8 px/frame.
+
+# an idle ship gets blown downwind
+ship 0 grizzly 400 360
+wind 0 4000
+run 60
+expect 0 vx > 7
+expect 0 vx < 10
+expect 0 x > 700
+shot nome_wind_drift.png
+
+# thrusting straight into the wind still makes headway (net thrust 7000 - 4000)
+teleport 0 900 360
+move 0 -1 0
+run 60
+expect 0 vx < -5
+expect 0 x < 700
+
+# a crosswind bends the path of a ship flying north
+teleport 0 640 600
+move 0 0 -1
+wind 0 4000
+run 60
+expect 0 y < 300
+expect 0 x > 800
+
+# calm again: the drift dies off
+teleport 0 640 360
+move 0 0 0
+wind 0 0
+run 90
+expect 0 vx < 1
+expect 0 vy > -1

@@ -69,10 +69,19 @@
     <ClCompile Include="stage_marker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="wind.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="panda.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="squiggle_segment.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kodiak.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sawblade.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,10 +140,19 @@
     <ClInclude Include="stage_marker.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="wind.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="panda.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="squiggle_segment.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kodiak.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sawblade.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

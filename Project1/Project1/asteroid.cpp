@@ -65,6 +65,7 @@ int Asteroid::serialize(char* buf, int i) {
 	i = serialize_double(angle, buf, i);
 
 	i = serialize_int(tex_number, buf, i);
+	i = serialize_int(radius, buf, i);
 
 	return i;
 }
@@ -76,6 +77,7 @@ int Asteroid::deserialize(char* buf, int i) {
 	i = deserialize_double(&angle, buf, i);
 
 	i = deserialize_int(&tex_number, buf, i);
+	i = deserialize_int(&radius, buf, i);
 
 	get_resources();
 

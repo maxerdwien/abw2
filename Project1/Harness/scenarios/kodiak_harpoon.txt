@@ -1,0 +1,32 @@
+# Kodiak RT: the harpoon should impale a target and reel it toward the Kodiak.
+ship 0 kodiak 400 360
+ship 1 polar 800 360
+expect_dist 0 1 == 400
+
+aim 0 1 0
+fire2 0 1
+run 1
+fire2 0 0
+
+run 14
+shot kodiak_harpoon_flight.png
+
+run 12
+expect 1 damage_taken >= 4       # impaled
+expect 1 vx < 0                  # being dragged left, toward the kodiak
+shot kodiak_harpoon_tethered.png
+
+run 40
+expect_dist 0 1 < 300            # reeled in a long way
+print 1
+print 0
+
+# a miss must retract and become ready again
+ship 2 kodiak 400 150
+aim 2 0 -1
+fire2 2 1
+run 1
+fire2 2 0
+run 30
+shot kodiak_harpoon_miss_retract.png
+expect 2 damage_done == 0

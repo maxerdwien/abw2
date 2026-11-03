@@ -1,0 +1,34 @@
+# Kodiak LB: a fully charged roar should blast every nearby enemy radially outward.
+ship 0 kodiak 640 360
+ship 1 grizzly 760 360        # right
+ship 2 black 640 250          # above
+ship 3 panda 300 360          # far left, outside even a full-charge roar (240px)
+
+fire3 0 1
+run 20
+shot kodiak_roar_charging.png
+
+run 30                        # 45 frames = full charge; it auto-releases
+fire3 0 0
+run 3
+shot kodiak_roar_blast.png
+
+run 12
+expect 1 damage_taken >= 7    # full-charge damage
+expect 1 vx > 0               # blasted right
+expect 2 damage_taken >= 7
+expect 2 vy < 0               # blasted up
+expect 3 damage_taken == 0    # out of range
+print 1
+print 2
+print 3
+
+# a tapped (uncharged) roar is weaker but still hits
+run 60
+teleport 1 760 360
+fire3 0 1
+run 2
+fire3 0 0
+run 20
+expect 1 damage_taken >= 9    # 7 + at least 2 more
+expect 1 damage_taken <= 11

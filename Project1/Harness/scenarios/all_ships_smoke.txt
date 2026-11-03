@@ -1,0 +1,51 @@
+# Every ship fires every weapon at a target for a while. Catches crashes and gives a
+# screenshot of each ship's full arsenal.
+ship 0 black 300 200
+ship 1 grizzly 300 520
+ship 2 polar 900 200
+ship 3 panda 900 520
+aim 0 1 0.3
+aim 1 1 -0.3
+aim 2 -1 0.3
+aim 3 -1 -0.3
+fire1 0 1
+fire2 0 1
+fire3 0 1
+fire1 1 1
+fire2 1 1
+fire3 1 1
+fire1 2 1
+fire2 2 1
+fire3 2 1
+fire1 3 1
+fire2 3 1
+fire3 3 1
+run 45
+shot smoke_black_grizzly_polar_panda.png
+run 120
+print 0
+print 1
+print 2
+print 3
+
+ship 0 kodiak 300 200
+ship 1 kodiak 300 520
+ship 2 kodiak 900 200
+ship 3 kodiak 900 520
+aim 0 1 0.3
+aim 1 1 -0.3
+aim 2 -1 0.3
+aim 3 -1 -0.3
+fire1 0 1
+fire2 1 1
+fire3 2 1
+fire1 3 1
+fire2 3 1
+fire3 3 1
+run 30
+shot smoke_kodiak.png
+run 300
+print 0
+print 1
+print 2
+print 3

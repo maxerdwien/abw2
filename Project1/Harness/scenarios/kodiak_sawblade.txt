@@ -1,0 +1,42 @@
+# Kodiak RB: a sawblade thrown at a stationary target should hit it and then come home.
+ship 0 kodiak 400 360
+ship 1 grizzly 800 360
+
+aim 0 1 0
+fire1 0 1
+run 1
+fire1 0 0
+expect 0 stamina < 2000          # the throw cost stamina
+
+run 24
+shot kodiak_sawblade_outbound.png
+
+run 40
+expect 1 damage_taken >= 3       # the blade shredded the grizzly on the way past
+expect 1 vx > 0                  # and knocked it away from the thrower
+print 1
+
+# the blade turns around and comes home
+run 30
+shot kodiak_sawblade_returning.png
+run 150
+expect 0 stamina == 2000         # regenerated, and nothing else was thrown
+print 0
+
+# holding RB should keep throwing until all three blades are out, then wait for a catch
+teleport 1 800 360
+fire1 0 1
+run 90
+shot kodiak_sawblade_three.png
+fire1 0 0
+expect 1 damage_taken >= 6
+run 200
+
+# a throw into the wall should ricochet, not vanish
+teleport 0 1200 360
+aim 0 1 0
+fire1 0 1
+run 1
+fire1 0 0
+run 12
+shot kodiak_sawblade_ricochet.png
