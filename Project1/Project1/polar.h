@@ -66,7 +66,7 @@ public:
 	void update_projectiles_3(int min_x, int max_x, int min_y, int max_y, Ship* ships[], Asteroid* asteroids[], int num_asteroids, SDL_Haptic* haptics[]);
 	void render_projectiles_3();
 
-	double Polar::get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_0);
+	double get_dist(long x_1, long y_1, long x_2, long y_2, long x_0, long y_0);
 
 	int serialize(char* buf, int i);
 	int deserialize(char*buf, int i);

@@ -42,70 +42,70 @@ Grizzly::Grizzly(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	r = rend;
 
 	if (id == 0) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
-		mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineRed.png");
-		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileRed.png");
+		ship_tex = r->LoadTexture("../Project1/assets/ships/grizzly-red.png");
+		bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletRed.png");
+		mine_tex = r->LoadTexture("../Project1/assets/attacks/mineRed.png");
+		missile_tex = r->LoadTexture("../Project1/assets/attacks/missileRed.png");
 	} else if (id == 1) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
-			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/grizzly-blue.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletBlue.png");
+			mine_tex = r->LoadTexture("../Project1/assets/attacks/mineBlue.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileBlue.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-magenta.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletMagenta.png");
-			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineMagenta.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileMagenta.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/grizzly-magenta.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletMagenta.png");
+			mine_tex = r->LoadTexture("../Project1/assets/attacks/mineMagenta.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileMagenta.png");
 		}
 	} else if (id == 2) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
-			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineYellow.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileYellow.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/grizzly-yellow.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletYellow.png");
+			mine_tex = r->LoadTexture("../Project1/assets/attacks/mineYellow.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileYellow.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
-			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineBlue.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/grizzly-blue.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletBlue.png");
+			mine_tex = r->LoadTexture("../Project1/assets/attacks/mineBlue.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileBlue.png");
 		}
 	} else {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
-			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineGreen.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileGreen.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/grizzly-green.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletGreen.png");
+			mine_tex = r->LoadTexture("../Project1/assets/attacks/mineGreen.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileGreen.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-teal.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletTeal.png");
-			mine_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\mineTeal.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileTeal.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/grizzly-teal.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletTeal.png");
+			mine_tex = r->LoadTexture("../Project1/assets/attacks/mineTeal.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileTeal.png");
 		}
 	}
 
-	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-white.png");
+	ship_invincible_tex = r->LoadTexture("../Project1/assets/ships/grizzly-white.png");
 
-	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
+	cannon_tex = r->LoadTexture("../Project1/assets/cannon.png");
 
-	bounce_missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileOrange.png");
-	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
+	bounce_missile_tex = r->LoadTexture("../Project1/assets/attacks/missileOrange.png");
+	bounce_bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletOrange.png");
 	
-	explosion_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\explosion.png");
-	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	explosion_tex = r->LoadTexture("../Project1/assets/attacks/explosion.png");
+	shield_tex = r->LoadTexture("../Project1/assets/shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100); 
-	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
+	bounce_tex = r->LoadTexture("../Project1/assets/bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
-	thrust_low_tex = r->LoadTexture("..\\Project1\\assets\\thrustlow.png");
-	thrust_medium_tex = r->LoadTexture("..\\Project1\\assets\\thrustmed.png");
-	thrust_high_tex = r->LoadTexture("..\\Project1\\assets\\thrusthigh.png");
+	thrust_low_tex = r->LoadTexture("../Project1/assets/thrustlow.png");
+	thrust_medium_tex = r->LoadTexture("../Project1/assets/thrustmed.png");
+	thrust_high_tex = r->LoadTexture("../Project1/assets/thrusthigh.png");
 
 
-	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\missile.wav");
-	explosion_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\explosion.wav");
-	mine_deploy_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\dispenser.wav");
+	bullet_sfx = Mix_LoadWAV("../Project1/assets/sounds/bullet.wav");
+	missile_launch_sfx = Mix_LoadWAV("../Project1/assets/sounds/missile.wav");
+	explosion_sfx = Mix_LoadWAV("../Project1/assets/sounds/explosion.wav");
+	mine_deploy_sfx = Mix_LoadWAV("../Project1/assets/sounds/dispenser.wav");
 }
 
 Grizzly::~Grizzly() {

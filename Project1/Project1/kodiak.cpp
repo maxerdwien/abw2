@@ -48,72 +48,72 @@ Kodiak::Kodiak(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	Uint8 tint_r = 255, tint_g = 255, tint_b = 255;
 
 	if (id == 0) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-red.png");
-		sawblade_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\sawbladeRed.png");
-		harpoon_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\harpoonRed.png");
+		ship_tex = r->LoadTexture("../Project1/assets/ships/kodiak-red.png");
+		sawblade_tex = r->LoadTexture("../Project1/assets/attacks/sawbladeRed.png");
+		harpoon_tex = r->LoadTexture("../Project1/assets/attacks/harpoonRed.png");
 		tint_r = 255; tint_g = 70; tint_b = 70;
 	} else if (id == 1) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-blue.png");
-			sawblade_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\sawbladeBlue.png");
-			harpoon_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\harpoonBlue.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/kodiak-blue.png");
+			sawblade_tex = r->LoadTexture("../Project1/assets/attacks/sawbladeBlue.png");
+			harpoon_tex = r->LoadTexture("../Project1/assets/attacks/harpoonBlue.png");
 			tint_r = 80; tint_g = 120; tint_b = 255;
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-magenta.png");
-			sawblade_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\sawbladeMagenta.png");
-			harpoon_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\harpoonMagenta.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/kodiak-magenta.png");
+			sawblade_tex = r->LoadTexture("../Project1/assets/attacks/sawbladeMagenta.png");
+			harpoon_tex = r->LoadTexture("../Project1/assets/attacks/harpoonMagenta.png");
 			tint_r = 255; tint_g = 70; tint_b = 200;
 		}
 	} else if (id == 2) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-yellow.png");
-			sawblade_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\sawbladeYellow.png");
-			harpoon_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\harpoonYellow.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/kodiak-yellow.png");
+			sawblade_tex = r->LoadTexture("../Project1/assets/attacks/sawbladeYellow.png");
+			harpoon_tex = r->LoadTexture("../Project1/assets/attacks/harpoonYellow.png");
 			tint_r = 255; tint_g = 230; tint_b = 70;
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-blue.png");
-			sawblade_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\sawbladeBlue.png");
-			harpoon_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\harpoonBlue.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/kodiak-blue.png");
+			sawblade_tex = r->LoadTexture("../Project1/assets/attacks/sawbladeBlue.png");
+			harpoon_tex = r->LoadTexture("../Project1/assets/attacks/harpoonBlue.png");
 			tint_r = 80; tint_g = 120; tint_b = 255;
 		}
 	} else {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-green.png");
-			sawblade_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\sawbladeGreen.png");
-			harpoon_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\harpoonGreen.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/kodiak-green.png");
+			sawblade_tex = r->LoadTexture("../Project1/assets/attacks/sawbladeGreen.png");
+			harpoon_tex = r->LoadTexture("../Project1/assets/attacks/harpoonGreen.png");
 			tint_r = 80; tint_g = 255; tint_b = 100;
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-teal.png");
-			sawblade_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\sawbladeTeal.png");
-			harpoon_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\harpoonTeal.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/kodiak-teal.png");
+			sawblade_tex = r->LoadTexture("../Project1/assets/attacks/sawbladeTeal.png");
+			harpoon_tex = r->LoadTexture("../Project1/assets/attacks/harpoonTeal.png");
 			tint_r = 70; tint_g = 220; tint_b = 255;
 		}
 	}
 
-	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-white.png");
+	ship_invincible_tex = r->LoadTexture("../Project1/assets/ships/kodiak-white.png");
 
-	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
+	cannon_tex = r->LoadTexture("../Project1/assets/cannon.png");
 
-	bounce_sawblade_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\sawbladeOrange.png");
+	bounce_sawblade_tex = r->LoadTexture("../Project1/assets/attacks/sawbladeOrange.png");
 
-	roar_ring_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\roar_ring.png");
+	roar_ring_tex = r->LoadTexture("../Project1/assets/attacks/roar_ring.png");
 	SDL_SetTextureBlendMode(roar_ring_tex, SDL_BLENDMODE_BLEND);
 	SDL_SetTextureColorMod(roar_ring_tex, tint_r, tint_g, tint_b);
 
-	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	shield_tex = r->LoadTexture("../Project1/assets/shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
-	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
+	bounce_tex = r->LoadTexture("../Project1/assets/bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
-	thrust_low_tex = r->LoadTexture("..\\Project1\\assets\\thrustlow.png");
-	thrust_medium_tex = r->LoadTexture("..\\Project1\\assets\\thrustmed.png");
-	thrust_high_tex = r->LoadTexture("..\\Project1\\assets\\thrusthigh.png");
+	thrust_low_tex = r->LoadTexture("../Project1/assets/thrustlow.png");
+	thrust_medium_tex = r->LoadTexture("../Project1/assets/thrustmed.png");
+	thrust_high_tex = r->LoadTexture("../Project1/assets/thrusthigh.png");
 
-	sawblade_throw_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\sawblade_throw.wav");
-	sawblade_hit_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\sawblade_hit.wav");
-	harpoon_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\harpoon.wav");
-	roar_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\roar.wav");
-	roar_charge_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\roar_charge.wav");
+	sawblade_throw_sfx = Mix_LoadWAV("../Project1/assets/sounds/sawblade_throw.wav");
+	sawblade_hit_sfx = Mix_LoadWAV("../Project1/assets/sounds/sawblade_hit.wav");
+	harpoon_sfx = Mix_LoadWAV("../Project1/assets/sounds/harpoon.wav");
+	roar_sfx = Mix_LoadWAV("../Project1/assets/sounds/roar.wav");
+	roar_charge_sfx = Mix_LoadWAV("../Project1/assets/sounds/roar_charge.wav");
 }
 
 Kodiak::~Kodiak() {

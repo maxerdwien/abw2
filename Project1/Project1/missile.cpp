@@ -1,4 +1,5 @@
 #include <string>
+#include <math.h>
 
 #include "serializer.h"
 #include "missile.h"

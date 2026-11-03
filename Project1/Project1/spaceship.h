@@ -83,7 +83,7 @@ class Ship {
 		int gun_length = 10000 * 21;
 
 		// todo: make this use the constant NUM_ITEMS
-		int item_times[6];
+		int item_times[6] = {}; // frames remaining per item_type; must start at 0 (no powerups)
 
 		int last_hit = -1;
 

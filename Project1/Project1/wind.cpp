@@ -19,7 +19,7 @@ Wind::Wind(Renderer* rend, int min_x_, int max_x_, int min_y_, int max_y_) {
 	min_y = min_y_;
 	max_y = max_y_;
 
-	sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\wind.wav");
+	sfx = Mix_LoadWAV("../Project1/assets/sounds/wind.wav");
 
 	reset();
 }

@@ -10,3 +10,6 @@ Max Erdwien and David Meierer
 Technologies Used:
 C++
 SDL 2
+
+
+To build and play on Linux / Steam Deck, see [STEAMOS.md](STEAMOS.md).

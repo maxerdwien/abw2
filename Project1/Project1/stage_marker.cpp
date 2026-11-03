@@ -18,8 +18,8 @@ Stage_Marker::Stage_Marker(Renderer* rend, int x, int y, std::string n, std::str
 	name = n;
 	description = desc;
 
-	unselected_tex = r->LoadTexture("..\\Project1\\assets\\hitbox.png");
-	selected_tex = r->LoadTexture("..\\Project1\\assets\\sun.png");
+	unselected_tex = r->LoadTexture("../Project1/assets/hitbox.png");
+	selected_tex = r->LoadTexture("../Project1/assets/sun.png");
 }
 
 void Stage_Marker::render() {

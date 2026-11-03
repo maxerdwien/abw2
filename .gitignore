@@ -21,3 +21,7 @@
 /Project1/Project1/Debug
 /Project1/Harness/Debug
 /Project1/Harness/Release
+
+# linux build output
+/Project1/build/
+/Project1/linux/

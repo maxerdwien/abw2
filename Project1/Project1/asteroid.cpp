@@ -34,11 +34,11 @@ void Asteroid::get_resources() {
 	if (tex) return;
 
 	if (tex_number == 0) {
-		tex = r->LoadTexture("..\\Project1\\assets\\asteroid1.png");
+		tex = r->LoadTexture("../Project1/assets/asteroid1.png");
 	} else if (tex_number == 1) {
-		tex = r->LoadTexture("..\\Project1\\assets\\asteroid2.png");
+		tex = r->LoadTexture("../Project1/assets/asteroid2.png");
 	} else {
-		tex = r->LoadTexture("..\\Project1\\assets\\asteroid3.png");
+		tex = r->LoadTexture("../Project1/assets/asteroid3.png");
 	}
 }
 

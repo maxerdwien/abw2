@@ -2,8 +2,8 @@
 #include <string>
 #include <math.h>
 
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <stdint.h>
+#include "platform-compat.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -51,12 +51,18 @@ bool dpad_down[4] = { false, false, false, false };
 
 Renderer* r;
 
+// debug conveniences (skip menus/countdowns, windowed, muted, fps in title).
+// on only in debug builds: visual studio's Debug configuration defines _DEBUG.
+#ifdef _DEBUG
 const bool DEBUG_MODE = true;
+#else
+const bool DEBUG_MODE = false;
+#endif
 
 bool quit = false;
 bool is_fullscreen = !DEBUG_MODE;
 bool xp_mode = false;
-bool muted = true;
+bool muted = DEBUG_MODE;
 
 int controller_mappings[4] = { -1, -1, -1, -1 };
 Input_State controllers[4];
@@ -125,7 +131,7 @@ int num_asteroids = 0;
 Wind* wind = NULL;
 
 int lookup_controller(int instanceID);
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps);
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps, bool has_controller);
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship);
 void render_game(int game_end_cooldown, int game_end_delay, int game_start_cooldown,
 	Mix_Chunk* countdown_tick, Mix_Chunk* selected_ship, SDL_Texture* bg,
@@ -145,6 +151,16 @@ ship_type increment_ship_selection(ship_type st, int amount);
 void toggle_mute();
 
 int main(int, char**) {
+#ifndef _WIN32
+	// assets are loaded relative to the executable ("../Project1/assets/..."), so make
+	// sure the working directory is the executable's directory regardless of how we were launched
+	if (char* base_path = SDL_GetBasePath()) {
+		if (chdir(base_path) != 0) {
+			printf("could not chdir to %s\n", base_path);
+		}
+		SDL_free(base_path);
+	}
+#endif
 
 	enum class online_status {
 		local,
@@ -263,61 +279,61 @@ int main(int, char**) {
 	r = new Renderer(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// load textures
-	SDL_Texture* bg = r->LoadTexture("..\\Project1\\assets\\background.png");
+	SDL_Texture* bg = r->LoadTexture("../Project1/assets/background.png");
 
 	SDL_Texture* ship_textures[(int)ship_type::MAX][6];
-	ship_textures[(int)ship_type::black][red] = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
-	ship_textures[(int)ship_type::black][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-	ship_textures[(int)ship_type::black][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
-	ship_textures[(int)ship_type::black][green] = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
-	ship_textures[(int)ship_type::black][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\black-teal.png");
-	ship_textures[(int)ship_type::black][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\black-magenta.png");
+	ship_textures[(int)ship_type::black][red] = r->LoadTexture("../Project1/assets/ships/black-red.png");
+	ship_textures[(int)ship_type::black][blue] = r->LoadTexture("../Project1/assets/ships/black-blue.png");
+	ship_textures[(int)ship_type::black][yellow] = r->LoadTexture("../Project1/assets/ships/black-yellow.png");
+	ship_textures[(int)ship_type::black][green] = r->LoadTexture("../Project1/assets/ships/black-green.png");
+	ship_textures[(int)ship_type::black][teal] = r->LoadTexture("../Project1/assets/ships/black-teal.png");
+	ship_textures[(int)ship_type::black][magenta] = r->LoadTexture("../Project1/assets/ships/black-magenta.png");
 
-	ship_textures[(int)ship_type::grizzly][red] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-red.png");
-	ship_textures[(int)ship_type::grizzly][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-blue.png");
-	ship_textures[(int)ship_type::grizzly][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-yellow.png");
-	ship_textures[(int)ship_type::grizzly][green] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-green.png");
-	ship_textures[(int)ship_type::grizzly][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-teal.png");
-	ship_textures[(int)ship_type::grizzly][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\grizzly-magenta.png");
+	ship_textures[(int)ship_type::grizzly][red] = r->LoadTexture("../Project1/assets/ships/grizzly-red.png");
+	ship_textures[(int)ship_type::grizzly][blue] = r->LoadTexture("../Project1/assets/ships/grizzly-blue.png");
+	ship_textures[(int)ship_type::grizzly][yellow] = r->LoadTexture("../Project1/assets/ships/grizzly-yellow.png");
+	ship_textures[(int)ship_type::grizzly][green] = r->LoadTexture("../Project1/assets/ships/grizzly-green.png");
+	ship_textures[(int)ship_type::grizzly][teal] = r->LoadTexture("../Project1/assets/ships/grizzly-teal.png");
+	ship_textures[(int)ship_type::grizzly][magenta] = r->LoadTexture("../Project1/assets/ships/grizzly-magenta.png");
 
-	ship_textures[(int)ship_type::polar][red] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
-	ship_textures[(int)ship_type::polar][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
-	ship_textures[(int)ship_type::polar][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
-	ship_textures[(int)ship_type::polar][green] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
-	ship_textures[(int)ship_type::polar][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
-	ship_textures[(int)ship_type::polar][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
+	ship_textures[(int)ship_type::polar][red] = r->LoadTexture("../Project1/assets/ships/polar-red.png");
+	ship_textures[(int)ship_type::polar][blue] = r->LoadTexture("../Project1/assets/ships/polar-blue.png");
+	ship_textures[(int)ship_type::polar][yellow] = r->LoadTexture("../Project1/assets/ships/polar-yellow.png");
+	ship_textures[(int)ship_type::polar][green] = r->LoadTexture("../Project1/assets/ships/polar-green.png");
+	ship_textures[(int)ship_type::polar][teal] = r->LoadTexture("../Project1/assets/ships/polar-teal.png");
+	ship_textures[(int)ship_type::polar][magenta] = r->LoadTexture("../Project1/assets/ships/polar-magenta.png");
 
-	ship_textures[(int)ship_type::panda][red] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-red.png");
-	ship_textures[(int)ship_type::panda][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-blue.png");
-	ship_textures[(int)ship_type::panda][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-yellow.png");
-	ship_textures[(int)ship_type::panda][green] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-green.png");
-	ship_textures[(int)ship_type::panda][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-teal.png");
-	ship_textures[(int)ship_type::panda][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\panda-magenta.png");
+	ship_textures[(int)ship_type::panda][red] = r->LoadTexture("../Project1/assets/ships/panda-red.png");
+	ship_textures[(int)ship_type::panda][blue] = r->LoadTexture("../Project1/assets/ships/panda-blue.png");
+	ship_textures[(int)ship_type::panda][yellow] = r->LoadTexture("../Project1/assets/ships/panda-yellow.png");
+	ship_textures[(int)ship_type::panda][green] = r->LoadTexture("../Project1/assets/ships/panda-green.png");
+	ship_textures[(int)ship_type::panda][teal] = r->LoadTexture("../Project1/assets/ships/panda-teal.png");
+	ship_textures[(int)ship_type::panda][magenta] = r->LoadTexture("../Project1/assets/ships/panda-magenta.png");
 
-	ship_textures[(int)ship_type::kodiak][red] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-red.png");
-	ship_textures[(int)ship_type::kodiak][blue] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-blue.png");
-	ship_textures[(int)ship_type::kodiak][yellow] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-yellow.png");
-	ship_textures[(int)ship_type::kodiak][green] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-green.png");
-	ship_textures[(int)ship_type::kodiak][teal] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-teal.png");
-	ship_textures[(int)ship_type::kodiak][magenta] = r->LoadTexture("..\\Project1\\assets\\ships\\kodiak-magenta.png");
+	ship_textures[(int)ship_type::kodiak][red] = r->LoadTexture("../Project1/assets/ships/kodiak-red.png");
+	ship_textures[(int)ship_type::kodiak][blue] = r->LoadTexture("../Project1/assets/ships/kodiak-blue.png");
+	ship_textures[(int)ship_type::kodiak][yellow] = r->LoadTexture("../Project1/assets/ships/kodiak-yellow.png");
+	ship_textures[(int)ship_type::kodiak][green] = r->LoadTexture("../Project1/assets/ships/kodiak-green.png");
+	ship_textures[(int)ship_type::kodiak][teal] = r->LoadTexture("../Project1/assets/ships/kodiak-teal.png");
+	ship_textures[(int)ship_type::kodiak][magenta] = r->LoadTexture("../Project1/assets/ships/kodiak-magenta.png");
 
-	SDL_Texture* right_arrow = r->LoadTexture("..\\Project1\\assets\\right_arrow.png");
-	SDL_Texture* left_arrow = r->LoadTexture("..\\Project1\\assets\\left_arrow.png");
+	SDL_Texture* right_arrow = r->LoadTexture("../Project1/assets/right_arrow.png");
+	SDL_Texture* left_arrow = r->LoadTexture("../Project1/assets/left_arrow.png");
 
-	SDL_Texture* alaska = r->LoadTexture("..\\Project1\\assets\\alaska.png");
+	SDL_Texture* alaska = r->LoadTexture("../Project1/assets/alaska.png");
 
 	
-	Mix_Chunk* beep = Mix_LoadWAV("..\\Project1\\assets\\sounds\\confirm.wav");
-	Mix_Chunk* deselect = Mix_LoadWAV("..\\Project1\\assets\\sounds\\deselect.wav");
-	Mix_Chunk* selected_ship = Mix_LoadWAV("..\\Project1\\assets\\sounds\\beep.wav");
-	Mix_Chunk* powerup_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\item.wav");
-	Mix_Chunk* death_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\death.wav");
-	Mix_Chunk* countdown_tick = Mix_LoadWAV("..\\Project1\\assets\\sounds\\countdown.wav");
+	Mix_Chunk* beep = Mix_LoadWAV("../Project1/assets/sounds/confirm.wav");
+	Mix_Chunk* deselect = Mix_LoadWAV("../Project1/assets/sounds/deselect.wav");
+	Mix_Chunk* selected_ship = Mix_LoadWAV("../Project1/assets/sounds/beep.wav");
+	Mix_Chunk* powerup_sfx = Mix_LoadWAV("../Project1/assets/sounds/item.wav");
+	Mix_Chunk* death_sfx = Mix_LoadWAV("../Project1/assets/sounds/death.wav");
+	Mix_Chunk* countdown_tick = Mix_LoadWAV("../Project1/assets/sounds/countdown.wav");
 
 	wind = new Wind(r, STATUS_BAR_WIDTH, WIDTH_UNITS, 0, HEIGHT_UNITS);
 
 
-	music = Mix_LoadMUS("..\\Project1\\assets\\sounds\\Cyborg_Ninja.wav");
+	music = Mix_LoadMUS("../Project1/assets/sounds/Cyborg_Ninja.wav");
 	// "Cyborg Ninja" Kevin MacLeod (incompetech.com)
 	// Licensed under Creative Commons : By Attribution 3.0 License
 	// http ://creativecommons.org/licenses/by/3.0/
@@ -487,7 +503,7 @@ int main(int, char**) {
 							}
 
 							SOCKADDR_STORAGE from;
-							int fromlen = sizeof(from);
+							socklen_t fromlen = sizeof(from);
 							int message_len = recvfrom(me, handshake_buffer, handshake_buffer_size, 0, (LPSOCKADDR)&from, &fromlen);
 							if (message_len == SOCKET_ERROR) {
 								printf("recvfrom failed, %d", WSAGetLastError());
@@ -657,6 +673,33 @@ int main(int, char**) {
 						//int random_selection = rand() % 3;
 						//selections[controller_index] = (ship_type)random_selection;
 					}
+					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_X) {
+						// add an ai player to the first slot with no controller plugged in.
+						// if every slot is taken, clear out all of the controller-less ai players instead.
+						int empty_slot = -1;
+						for (int i = 0; i < 4; i++) {
+							if (controllers[i].status == empty && controller_mappings[i] == -1) {
+								empty_slot = i;
+								break;
+							}
+						}
+						if (empty_slot != -1) {
+							Mix_PlayChannel(-1, beep, 0);
+							controllers[empty_slot].status = ai;
+							selections[empty_slot] = (ship_type)(rand() % (int)ship_type::MAX);
+							ready[empty_slot] = true;
+						} else {
+							bool removed_any = false;
+							for (int i = 0; i < 4; i++) {
+								if (controllers[i].status == ai && controller_mappings[i] == -1) {
+									controllers[i] = Input_State();
+									ready[i] = false;
+									removed_any = true;
+								}
+							}
+							if (removed_any) Mix_PlayChannel(-1, deselect, 0);
+						}
+					}
 					else if (e.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) {
 						if (selected_team_mode == free_for_all) {
 							selected_team_mode = two_vs_two;
@@ -710,6 +753,21 @@ int main(int, char**) {
 				r->render_text(0, 0, " Items: OFF (Y) ", false, false, true, small_f, 255, 255);
 			}
 
+			// render add/clear ai prompt
+			{
+				bool has_empty_slot = false;
+				bool has_controllerless_ai = false;
+				for (int i = 0; i < 4; i++) {
+					if (controllers[i].status == empty && controller_mappings[i] == -1) has_empty_slot = true;
+					if (controllers[i].status == ai && controller_mappings[i] == -1) has_controllerless_ai = true;
+				}
+				if (has_empty_slot) {
+					r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Add AI Player (X) ", false, false, true, small_f, 255, 255);
+				} else if (has_controllerless_ai) {
+					r->render_text((WIDTH_UNITS + BARSIZE) / 2, 0, " Clear AI Players (X) ", false, false, true, small_f, 255, 255);
+				}
+			}
+
 			// render team mode
 			if (selected_team_mode == free_for_all) {
 				r->render_text(0, (HEIGHT_UNITS + BARSIZE) / 2, " Mode: Free for All (RB) ", false, false, true, small_f, 255, 255);
@@ -727,19 +785,19 @@ int main(int, char**) {
 			// render ships selections
 			{
 				color c = red;
-				render_character_selector(0, 0, ship_textures[(int)selections[0]][c], selections[0], right_arrow, left_arrow, ready[0], controllers[0].status);
+				render_character_selector(0, 0, ship_textures[(int)selections[0]][c], selections[0], right_arrow, left_arrow, ready[0], controllers[0].status, controller_mappings[0] != -1);
 
 				if (selected_team_mode == two_vs_two) c = magenta;
 				else c = blue;
-				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, 0, ship_textures[(int)selections[1]][c], selections[1], right_arrow, left_arrow, ready[1], controllers[1].status);
+				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, 0, ship_textures[(int)selections[1]][c], selections[1], right_arrow, left_arrow, ready[1], controllers[1].status, controller_mappings[1] != -1);
 
 				if (selected_team_mode == two_vs_two) c = blue;
 				else c = yellow;
-				render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[(int)selections[2]][c], selections[2], right_arrow, left_arrow, ready[2], controllers[2].status);
+				render_character_selector(0, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[(int)selections[2]][c], selections[2], right_arrow, left_arrow, ready[2], controllers[2].status, controller_mappings[2] != -1);
 
 				if (selected_team_mode == two_vs_two) c = teal;
 				else c = green;
-				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[(int)selections[3]][c], selections[3], right_arrow, left_arrow, ready[3], controllers[3].status);
+				render_character_selector(WIDTH_UNITS / 2 + BARSIZE / 2, HEIGHT_UNITS / 2 + BARSIZE / 2, ship_textures[(int)selections[3]][c], selections[3], right_arrow, left_arrow, ready[3], controllers[3].status, controller_mappings[3] != -1);
 
 			}
 
@@ -1460,7 +1518,8 @@ int main(int, char**) {
 			} // end of update ships
 
 			// Check to see if the game is over
-			bool game_over = false;
+			bool game_over; // declared without initializer so the goto above may legally jump past it
+			game_over = false;
 			if (selected_team_mode == free_for_all) {
 				int number_alive = 0;
 				winner = -1;
@@ -1662,7 +1721,6 @@ int main(int, char**) {
 			r->render_text(STATUS_BAR_WIDTH, 0, "L + R + A + START to reset", false, false, true, medium_f, 255, 255);
 			r->render_text(STATUS_BAR_WIDTH, r->get_text_height(medium_f), "Y to toggle hitboxes", false, false, true, medium_f, 255, 255);
 			r->render_text(STATUS_BAR_WIDTH, 2 * r->get_text_height(medium_f), "X to toggle XP mode", false, false, true, medium_f, 255, 255);
-			r->render_text(STATUS_BAR_WIDTH, 3 * r->get_text_height(medium_f), "B to toggle sound", false, false, true, medium_f, 255, 255);
 
 
 			SDL_RenderPresent(renderer);
@@ -1695,16 +1753,16 @@ int main(int, char**) {
 				char winnerMessage[20];
 
 				if (winner == -1) {
-					sprintf_s(winnerMessage, "No Contest!");
+					snprintf(winnerMessage, sizeof(winnerMessage), "No Contest!");
 				}
 				else if (selected_team_mode == free_for_all) {
-					sprintf_s(winnerMessage, "Player %d wins!", winner);
+					snprintf(winnerMessage, sizeof(winnerMessage), "Player %d wins!", winner);
 				}
 				else if (selected_team_mode == two_vs_two) {
 					if (winner == 1 || winner == 2) {
-						sprintf_s(winnerMessage, "Red Team wins!");
+						snprintf(winnerMessage, sizeof(winnerMessage), "Red Team wins!");
 					} else if (winner == 3 || winner == 4) {
-						sprintf_s(winnerMessage, "Blue Team wins!");
+						snprintf(winnerMessage, sizeof(winnerMessage), "Blue Team wins!");
 					}
 				}
 				r->render_text(WIDTH_UNITS / 2, HEIGHT_UNITS / 12, winnerMessage, true, false, false, medium_f, 255, 255);
@@ -1773,10 +1831,12 @@ void log_controller_diagnostics() {
 		compiled.major, compiled.minor, compiled.patch,
 		linked.major, linked.minor, linked.patch);
 
+#ifdef _WIN32
 	char dll_path[MAX_PATH] = "(not loaded?)";
 	HMODULE sdl_dll = GetModuleHandleA("SDL2.dll");
 	if (sdl_dll) GetModuleFileNameA(sdl_dll, dll_path, sizeof(dll_path));
 	printf("[gc-debug] SDL2.dll loaded from: %s\n", dll_path);
+#endif
 
 	const char* h_hidapi = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI);
 	const char* h_gamecube = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE);
@@ -1860,8 +1920,6 @@ bool read_global_input(SDL_Event* e) {
 			//dpad_down[]
 			//xp_mode = !xp_mode;
 			//event_eaten = true;
-		} else if (e->cbutton.button == SDL_CONTROLLER_BUTTON_B) {
-			toggle_mute();
 		}
 		break;
 	case SDL_JOYDEVICEADDED:
@@ -1918,7 +1976,7 @@ bool read_global_input(SDL_Event* e) {
 		// find first empty slot
 		bool found_slot = false;
 		for (int i = 0; i < 4; i++) {
-			if (controller_mappings[i] == -1) {
+			if (controller_mappings[i] == -1 && controllers[i].status == empty) {
 				found_slot = true;
 				controller_mappings[i] = instanceID;
 				controllers[i].controller = temp;
@@ -1941,7 +1999,7 @@ bool read_global_input(SDL_Event* e) {
 			}
 		}
 		if (!found_slot) {
-			printf("[gc-debug] no free slot for controller instance_id=%d; all 4 slots occupied\n", instanceID);
+			printf("[gc-debug] no free slot for controller instance_id=%d; all 4 slots occupied (press X in character select to clear AI players)\n", instanceID);
 		}
 		event_eaten = true;
 		break;
@@ -2196,13 +2254,14 @@ int lookup_controller(int instanceID) {
 	return -1;
 }
 
-void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps) {
+void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type shipType, SDL_Texture* right_arrow, SDL_Texture* left_arrow, bool ready, player_status ps, bool has_controller) {
 	
 	int box_w = (WIDTH_UNITS - BARSIZE) / 2;
 	int box_h = (HEIGHT_UNITS - BARSIZE) / 2;
 
 	if (ps == empty) {
 		r->render_text(x + box_w / 2, y + box_h / 3, "Plug in controller to join", true, false, false, medium_f, 255, 255);
+		r->render_text(x + box_w / 2, y + box_h / 2, "or press X to add an AI player", true, false, false, small_f, 255, 255);
 		return;
 	}
 
@@ -2252,6 +2311,15 @@ void render_character_selector(int x, int y, SDL_Texture* ship_tex, ship_type sh
 	r->render_text(x + box_w / 3, y + 6 * box_h / 10, wep1, false, false, false, medium_f, 255, 255);
 	r->render_text(x + box_w / 3, y + 7 * box_h / 10, wep3, false, false, false, medium_f, 255, 255);
 	r->render_text(x + box_w / 3, y + 8 * box_h / 10, wep2, false, false, false, medium_f, 255, 255);
+
+	// explain how to switch this slot between human and ai control
+	if (ps == human) {
+		r->render_text(x + box_w / 2, y + 9 * box_h / 10, "Press LB to switch to AI", true, false, false, small_f, 255, 255);
+	} else if (ps == ai && has_controller) {
+		r->render_text(x + box_w / 2, y + 9 * box_h / 10, "Press LB to switch back to human", true, false, false, small_f, 255, 255);
+	} else if (ps == ai) {
+		r->render_text(x + box_w / 2, y + 9 * box_h / 10, "AI player (no controller)", true, false, false, small_f, 255, 255);
+	}
 }
 
 void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
@@ -2260,10 +2328,10 @@ void render_results(int x, int y, SDL_Texture * ship_tex, Ship * ship) {
 	char suicideResult[15];
 	char damageGiven[30];
 	char damageTaken[30];
-	sprintf_s(killResult, "Kills: %d", ship->num_kills - ship->num_suicides);
-	sprintf_s(suicideResult, "Self-Kills: %d", ship->num_suicides);
-	sprintf_s(damageGiven, "Damage Given: %d%% ", ship->damage_done);
-	sprintf_s(damageTaken, "Damage Taken: %d%%", ship->damage_taken);
+	snprintf(killResult, sizeof(killResult), "Kills: %d", ship->num_kills - ship->num_suicides);
+	snprintf(suicideResult, sizeof(suicideResult), "Self-Kills: %d", ship->num_suicides);
+	snprintf(damageGiven, sizeof(damageGiven), "Damage Given: %d%% ", ship->damage_done);
+	snprintf(damageTaken, sizeof(damageTaken), "Damage Taken: %d%%", ship->damage_taken);
 
 	r->render_texture(ship_tex, x, y, 1, 5);
 	r->render_text(x, y + 10000 * 100, killResult, true, false, false, small_f, 255, 255);
@@ -2383,7 +2451,7 @@ void render_game(int game_end_cooldown, int game_end_delay, int game_start_coold
 			// render stock counter
 			{
 				char playerLives[20];
-				sprintf_s(playerLives, "Lives: %d", ship->lives);
+				snprintf(playerLives, sizeof(playerLives), "Lives: %d", ship->lives);
 				r->render_text(0, 10000 * (10 + box_height * i), playerLives, false, false, false, medium_f, 255, 255);
 			}
 		}

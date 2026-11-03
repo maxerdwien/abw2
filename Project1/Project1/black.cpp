@@ -42,55 +42,55 @@ Black::Black(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	flamethrower_channel = 25 + 2 * id;
 
 	if (id == 0) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-red.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
+		ship_tex = r->LoadTexture("../Project1/assets/ships/black-red.png");
+		bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletRed.png");
 	} else if (id == 1) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/black-blue.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletBlue.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-magenta.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletMagenta.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/black-magenta.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletMagenta.png");
 		}
 	} else if (id == 2) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-yellow.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/black-yellow.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletYellow.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-blue.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/black-blue.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletBlue.png");
 		}
 	} else {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-green.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/black-green.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletGreen.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-teal.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletTeal.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/black-teal.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletTeal.png");
 		}
 	}
 
-	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\black-white.png");
+	ship_invincible_tex = r->LoadTexture("../Project1/assets/ships/black-white.png");
 
-	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
+	cannon_tex = r->LoadTexture("../Project1/assets/cannon.png");
 
-	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
+	bounce_bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletOrange.png");
 
-	flame_tex_1 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame1.png");
-	flame_tex_2 = r->LoadTexture("..\\Project1\\assets\\attacks\\flame2.png");
+	flame_tex_1 = r->LoadTexture("../Project1/assets/attacks/flame1.png");
+	flame_tex_2 = r->LoadTexture("../Project1/assets/attacks/flame2.png");
 
-	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	shield_tex = r->LoadTexture("../Project1/assets/shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
-	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
+	bounce_tex = r->LoadTexture("../Project1/assets/bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
-	thrust_low_tex = r->LoadTexture("..\\Project1\\assets\\thrustlow.png");
-	thrust_medium_tex = r->LoadTexture("..\\Project1\\assets\\thrustmed.png");
-	thrust_high_tex = r->LoadTexture("..\\Project1\\assets\\thrusthigh.png");
+	thrust_low_tex = r->LoadTexture("../Project1/assets/thrustlow.png");
+	thrust_medium_tex = r->LoadTexture("../Project1/assets/thrustmed.png");
+	thrust_high_tex = r->LoadTexture("../Project1/assets/thrusthigh.png");
 
-	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	flamethrower_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\flamethrower.wav");
-	charging_shot_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\charging.wav");
+	bullet_sfx = Mix_LoadWAV("../Project1/assets/sounds/bullet.wav");
+	flamethrower_sfx = Mix_LoadWAV("../Project1/assets/sounds/flamethrower.wav");
+	charging_shot_sfx = Mix_LoadWAV("../Project1/assets/sounds/charging.wav");
 }
 
 Black::~Black() {

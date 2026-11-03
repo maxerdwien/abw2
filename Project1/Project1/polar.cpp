@@ -43,64 +43,64 @@ Polar::Polar(int identifier, int a1, int a2, int x, int y, Renderer* rend) {
 	r = rend;
 
 	if (id == 0) {
-		ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-red.png");
-		bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletRed.png");
-		missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileRed.png");
+		ship_tex = r->LoadTexture("../Project1/assets/ships/polar-red.png");
+		bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletRed.png");
+		missile_tex = r->LoadTexture("../Project1/assets/attacks/missileRed.png");
 	} else if (id == 1) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/polar-blue.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletBlue.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileBlue.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-magenta.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletMagenta.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileMagenta.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/polar-magenta.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletMagenta.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileMagenta.png");
 		}
 	} else if (id == 2) {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-yellow.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletYellow.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileYellow.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/polar-yellow.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletYellow.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileYellow.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-blue.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletBlue.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileBlue.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/polar-blue.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletBlue.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileBlue.png");
 		}
 	} else {
 		if (ally1 == -1) {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-green.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletGreen.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileGreen.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/polar-green.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletGreen.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileGreen.png");
 		} else {
-			ship_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-teal.png");
-			bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletTeal.png");
-			missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileTeal.png");
+			ship_tex = r->LoadTexture("../Project1/assets/ships/polar-teal.png");
+			bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletTeal.png");
+			missile_tex = r->LoadTexture("../Project1/assets/attacks/missileTeal.png");
 		}
 	}
 
-	ship_invincible_tex = r->LoadTexture("..\\Project1\\assets\\ships\\polar-white.png");
+	ship_invincible_tex = r->LoadTexture("../Project1/assets/ships/polar-white.png");
 
-	cannon_tex = r->LoadTexture("..\\Project1\\assets\\cannon.png");
+	cannon_tex = r->LoadTexture("../Project1/assets/cannon.png");
 
-	bounce_missile_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\missileOrange.png");
-	bounce_bullet_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\bulletOrange.png");
+	bounce_missile_tex = r->LoadTexture("../Project1/assets/attacks/missileOrange.png");
+	bounce_bullet_tex = r->LoadTexture("../Project1/assets/attacks/bulletOrange.png");
 
-	vortex_tex = r->LoadTexture("..\\Project1\\assets\\attacks\\blackhole.png");
+	vortex_tex = r->LoadTexture("../Project1/assets/attacks/blackhole.png");
 	SDL_SetTextureAlphaMod(vortex_tex, 100);
 
-	shield_tex = r->LoadTexture("..\\Project1\\assets\\shield.png");
+	shield_tex = r->LoadTexture("../Project1/assets/shield.png");
 	SDL_SetTextureAlphaMod(shield_tex, 100);
-	bounce_tex = r->LoadTexture("..\\Project1\\assets\\bouncer.png");
+	bounce_tex = r->LoadTexture("../Project1/assets/bouncer.png");
 	SDL_SetTextureAlphaMod(bounce_tex, 100);
 
-	thrust_low_tex = r->LoadTexture("..\\Project1\\assets\\thrustlow.png");
-	thrust_medium_tex = r->LoadTexture("..\\Project1\\assets\\thrustmed.png");
-	thrust_high_tex = r->LoadTexture("..\\Project1\\assets\\thrusthigh.png");
+	thrust_low_tex = r->LoadTexture("../Project1/assets/thrustlow.png");
+	thrust_medium_tex = r->LoadTexture("../Project1/assets/thrustmed.png");
+	thrust_high_tex = r->LoadTexture("../Project1/assets/thrusthigh.png");
 
-	laser_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\laser-active-big.wav");
-	bullet_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\bullet.wav");
-	missile_launch_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\missile.wav");
-	blackhole_sfx = Mix_LoadWAV("..\\Project1\\assets\\sounds\\blackhole.wav");
+	laser_sfx = Mix_LoadWAV("../Project1/assets/sounds/laser-active-big.wav");
+	bullet_sfx = Mix_LoadWAV("../Project1/assets/sounds/bullet.wav");
+	missile_launch_sfx = Mix_LoadWAV("../Project1/assets/sounds/missile.wav");
+	blackhole_sfx = Mix_LoadWAV("../Project1/assets/sounds/blackhole.wav");
 }
 
 Polar::~Polar() {

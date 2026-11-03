@@ -25,27 +25,27 @@ void Item::get_resources() {
 
 	switch (type) {
 	case shield:
-		tex = r->LoadTexture("..\\Project1\\assets\\powerUpTeal.png");
+		tex = r->LoadTexture("../Project1/assets/powerUpTeal.png");
 		text = "shield blocks damage!";
 		break;
 	case laser_sights:
-		tex = r->LoadTexture("..\\Project1\\assets\\powerUpGrey.png");
+		tex = r->LoadTexture("../Project1/assets/powerUpGrey.png");
 		text = "laser sights!";
 		break;
 	case speed_up:
-		tex = r->LoadTexture("..\\Project1\\assets\\powerUpPurple.png");
+		tex = r->LoadTexture("../Project1/assets/powerUpPurple.png");
 		text = "speed up!";
 		break;
 	case bounce:
-		tex = r->LoadTexture("..\\Project1\\assets\\powerUpOrange.png");
+		tex = r->LoadTexture("../Project1/assets/powerUpOrange.png");
 		text = "bounce off edges!";
 		break;
 	case small_pwrup:
-		tex = r->LoadTexture("..\\Project1\\assets\\powerUpYellow.png");
+		tex = r->LoadTexture("../Project1/assets/powerUpYellow.png");
 		text = "hard to hit!";
 		break;
 	case bullet_bounce:
-		tex = r->LoadTexture("..\\Project1\\assets\\powerUpRed.png");
+		tex = r->LoadTexture("../Project1/assets/powerUpRed.png");
 		text = "bouncy bullets!";
 		break;
 	}
